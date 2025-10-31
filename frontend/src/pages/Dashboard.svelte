@@ -22,6 +22,20 @@
     try {
       loading = true;
       tracks = await trackService.getAllTracks();
+      
+      // Try to restore last played track after tracks are loaded
+      const savedData = localStorage.getItem('streamletz_last_track');
+      if (savedData && tracks.length > 0) {
+        try {
+          const { trackId } = JSON.parse(savedData);
+          const lastTrack = tracks.find(t => t.id === trackId);
+          if (lastTrack) {
+            currentTrack = lastTrack;
+          }
+        } catch (e) {
+          console.error('Failed to restore last track:', e);
+        }
+      }
     } catch (err: any) {
       error = "Failed to load tracks. Please try again.";
       console.error(err);
@@ -365,10 +379,10 @@
 
       .play-overlay {
         position: absolute;
-        bottom: $spacing-md;
-        right: $spacing-md;
-        width: 48px;
-        height: 48px;
+        bottom: $spacing-sm;
+        right: $spacing-sm;
+        width: 40px;
+        height: 40px;
         background: $primary-color;
         border-radius: 50%;
         display: flex;

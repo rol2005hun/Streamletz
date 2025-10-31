@@ -3,10 +3,10 @@
   import type { Track } from "../lib/trackService";
   import { trackService } from "../lib/trackService";
 
-  let { 
+  let {
     track = $bindable(null),
-    isPlaying = $bindable(false)
-  }: { 
+    isPlaying = $bindable(false),
+  }: {
     track: Track | null;
     isPlaying: boolean;
   } = $props();
@@ -18,6 +18,31 @@
   let buffered = $state(0);
   let seeking = $state(false);
 
+  // Load saved volume and track on mount
+  onMount(() => {
+    const savedVolume = localStorage.getItem('streamletz_volume');
+    if (savedVolume) {
+      volume = parseFloat(savedVolume);
+    }
+  });
+
+  // Save volume to localStorage when it changes
+  $effect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('streamletz_volume', volume.toString());
+    }
+  });
+
+  // Save current track and playback position
+  $effect(() => {
+    if (track && currentTime > 0 && typeof window !== 'undefined') {
+      localStorage.setItem('streamletz_last_track', JSON.stringify({
+        trackId: track.id,
+        position: currentTime
+      }));
+    }
+  });
+
   $effect(() => {
     if (track && audio) {
       loadTrack();
@@ -27,21 +52,32 @@
   async function loadTrack() {
     if (!track || !audio) return;
 
-    // Pause current playback
     audio.pause();
     currentTime = 0;
     isPlaying = false;
-    
+
     const streamUrl = trackService.getStreamUrl(track.id);
     audio.src = streamUrl;
     audio.load();
-    
-    // Wait for the audio to load and then play
+
+    // Check if we should restore playback position
+    const savedData = localStorage.getItem('streamletz_last_track');
+    if (savedData) {
+      try {
+        const { trackId, position } = JSON.parse(savedData);
+        if (trackId === track.id && position > 0 && position < duration - 5) {
+          audio.currentTime = position;
+        }
+      } catch (e) {
+        console.error('Failed to restore playback position:', e);
+      }
+    }
+
     try {
       await audio.play();
       isPlaying = true;
     } catch (err) {
-      console.error('Playback failed:', err);
+      console.error("Playback failed:", err);
       isPlaying = false;
     }
   }
@@ -115,9 +151,11 @@
     <div class="player-info">
       <div class="album-art">
         {#if track.coverArtUrl}
-          <img 
-            src={track.coverArtUrl.startsWith('http') ? track.coverArtUrl : `http://localhost:8080${track.coverArtUrl}`} 
-            alt={track.album} 
+          <img
+            src={track.coverArtUrl.startsWith("http")
+              ? track.coverArtUrl
+              : `http://localhost:8080${track.coverArtUrl}`}
+            alt={track.album}
           />
         {:else}
           <div class="placeholder">🎵</div>
@@ -303,13 +341,13 @@
       &:active {
         transform: scale(0.95);
       }
-      
+
       &.play-pause {
         background: $text-primary;
         color: $spotify-dark;
         width: 36px;
         height: 36px;
-        
+
         &:hover {
           background: $text-primary;
           transform: scale(1.08);
@@ -386,7 +424,7 @@
             opacity: 1;
             transition: transform 0.2s ease;
             margin-top: -4px;
-            
+
             &:hover {
               transform: scale(1.2);
             }
@@ -401,7 +439,7 @@
             cursor: pointer;
             opacity: 1;
             transition: transform 0.2s ease;
-            
+
             &:hover {
               transform: scale(1.2);
             }
