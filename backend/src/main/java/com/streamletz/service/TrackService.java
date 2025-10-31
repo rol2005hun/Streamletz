@@ -28,6 +28,9 @@ public class TrackService {
     }
 
     public Track getTrackById(Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("Track ID cannot be null");
+        }
         return trackRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Track not found with id: " + id));
     }
@@ -43,10 +46,15 @@ public class TrackService {
         Track track = getTrackById(trackId);
         try {
             Path filePath = Paths.get(musicStoragePath).resolve(track.getFilePath()).normalize();
-            Resource resource = new UrlResource(filePath.toUri());
+            java.net.URI uri = filePath.toUri();
+            if (uri == null) {
+                throw new RuntimeException("Could not create URI for file: " + track.getFilePath());
+            }
+            Resource resource = new UrlResource(uri);
 
             if (resource.exists() && resource.isReadable()) {
-                track.setPlayCount(track.getPlayCount() + 1);
+                Integer currentPlayCount = track.getPlayCount();
+                track.setPlayCount(currentPlayCount != null ? currentPlayCount + 1 : 1);
                 trackRepository.save(track);
                 return resource;
             } else {
@@ -86,10 +94,16 @@ public class TrackService {
     }
 
     public Track saveTrack(Track track) {
+        if (track == null) {
+            throw new IllegalArgumentException("Track cannot be null");
+        }
         return trackRepository.save(track);
     }
 
     public void deleteTrack(Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("Track ID cannot be null");
+        }
         trackRepository.deleteById(id);
     }
 

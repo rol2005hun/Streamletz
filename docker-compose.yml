@@ -39,7 +39,7 @@ services:
     volumes:
       - ./backend/music:/app/music
 
-  # Svelte Frontend
+  # Svelte + Vite Frontend (Dev mode)
   frontend:
     build:
       context: ./frontend

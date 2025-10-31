@@ -1,15 +1,20 @@
 <script lang="ts">
-  import { authService, type RegisterData } from '../lib/authService';
+  import { authService, type RegisterData } from "../lib/authService";
 
-  let { onRegister, onSwitchToLogin }: { onRegister: () => void; onSwitchToLogin: () => void } = $props();
+  let {
+    onRegister,
+    onSwitchToLogin,
+  }: { onRegister: () => void; onSwitchToLogin: () => void } = $props();
 
-  let username = $state('');
-  let email = $state('');
-  let password = $state('');
-  let confirmPassword = $state('');
+  let username = $state("");
+  let email = $state("");
+  let password = $state("");
+  let confirmPassword = $state("");
   let errors = $state<Record<string, string>>({});
-  let error = $state('');
+  let error = $state("");
   let loading = $state(false);
+  let showPassword = $state(false);
+  let showConfirmPassword = $state(false);
 
   function validateForm(): boolean {
     errors = {};
@@ -36,10 +41,17 @@
 
   async function handleSubmit(e: Event) {
     e.preventDefault();
+    e.stopPropagation();
+
+    // Prevent any default form behavior
+    if (e.target instanceof HTMLFormElement) {
+      e.target.setAttribute("action", "javascript:void(0);");
+    }
+
     error = "";
 
     if (!validateForm()) {
-      return;
+      return false;
     }
 
     loading = true;
@@ -61,9 +73,20 @@
     } catch (err: any) {
       error =
         err.response?.data?.message || "Registration failed. Please try again.";
+      console.error("Registration error:", err);
     } finally {
       loading = false;
     }
+
+    return false;
+  }
+
+  function togglePasswordVisibility() {
+    showPassword = !showPassword;
+  }
+
+  function toggleConfirmPasswordVisibility() {
+    showConfirmPassword = !showConfirmPassword;
   }
 </script>
 
@@ -74,7 +97,7 @@
       <p class="motto">Your sound. Your stream. Your rules.</p>
     </div>
 
-    <form onsubmit={handleSubmit}>
+    <form onsubmit={handleSubmit} action="javascript:void(0);">
       {#if error}
         <div class="error-message">{error}</div>
       {/if}
@@ -109,13 +132,45 @@
 
       <div class="form-group">
         <label for="password">Password</label>
-        <input
-          type="password"
-          id="password"
-          bind:value={password}
-          placeholder="Create a password"
-          required
-        />
+        <div class="password-input-wrapper">
+          <input
+            type={showPassword ? "text" : "password"}
+            id="password"
+            bind:value={password}
+            placeholder="Create a password"
+            required
+          />
+          <button
+            type="button"
+            class="password-toggle"
+            onclick={togglePasswordVisibility}
+            aria-label={showPassword ? "Hide password" : "Show password"}
+          >
+            {#if showPassword}
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"
+                />
+                <line x1="1" y1="1" x2="23" y2="23" />
+              </svg>
+            {:else}
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            {/if}
+          </button>
+        </div>
         {#if errors.password}
           <div class="error">{errors.password}</div>
         {/if}
@@ -123,13 +178,45 @@
 
       <div class="form-group">
         <label for="confirmPassword">Confirm Password</label>
-        <input
-          type="password"
-          id="confirmPassword"
-          bind:value={confirmPassword}
-          placeholder="Confirm your password"
-          required
-        />
+        <div class="password-input-wrapper">
+          <input
+            type={showConfirmPassword ? "text" : "password"}
+            id="confirmPassword"
+            bind:value={confirmPassword}
+            placeholder="Confirm your password"
+            required
+          />
+          <button
+            type="button"
+            class="password-toggle"
+            onclick={toggleConfirmPasswordVisibility}
+            aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+          >
+            {#if showConfirmPassword}
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"
+                />
+                <line x1="1" y1="1" x2="23" y2="23" />
+              </svg>
+            {:else}
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            {/if}
+          </button>
+        </div>
         {#if errors.confirmPassword}
           <div class="error">{errors.confirmPassword}</div>
         {/if}
@@ -156,8 +243,8 @@
 </div>
 
 <style lang="scss">
-  @use 'sass:color';
-  @use '../styles/variables.scss' as *;
+  @use "sass:color";
+  @use "../styles/variables.scss" as *;
 
   .register-container {
     min-height: 100vh;
@@ -182,7 +269,7 @@
     overflow: hidden;
 
     &::before {
-      content: '';
+      content: "";
       position: absolute;
       top: 0;
       left: 0;
@@ -192,13 +279,17 @@
     }
 
     &::after {
-      content: '';
+      content: "";
       position: absolute;
       bottom: -50%;
       left: -50%;
       width: 200%;
       height: 200%;
-      background: radial-gradient(circle, rgba($accent-color, 0.05) 0%, transparent 70%);
+      background: radial-gradient(
+        circle,
+        rgba($accent-color, 0.05) 0%,
+        transparent 70%
+      );
       pointer-events: none;
     }
   }
@@ -231,11 +322,45 @@
     position: relative;
     z-index: 1;
 
-    button[type='submit'] {
+    button[type="submit"] {
       width: 100%;
       margin-top: $spacing-xl;
       padding: $spacing-lg;
       font-size: 1rem;
+    }
+  }
+
+  .password-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    input {
+      flex: 1;
+      padding-right: 3rem;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: $spacing-md;
+      background: none;
+      border: none;
+      color: $text-muted;
+      cursor: pointer;
+      padding: $spacing-sm;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color $transition-fast;
+
+      svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      &:hover {
+        color: $primary-color;
+      }
     }
   }
 

@@ -1,17 +1,17 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { authService } from '../lib/authService';
-  import { trackService, type Track } from '../lib/trackService';
-  import AudioPlayer from '../components/AudioPlayer.svelte';
+  import { onMount } from "svelte";
+  import { authService } from "../lib/authService";
+  import { trackService, type Track } from "../lib/trackService";
+  import AudioPlayer from "../components/AudioPlayer.svelte";
 
   let { onLogout }: { onLogout: () => void } = $props();
 
   let user = authService.getUser();
   let tracks = $state<Track[]>([]);
   let currentTrack = $state<Track | null>(null);
-  let searchQuery = $state('');
+  let searchQuery = $state("");
   let loading = $state(true);
-  let error = $state('');
+  let error = $state("");
 
   onMount(async () => {
     await loadTracks();
@@ -51,9 +51,7 @@
   }
 
   function handleLogoutClick() {
-    if (confirm("Are you sure you want to logout?")) {
-      onLogout();
-    }
+    onLogout();
   }
 
   function formatDuration(seconds: number): string {
@@ -82,12 +80,10 @@
         <input
           type="text"
           bind:value={searchQuery}
-          onkeyup={(e) => e.key === 'Enter' && handleSearch()}
+          onkeyup={(e) => e.key === "Enter" && handleSearch()}
           placeholder="Search for tracks, artists, or albums..."
         />
-        <button class="btn btn-primary" onclick={handleSearch}>
-          Search
-        </button>
+        <button class="btn btn-primary" onclick={handleSearch}> Search </button>
       </div>
     </div>
 
@@ -115,7 +111,11 @@
               {:else}
                 <div class="cover-placeholder">🎵</div>
               {/if}
-              <button class="play-overlay" onclick={() => playTrack(track)} aria-label="Play {track.title}">
+              <button
+                class="play-overlay"
+                onclick={() => playTrack(track)}
+                aria-label="Play {track.title}"
+              >
                 <svg viewBox="0 0 24 24" fill="currentColor">
                   <path d="M8 5v14l11-7z" />
                 </svg>
@@ -140,14 +140,14 @@
 
   <footer class="dashboard-footer">
     <p class="motto">Your sound. Your stream. Your rules.</p>
-    <p class="copyright">&copy; 2024 Streamletz. All rights reserved.</p>
+    <p class="copyright">&copy; 2025 Streamletz. All rights reserved.</p>
   </footer>
 
   <AudioPlayer track={currentTrack} />
 </div>
 
 <style lang="scss">
-  @use '../styles/variables.scss' as *;
+  @use "../styles/variables.scss" as *;
 
   .dashboard {
     min-height: 100vh;
@@ -289,7 +289,7 @@
     overflow: hidden;
 
     &::before {
-      content: '';
+      content: "";
       position: absolute;
       top: 0;
       left: 0;
@@ -321,7 +321,7 @@
       box-shadow: $shadow-glow;
 
       .track-cover::after {
-        content: '';
+        content: "";
         position: absolute;
         inset: 0;
         border: 3px solid $primary-color;

@@ -55,6 +55,9 @@ public class TrackController {
             Resource resource = trackService.getTrackResource(id);
             long fileSize = trackService.getTrackFileSize(id);
             String contentType = trackService.getContentType(id);
+            if (contentType == null || contentType.isEmpty()) {
+                contentType = "audio/mpeg";
+            }
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.parseMediaType(contentType));
