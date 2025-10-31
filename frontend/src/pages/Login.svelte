@@ -16,7 +16,6 @@
     e.preventDefault();
     e.stopPropagation();
 
-    // Prevent any default form behavior
     if (e.target instanceof HTMLFormElement) {
       e.target.setAttribute("action", "javascript:void(0);");
     }

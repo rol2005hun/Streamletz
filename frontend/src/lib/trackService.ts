@@ -1,4 +1,4 @@
-import api from './api';
+import api from "./api";
 
 export interface Track {
   id: number;
@@ -14,7 +14,7 @@ export interface Track {
 
 export const trackService = {
   async getAllTracks(): Promise<Track[]> {
-    const response = await api.get('/tracks');
+    const response = await api.get("/tracks");
     return response.data;
   },
 
@@ -24,17 +24,17 @@ export const trackService = {
   },
 
   async searchTracks(query: string): Promise<Track[]> {
-    const response = await api.get('/tracks/search', { params: { query } });
+    const response = await api.get("/tracks/search", { params: { query } });
     return response.data;
   },
 
   getStreamUrl(trackId: number): string {
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
     return `${baseUrl}/tracks/stream/${trackId}`;
   },
 
   async downloadFromExternal(source: string, url: string): Promise<void> {
-    await api.post('/tracks/download', null, {
+    await api.post("/tracks/download", null, {
       params: { source, url }
     });
   }

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte';
+  import { onMount, onDestroy } from "svelte";
   import { authService } from "../lib/authService";
   import { trackService, type Track } from "../lib/trackService";
   import AudioPlayer from "../components/AudioPlayer.svelte";
@@ -10,9 +10,9 @@
   let tracks = $state<Track[]>([]);
   let currentTrack = $state<Track | null>(null);
   let isPlaying = $state(false);
-  let searchQuery = $state('');
+  let searchQuery = $state("");
   let loading = $state(true);
-  let error = $state('');
+  let error = $state("");
   let dropdownOpen = $state(false);
 
   onMount(async () => {
@@ -33,7 +33,7 @@
             currentTrack = lastTrack;
           }
         } catch (e) {
-          console.error("Failed to restore last track:", e);
+          console.error("Failed to restore last track: ", e);
         }
       }
     } catch (err: any) {
@@ -101,11 +101,11 @@
 
   onMount(async () => {
     await loadTracks();
-    document.addEventListener('click', handleClickOutside);
+    document.addEventListener("click", handleClickOutside);
   });
 
   onDestroy(() => {
-    document.removeEventListener('click', handleClickOutside);
+    document.removeEventListener("click", handleClickOutside);
   });
 
   function formatDuration(seconds: number): string {
@@ -127,7 +127,7 @@
         <input
           type="text"
           bind:value={searchQuery}
-          onkeyup={(e) => e.key === 'Enter' && handleSearch()}
+          onkeyup={(e) => e.key === "Enter" && handleSearch()}
           placeholder="Search for tracks, artists, or albums..."
         />
       </div>

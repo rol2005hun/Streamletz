@@ -1,9 +1,9 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
-    import Login from './pages/Login.svelte';
-    import Register from './pages/Register.svelte';
-    import Dashboard from './pages/Dashboard.svelte';
-    import { authService } from './lib/authService';
+    import { onMount } from "svelte";
+    import Login from "./pages/Login.svelte";
+    import Register from "./pages/Register.svelte";
+    import Dashboard from "./pages/Dashboard.svelte";
+    import { authService } from "./lib/authService";
 
     let currentPage = $state<'login' | 'register' | 'dashboard'>('login');
     let isAuthenticated = $state(false);
