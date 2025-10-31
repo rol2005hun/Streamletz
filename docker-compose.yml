@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: streamletz-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-streamletz}
+      POSTGRES_USER: ${DB_USERNAME:-streamletz_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme123}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - streamletz-network
+
+  # Spring Boot Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: streamletz-backend
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-streamletz}
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME:-streamletz_user}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-changeme123}
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-this}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    depends_on:
+      - postgres
+    networks:
+      - streamletz-network
+    volumes:
+      - ./backend/music:/app/music
+
+  # Svelte Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8080/api}
+    container_name: streamletz-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-5173}:80"
+    depends_on:
+      - backend
+    networks:
+      - streamletz-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  streamletz-network:
+    driver: bridge
