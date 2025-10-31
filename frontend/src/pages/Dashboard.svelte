@@ -9,6 +9,7 @@
   let user = authService.getUser();
   let tracks = $state<Track[]>([]);
   let currentTrack = $state<Track | null>(null);
+  let isPlaying = $state(false);
   let searchQuery = $state("");
   let loading = $state(true);
   let error = $state("");
@@ -107,18 +108,30 @@
           <div class="track-card" class:playing={currentTrack?.id === track.id}>
             <div class="track-cover">
               {#if track.coverArtUrl}
-                <img src={track.coverArtUrl} alt={track.album} />
+                <img src={track.coverArtUrl} alt={track.album || track.title} />
               {:else}
-                <div class="cover-placeholder">🎵</div>
+                <div class="cover-placeholder">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                      d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"
+                    />
+                  </svg>
+                </div>
               {/if}
               <button
                 class="play-overlay"
                 onclick={() => playTrack(track)}
                 aria-label="Play {track.title}"
               >
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
+                {#if currentTrack?.id === track.id && isPlaying}
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+                  </svg>
+                {:else}
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                {/if}
               </button>
             </div>
             <div class="track-details">
@@ -138,12 +151,7 @@
     {/if}
   </main>
 
-  <footer class="dashboard-footer">
-    <p class="motto">Your sound. Your stream. Your rules.</p>
-    <p class="copyright">&copy; 2025 Streamletz. All rights reserved.</p>
-  </footer>
-
-  <AudioPlayer track={currentTrack} />
+  <AudioPlayer track={currentTrack} bind:isPlaying />
 </div>
 
 <style lang="scss">
@@ -161,7 +169,7 @@
   .dashboard-header {
     background: rgba($background-card, 0.7);
     backdrop-filter: blur(20px);
-    padding: $spacing-xl $spacing-xxl;
+    padding: $spacing-md $spacing-xxl;
     border-bottom: 1px solid rgba($primary-color, 0.1);
     position: sticky;
     top: 0;
@@ -438,30 +446,6 @@
     }
     50% {
       opacity: 0.5;
-    }
-  }
-
-  .dashboard-footer {
-    background: rgba($background-card, 0.7);
-    backdrop-filter: blur(20px);
-    padding: $spacing-xxl;
-    text-align: center;
-    margin-top: auto;
-    border-top: 1px solid rgba($primary-color, 0.1);
-
-    .motto {
-      background: $gradient-primary;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      font-weight: 600;
-      font-size: 1.2rem;
-      margin-bottom: $spacing-sm;
-    }
-
-    .copyright {
-      color: $text-muted;
-      font-size: 0.9rem;
     }
   }
 

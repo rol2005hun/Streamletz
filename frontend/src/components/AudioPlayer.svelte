@@ -3,10 +3,15 @@
   import type { Track } from "../lib/trackService";
   import { trackService } from "../lib/trackService";
 
-  let { track = $bindable(null) }: { track: Track | null } = $props();
+  let { 
+    track = $bindable(null),
+    isPlaying = $bindable(false)
+  }: { 
+    track: Track | null;
+    isPlaying: boolean;
+  } = $props();
 
   let audio: HTMLAudioElement | null = null;
-  let isPlaying = $state(false);
   let currentTime = $state(0);
   let duration = $state(0);
   let volume = $state(0.7);
@@ -16,6 +21,10 @@
   $effect(() => {
     if (track && audio) {
       loadTrack();
+      // Automatikusan indítsd el a lejátszást
+      audio.play().catch((err) => {
+        console.error('Playback failed:', err);
+      });
     }
   });
 

@@ -126,16 +126,14 @@
           Login
         {/if}
       </button>
-    </form>
 
-    <div class="login-footer">
-      <p>
+      <p class="signup-link">
         Don't have an account?
         <button type="button" class="link-btn" onclick={onSwitchToRegister}>
           Sign up
         </button>
       </p>
-    </div>
+    </form>
   </div>
 </div>
 
@@ -261,16 +259,11 @@
     }
   }
 
-  .login-footer {
+  .signup-link {
     text-align: center;
     margin-top: $spacing-xl;
-    position: relative;
-    z-index: 1;
-
-    p {
-      color: $text-secondary;
-      font-size: 0.95rem;
-    }
+    color: $text-secondary;
+    font-size: 0.95rem;
 
     .link-btn {
       background: none;
