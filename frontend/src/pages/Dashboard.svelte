@@ -266,7 +266,7 @@
 
   .dashboard-header {
     background: $background-card;
-    padding: $spacing-md $spacing-xxl;
+    padding: $spacing-md $spacing-lg;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     position: sticky;
     top: 0;
@@ -278,16 +278,18 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: $spacing-lg;
 
       h1 {
-        font-size: 2rem;
+        font-size: 1.75rem;
         color: $text-primary;
         font-weight: 700;
+        white-space: nowrap;
       }
 
       .search-bar {
         flex: 1;
-        max-width: 600px;
+        max-width: 500px;
         position: relative;
         display: flex;
         align-items: center;
@@ -299,6 +301,7 @@
           height: 20px;
           color: $text-secondary;
           pointer-events: none;
+          z-index: 1;
         }
 
         input {
@@ -325,6 +328,7 @@
 
       .profile-dropdown {
         position: relative;
+        flex-shrink: 0;
 
         .profile-btn {
           background: transparent;
@@ -432,6 +436,64 @@
               }
             }
           }
+        }
+      }
+    }
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    .dashboard-header {
+      padding: $spacing-sm $spacing-md;
+
+      .header-content {
+        gap: $spacing-md;
+
+        h1 {
+          font-size: 1.5rem;
+        }
+
+        .search-bar {
+          max-width: 300px;
+
+          input {
+            font-size: 0.9rem;
+            padding: $spacing-xs $spacing-sm $spacing-xs 40px;
+          }
+
+          .search-icon {
+            left: $spacing-sm;
+            width: 18px;
+            height: 18px;
+          }
+        }
+
+        .profile-dropdown .profile-btn .profile-avatar {
+          width: 36px;
+          height: 36px;
+          font-size: 1rem;
+        }
+      }
+    }
+  }
+
+  @media (max-width: $breakpoint-mobile) {
+    .dashboard-header {
+      .header-content {
+        flex-wrap: wrap;
+
+        h1 {
+          font-size: 1.3rem;
+          flex: 0 0 auto;
+        }
+
+        .search-bar {
+          flex: 1 1 100%;
+          max-width: 100%;
+          order: 3;
+        }
+
+        .profile-dropdown {
+          flex: 0 0 auto;
         }
       }
     }
@@ -636,44 +698,56 @@
   }
 
   @media (max-width: $breakpoint-tablet) {
-    .dashboard-header {
-      .header-content {
-        flex-direction: column;
-        gap: $spacing-md;
-        text-align: center;
-      }
+    .dashboard-content {
+      padding: $spacing-xxl $spacing-lg;
     }
 
     .tracks-grid {
       grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
       gap: $spacing-lg;
     }
-
-    .dashboard-content {
-      padding: $spacing-xxl $spacing-lg;
-    }
   }
 
   @media (max-width: $breakpoint-mobile) {
-    .tracks-grid {
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: $spacing-md;
-    }
-
     .dashboard-content {
       padding: $spacing-xl $spacing-md;
     }
 
-    .dashboard-header .header-content {
-      flex-direction: column;
+    .tracks-grid {
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
       gap: $spacing-md;
+    }
 
-      h1 {
-        font-size: 1.5rem;
+    .track-card {
+      .track-cover {
+        height: 140px;
+
+        .play-overlay {
+          width: 36px;
+          height: 36px;
+          bottom: $spacing-xs;
+          right: $spacing-xs;
+
+          svg {
+            width: 18px;
+            height: 18px;
+          }
+        }
       }
 
-      .search-bar {
-        max-width: 100%;
+      .track-details {
+        .track-title {
+          font-size: 0.95rem;
+        }
+
+        .track-artist,
+        .track-album {
+          font-size: 0.85rem;
+        }
+
+        .track-meta {
+          font-size: 0.75rem;
+        }
       }
     }
   }

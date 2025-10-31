@@ -204,25 +204,25 @@
           <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
         </svg>
       </button>
+    </div>
 
-      <div class="progress-container">
-        <span class="time">{formatTime(currentTime)}</span>
-        <div class="progress-wrapper">
-          <div class="buffer-bar" style="width: {buffered}%"></div>
-          <input
-            type="range"
-            min="0"
-            max={duration || 0}
-            step="0.1"
-            bind:value={currentTime}
-            oninput={handleSeek}
-            onmousedown={() => (seeking = true)}
-            onmouseup={() => (seeking = false)}
-            class="progress-bar"
-          />
-        </div>
-        <span class="time">{formatTime(duration)}</span>
+    <div class="progress-section">
+      <span class="time">{formatTime(currentTime)}</span>
+      <div class="progress-wrapper">
+        <div class="buffer-bar" style="width: {buffered}%"></div>
+        <input
+          type="range"
+          min="0"
+          max={duration || 0}
+          step="0.1"
+          bind:value={currentTime}
+          oninput={handleSeek}
+          onmousedown={() => (seeking = true)}
+          onmouseup={() => (seeking = false)}
+          class="progress-bar"
+        />
       </div>
+      <span class="time">{formatTime(duration)}</span>
     </div>
 
     <div class="player-volume">
@@ -261,11 +261,10 @@
     padding: $spacing-sm $spacing-xl;
     box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.4);
     border-top: 1px solid rgba(255, 255, 255, 0.05);
+    z-index: $z-player;
     display: flex;
     align-items: center;
-    gap: $spacing-xl;
-    z-index: $z-player;
-    min-height: 90px;
+    gap: $spacing-lg;
 
     &:not(.active) {
       display: flex;
@@ -278,11 +277,13 @@
     display: flex;
     align-items: center;
     gap: $spacing-md;
-    min-width: 280px;
+    min-width: 220px;
+    max-width: 280px;
+    flex: 0 0 auto;
 
     .album-art {
-      width: 64px;
-      height: 64px;
+      width: 56px;
+      height: 56px;
       border-radius: $border-radius-md;
       overflow: hidden;
       background: $gradient-primary;
@@ -290,16 +291,7 @@
       align-items: center;
       justify-content: center;
       box-shadow: $shadow-md;
-      position: relative;
-
-      &::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        border: 2px solid rgba($primary-color, 0.3);
-        border-radius: $border-radius-md;
-        animation: pulse 2s infinite;
-      }
+      flex-shrink: 0;
 
       img {
         width: 100%;
@@ -308,25 +300,26 @@
       }
 
       .placeholder {
-        font-size: 2rem;
+        font-size: 1.5rem;
       }
     }
 
     .track-info {
+      min-width: 0;
       flex: 1;
 
       .track-title {
         font-weight: 700;
-        font-size: 1.05rem;
+        font-size: 0.95rem;
         color: $text-primary;
-        margin-bottom: $spacing-xs;
+        margin-bottom: 4px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
 
       .track-artist {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         color: $text-secondary;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -336,159 +329,62 @@
   }
 
   .player-controls {
-    flex: 1;
     display: flex;
     align-items: center;
-    gap: $spacing-lg;
+    gap: $spacing-sm;
+    justify-content: center;
+    flex: 0 0 auto;
 
     .control-btn {
       background: transparent;
-      border: 2px solid transparent;
-      width: 40px;
-      height: 40px;
+      border: none;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: all 0.2s ease;
       color: $text-secondary;
+      cursor: pointer;
 
       svg {
-        width: 20px;
-        height: 20px;
+        width: 18px;
+        height: 18px;
       }
 
-      &:hover {
+      &:hover:not(:disabled) {
         color: $text-primary;
         transform: scale(1.05);
       }
 
-      &:active {
+      &:active:not(:disabled) {
         transform: scale(0.95);
       }
 
       &:disabled {
         opacity: 0.3;
         cursor: not-allowed;
-
-        &:hover {
-          color: $text-secondary;
-          transform: none;
-        }
       }
 
       &.play-pause {
         background: $text-primary;
         color: $spotify-dark;
-        width: 36px;
-        height: 36px;
+        width: 40px;
+        height: 40px;
+
+        svg {
+          width: 20px;
+          height: 20px;
+        }
 
         &:hover {
           background: $text-primary;
           transform: scale(1.08);
         }
-      }
-    }
 
-    .progress-container {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      gap: $spacing-md;
-
-      .time {
-        font-size: 0.875rem;
-        color: $text-secondary;
-        min-width: 45px;
-        text-align: center;
-        font-weight: 500;
-        font-variant-numeric: tabular-nums;
-      }
-
-      .progress-wrapper {
-        flex: 1;
-        position: relative;
-        height: 4px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: $border-radius-full;
-        overflow: visible;
-        cursor: pointer;
-
-        &:hover {
-          height: 6px;
-        }
-
-        .buffer-bar {
-          position: absolute;
-          height: 100%;
-          background: rgba(255, 255, 255, 0.15);
-          border-radius: $border-radius-full;
-          pointer-events: none;
-          transition: width $transition-normal;
-        }
-
-        .progress-bar {
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          opacity: 1;
-          cursor: pointer;
-          z-index: 2;
-          appearance: none;
-          background: transparent;
-
-          &::-webkit-slider-runnable-track {
-            width: 100%;
-            height: 4px;
-            background: transparent;
-          }
-
-          &::-moz-range-track {
-            width: 100%;
-            height: 4px;
-            background: transparent;
-          }
-
-          &::-webkit-slider-thumb {
-            appearance: none;
-            width: 12px;
-            height: 12px;
-            background: $text-primary;
-            border-radius: 50%;
-            cursor: pointer;
-            opacity: 1;
-            transition: transform 0.2s ease;
-            margin-top: -4px;
-
-            &:hover {
-              transform: scale(1.2);
-            }
-          }
-
-          &::-moz-range-thumb {
-            width: 12px;
-            height: 12px;
-            background: $text-primary;
-            border-radius: 50%;
-            border: none;
-            cursor: pointer;
-            opacity: 1;
-            transition: transform 0.2s ease;
-
-            &:hover {
-              transform: scale(1.2);
-            }
-          }
-        }
-
-        &::after {
-          content: "";
-          position: absolute;
-          height: 100%;
-          background: $primary-color;
-          border-radius: $border-radius-full;
-          width: calc(var(--progress) * 1%);
-          pointer-events: none;
+        &:active {
+          transform: scale(0.98);
         }
       }
     }
@@ -497,19 +393,17 @@
   .player-volume {
     display: flex;
     align-items: center;
+    gap: $spacing-sm;
+    min-width: 140px;
+    max-width: 200px;
+    flex: 0 0 auto;
     justify-content: flex-end;
-    gap: $spacing-md;
-    min-width: 180px;
 
     .volume-icon {
-      width: 24px;
-      height: 24px;
+      width: 20px;
+      height: 20px;
       color: $text-secondary;
-      transition: color $transition-fast;
-
-      &:hover {
-        color: $text-primary;
-      }
+      flex-shrink: 0;
     }
 
     .volume-slider {
@@ -524,14 +418,24 @@
       &::-webkit-slider-runnable-track {
         width: 100%;
         height: 4px;
-        background: rgba(255, 255, 255, 0.1);
+        background: linear-gradient(
+          to right,
+          $primary-color 0%,
+          $primary-color var(--volume-percent, 70%),
+          rgba(255, 255, 255, 0.1) var(--volume-percent, 70%)
+        );
         border-radius: $border-radius-full;
       }
 
       &::-moz-range-track {
         width: 100%;
         height: 4px;
-        background: rgba(255, 255, 255, 0.1);
+        background: linear-gradient(
+          to right,
+          $primary-color 0%,
+          $primary-color var(--volume-percent, 70%),
+          rgba(255, 255, 255, 0.1) var(--volume-percent, 70%)
+        );
         border-radius: $border-radius-full;
       }
 
@@ -563,23 +467,122 @@
           transform: scale(1.2);
         }
       }
+    }
+  }
 
-      &::-webkit-slider-runnable-track {
-        background: linear-gradient(
-          to right,
-          $primary-color 0%,
-          $primary-color var(--volume-percent, 70%),
-          rgba(255, 255, 255, 0.1) var(--volume-percent, 70%)
-        );
+  .progress-section {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    flex: 1;
+
+    .time {
+      font-size: 0.75rem;
+      color: $text-secondary;
+      min-width: 40px;
+      text-align: center;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      flex-shrink: 0;
+    }
+
+    .progress-wrapper {
+      flex: 1;
+      position: relative;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: $border-radius-full;
+      overflow: visible;
+      cursor: pointer;
+
+      &:hover {
+        height: 6px;
+
+        .progress-bar::-webkit-slider-thumb {
+          opacity: 1;
+        }
+
+        .progress-bar::-moz-range-thumb {
+          opacity: 1;
+        }
       }
 
-      &::-moz-range-track {
-        background: linear-gradient(
-          to right,
-          $primary-color 0%,
-          $primary-color var(--volume-percent, 70%),
-          rgba(255, 255, 255, 0.1) var(--volume-percent, 70%)
-        );
+      .buffer-bar {
+        position: absolute;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: $border-radius-full;
+        pointer-events: none;
+        transition: width $transition-normal;
+      }
+
+      .progress-bar {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        opacity: 1;
+        cursor: pointer;
+        z-index: 2;
+        appearance: none;
+        background: transparent;
+        top: 0;
+        left: 0;
+
+        &::-webkit-slider-runnable-track {
+          width: 100%;
+          height: 4px;
+          background: linear-gradient(
+            to right,
+            $primary-color 0%,
+            $primary-color calc(var(--current, 0) / var(--max, 100) * 100%),
+            transparent calc(var(--current, 0) / var(--max, 100) * 100%)
+          );
+          border-radius: $border-radius-full;
+        }
+
+        &::-moz-range-track {
+          width: 100%;
+          height: 4px;
+          background: transparent;
+          border-radius: $border-radius-full;
+        }
+
+        &::-moz-range-progress {
+          background: $primary-color;
+          height: 4px;
+          border-radius: $border-radius-full;
+        }
+
+        &::-webkit-slider-thumb {
+          appearance: none;
+          width: 12px;
+          height: 12px;
+          background: $text-primary;
+          border-radius: 50%;
+          cursor: pointer;
+          opacity: 0;
+          transition: opacity 0.2s ease, transform 0.2s ease;
+          margin-top: -4px;
+
+          &:hover {
+            transform: scale(1.2);
+          }
+        }
+
+        &::-moz-range-thumb {
+          width: 12px;
+          height: 12px;
+          background: $text-primary;
+          border-radius: 50%;
+          border: none;
+          cursor: pointer;
+          opacity: 0;
+          transition: opacity 0.2s ease, transform 0.2s ease;
+
+          &:hover {
+            transform: scale(1.2);
+          }
+        }
       }
     }
   }
@@ -588,62 +591,115 @@
     width: 100%;
     text-align: center;
     color: $text-muted;
-    font-size: 1.05rem;
-    font-weight: 500;
-    letter-spacing: 0.5px;
-  }
+    font-size: 1rem;
+    padding: $spacing-md 0;
 
-  @keyframes pulse {
-    0%,
-    100% {
-      opacity: 0.6;
-    }
-    50% {
-      opacity: 0.2;
+    p {
+      margin: 0;
     }
   }
 
   @media (max-width: $breakpoint-tablet) {
     .audio-player {
-      flex-direction: column;
-      gap: $spacing-md;
-      padding: $spacing-md $spacing-lg;
-      min-height: auto;
+      padding: $spacing-md;
+      flex-wrap: wrap;
+      gap: $spacing-sm;
     }
 
     .player-info {
-      width: 100%;
-      min-width: unset;
+      flex: 1 1 auto;
+      min-width: 180px;
+      max-width: 240px;
+
+      .album-art {
+        width: 48px;
+        height: 48px;
+      }
+
+      .track-info {
+        .track-title {
+          font-size: 0.9rem;
+        }
+
+        .track-artist {
+          font-size: 0.8rem;
+        }
+      }
     }
 
     .player-controls {
-      width: 100%;
+      flex: 0 0 auto;
+      gap: $spacing-xs;
 
-      .progress-container .time {
-        min-width: 40px;
+      .control-btn {
+        width: 32px;
+        height: 32px;
+
+        svg {
+          width: 16px;
+          height: 16px;
+        }
+
+        &.play-pause {
+          width: 36px;
+          height: 36px;
+
+          svg {
+            width: 18px;
+            height: 18px;
+          }
+        }
+      }
+    }
+
+    .progress-section {
+      flex: 1 1 100%;
+      order: 3;
+      gap: $spacing-sm;
+
+      .time {
+        font-size: 0.7rem;
+        min-width: 36px;
       }
     }
 
     .player-volume {
-      width: 100%;
-      min-width: unset;
+      flex: 1 1 auto;
+      min-width: 120px;
+      max-width: 160px;
+
+      .volume-icon {
+        width: 18px;
+        height: 18px;
+      }
     }
   }
 
   @media (max-width: $breakpoint-mobile) {
-    .player-info .album-art {
-      width: 56px;
-      height: 56px;
+    .audio-player {
+      padding: $spacing-sm $spacing-md;
     }
 
-    .player-controls .control-btn {
-      width: 44px;
-      height: 44px;
+    .player-info {
+      flex: 1 1 100%;
+      max-width: 100%;
+      min-width: unset;
+      order: 1;
+    }
 
-      svg {
-        width: 20px;
-        height: 20px;
-      }
+    .player-controls {
+      order: 2;
+    }
+
+    .player-volume {
+      flex: 1 1 auto;
+      min-width: unset;
+      max-width: unset;
+      order: 3;
+    }
+
+    .progress-section {
+      order: 4;
     }
   }
 </style>
