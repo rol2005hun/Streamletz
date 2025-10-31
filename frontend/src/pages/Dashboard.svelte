@@ -108,7 +108,10 @@
           <div class="track-card" class:playing={currentTrack?.id === track.id}>
             <div class="track-cover">
               {#if track.coverArtUrl}
-                <img src={track.coverArtUrl} alt={track.album || track.title} />
+                <img 
+                  src={track.coverArtUrl.startsWith('http') ? track.coverArtUrl : `http://localhost:8080${track.coverArtUrl}`} 
+                  alt={track.album || track.title} 
+                />
               {:else}
                 <div class="cover-placeholder">
                   <svg viewBox="0 0 24 24" fill="currentColor">
@@ -245,7 +248,7 @@
 
         &:focus {
           outline: 2px solid $text-primary;
-          background: $background-bright;
+          background: $background-light;
         }
 
         &::placeholder {

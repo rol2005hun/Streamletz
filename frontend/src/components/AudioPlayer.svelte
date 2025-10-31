@@ -105,7 +105,10 @@
     <div class="player-info">
       <div class="album-art">
         {#if track.coverArtUrl}
-          <img src={track.coverArtUrl} alt={track.album} />
+          <img 
+            src={track.coverArtUrl.startsWith('http') ? track.coverArtUrl : `http://localhost:8080${track.coverArtUrl}`} 
+            alt={track.album} 
+          />
         {:else}
           <div class="placeholder">🎵</div>
         {/if}
