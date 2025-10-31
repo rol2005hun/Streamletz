@@ -220,6 +220,7 @@
           onmousedown={() => (seeking = true)}
           onmouseup={() => (seeking = false)}
           class="progress-bar"
+          style="--progress-percent: {duration > 0 ? (currentTime / duration) * 100 : 0}%"
         />
       </div>
       <span class="time">{formatTime(duration)}</span>
@@ -537,8 +538,8 @@
           background: linear-gradient(
             to right,
             $primary-color 0%,
-            $primary-color calc(var(--current, 0) / var(--max, 100) * 100%),
-            transparent calc(var(--current, 0) / var(--max, 100) * 100%)
+            $primary-color var(--progress-percent, 0%),
+            rgba(255, 255, 255, 0.1) var(--progress-percent, 0%)
           );
         }
 
@@ -554,6 +555,7 @@
         border-radius: $border-radius-full;
         pointer-events: none;
         transition: width $transition-normal;
+        z-index: 1;
       }
 
       .progress-bar {
@@ -574,8 +576,8 @@
           background: linear-gradient(
             to right,
             rgba(255, 255, 255, 0.7) 0%,
-            rgba(255, 255, 255, 0.7) calc(var(--current, 0) / var(--max, 100) * 100%),
-            transparent calc(var(--current, 0) / var(--max, 100) * 100%)
+            rgba(255, 255, 255, 0.7) var(--progress-percent, 0%),
+            rgba(255, 255, 255, 0.1) var(--progress-percent, 0%)
           );
           border-radius: $border-radius-full;
           transition: background 0.2s ease;
@@ -584,7 +586,7 @@
         &::-moz-range-track {
           width: 100%;
           height: 4px;
-          background: transparent;
+          background: rgba(255, 255, 255, 0.1);
           border-radius: $border-radius-full;
         }
 
