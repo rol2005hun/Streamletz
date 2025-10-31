@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte';
-  import type { Track } from '../lib/trackService';
-  import { trackService } from '../lib/trackService';
+  import { onMount, onDestroy } from "svelte";
+  import type { Track } from "../lib/trackService";
+  import { trackService } from "../lib/trackService";
 
   let {
     track = $bindable(null),
@@ -23,24 +23,27 @@
   let seeking = $state(false);
 
   onMount(() => {
-    const savedVolume = localStorage.getItem('streamletz_volume');
+    const savedVolume = localStorage.getItem("streamletz_volume");
     if (savedVolume) {
       volume = parseFloat(savedVolume);
     }
   });
 
   $effect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('streamletz_volume', volume.toString());
+    if (typeof window !== "undefined") {
+      localStorage.setItem("streamletz_volume", volume.toString());
     }
   });
 
   $effect(() => {
-    if (track && currentTime > 0 && typeof window !== 'undefined') {
-      localStorage.setItem('streamletz_last_track', JSON.stringify({
-        trackId: track.id,
-        position: currentTime
-      }));
+    if (track && currentTime > 0 && typeof window !== "undefined") {
+      localStorage.setItem(
+        "streamletz_last_track",
+        JSON.stringify({
+          trackId: track.id,
+          position: currentTime,
+        }),
+      );
     }
   });
 
@@ -61,7 +64,7 @@
     audio.src = streamUrl;
     audio.load();
 
-    const savedData = localStorage.getItem('streamletz_last_track');
+    const savedData = localStorage.getItem("streamletz_last_track");
     if (savedData) {
       try {
         const { trackId, position } = JSON.parse(savedData);
@@ -69,7 +72,7 @@
           audio.currentTime = position;
         }
       } catch (e) {
-        console.error('Failed to restore playback position:', e);
+        console.error("Failed to restore playback position:", e);
       }
     }
 
@@ -77,7 +80,7 @@
       await audio.play();
       isPlaying = true;
     } catch (err) {
-      console.error('Playback failed: ', err);
+      console.error("Playback failed: ", err);
       isPlaying = false;
     }
   }
@@ -124,24 +127,24 @@
   function formatTime(seconds: number): string {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   }
 
   onMount(() => {
     audio = new Audio();
     audio.volume = volume;
 
-    audio.addEventListener('play', () => (isPlaying = true));
-    audio.addEventListener('pause', () => (isPlaying = false));
-    audio.addEventListener('timeupdate', handleTimeUpdate);
-    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
-    audio.addEventListener('progress', handleProgress);
+    audio.addEventListener("play", () => (isPlaying = true));
+    audio.addEventListener("pause", () => (isPlaying = false));
+    audio.addEventListener("timeupdate", handleTimeUpdate);
+    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+    audio.addEventListener("progress", handleProgress);
   });
 
   onDestroy(() => {
     if (audio) {
       audio.pause();
-      audio.src = '';
+      audio.src = "";
     }
   });
 </script>
@@ -152,7 +155,7 @@
       <div class="album-art">
         {#if track.coverArtUrl}
           <img
-            src={track.coverArtUrl.startsWith('http')
+            src={track.coverArtUrl.startsWith("http")
               ? track.coverArtUrl
               : `http://localhost:8080${track.coverArtUrl}`}
             alt={track.album}
@@ -168,8 +171,8 @@
     </div>
 
     <div class="player-controls">
-      <button 
-        class="control-btn" 
+      <button
+        class="control-btn"
         onclick={onPrevious}
         disabled={!onPrevious}
         aria-label="Previous track"
@@ -191,8 +194,8 @@
         {/if}
       </button>
 
-      <button 
-        class="control-btn" 
+      <button
+        class="control-btn"
         onclick={onNext}
         disabled={!onNext}
         aria-label="Next track"
@@ -247,7 +250,7 @@
 </div>
 
 <style lang="scss">
-  @use '../styles/variables.scss' as *;
+  @use "../styles/variables.scss" as *;
 
   .audio-player {
     position: fixed;
@@ -367,7 +370,7 @@
       &:disabled {
         opacity: 0.3;
         cursor: not-allowed;
-        
+
         &:hover {
           color: $text-secondary;
           transform: none;
