@@ -374,8 +374,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        opacity: 0;
-        transform: scale(0.9);
+        opacity: 0.9;
+        transform: scale(1);
         transition: all 0.2s ease;
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
         z-index: 2;
@@ -388,8 +388,9 @@
         }
 
         &:hover {
-          transform: scale(1.05);
+          transform: scale(1.1);
           background: $primary-light;
+          opacity: 1;
         }
       }
     }

@@ -21,19 +21,29 @@
   $effect(() => {
     if (track && audio) {
       loadTrack();
-      // Automatikusan indítsd el a lejátszást
-      audio.play().catch((err) => {
-        console.error('Playback failed:', err);
-      });
     }
   });
 
-  function loadTrack() {
+  async function loadTrack() {
     if (!track || !audio) return;
 
+    // Pause current playback
+    audio.pause();
+    currentTime = 0;
+    isPlaying = false;
+    
     const streamUrl = trackService.getStreamUrl(track.id);
     audio.src = streamUrl;
     audio.load();
+    
+    // Wait for the audio to load and then play
+    try {
+      await audio.play();
+      isPlaying = true;
+    } catch (err) {
+      console.error('Playback failed:', err);
+      isPlaying = false;
+    }
   }
 
   function togglePlay() {
