@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { authService } from "../lib/authService";
-  import { trackService, type Track } from "../lib/trackService";
-  import AudioPlayer from "../components/AudioPlayer.svelte";
+  import { onMount } from 'svelte';
+  import { authService } from '../lib/authService';
+  import { trackService, type Track } from '../lib/trackService';
+  import AudioPlayer from '../components/AudioPlayer.svelte';
 
   let { onLogout }: { onLogout: () => void } = $props();
 
@@ -10,9 +10,9 @@
   let tracks = $state<Track[]>([]);
   let currentTrack = $state<Track | null>(null);
   let isPlaying = $state(false);
-  let searchQuery = $state("");
+  let searchQuery = $state('');
   let loading = $state(true);
-  let error = $state("");
+  let error = $state('');
 
   onMount(async () => {
     await loadTracks();
@@ -23,7 +23,6 @@
       loading = true;
       tracks = await trackService.getAllTracks();
       
-      // Try to restore last played track after tracks are loaded
       const savedData = localStorage.getItem('streamletz_last_track');
       if (savedData && tracks.length > 0) {
         try {
@@ -37,7 +36,7 @@
         }
       }
     } catch (err: any) {
-      error = "Failed to load tracks. Please try again.";
+      error = 'Failed to load tracks. Please try again.';
       console.error(err);
     } finally {
       loading = false;
@@ -54,7 +53,7 @@
       loading = true;
       tracks = await trackService.searchTracks(searchQuery);
     } catch (err: any) {
-      error = "Search failed. Please try again.";
+      error = 'Search failed. Please try again.';
       console.error(err);
     } finally {
       loading = false;
@@ -90,7 +89,7 @@
   function formatDuration(seconds: number): string {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   }
 </script>
 
@@ -113,7 +112,7 @@
         <input
           type="text"
           bind:value={searchQuery}
-          onkeyup={(e) => e.key === "Enter" && handleSearch()}
+          onkeyup={(e) => e.key === 'Enter' && handleSearch()}
           placeholder="Search for tracks, artists, or albums..."
         />
         <button class="btn btn-primary" onclick={handleSearch}> Search </button>
@@ -194,8 +193,8 @@
   />
 </div>
 
-<style lang="scss">
-  @use "../styles/variables.scss" as *;
+<style lang='scss'>
+  @use '../styles/variables.scss' as *;
 
   .dashboard {
     min-height: 100vh;
