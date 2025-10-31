@@ -166,6 +166,7 @@
         bind:value={volume}
         oninput={handleVolumeChange}
         class="volume-slider"
+        style="--volume-percent: {volume * 100}%"
       />
     </div>
   {:else}
@@ -332,14 +333,6 @@
 
         &:hover {
           height: 6px;
-          
-          .progress-bar::-webkit-slider-thumb {
-            opacity: 1;
-          }
-          
-          .progress-bar::-moz-range-thumb {
-            opacity: 1;
-          }
         }
 
         .buffer-bar {
@@ -355,10 +348,23 @@
           position: absolute;
           width: 100%;
           height: 100%;
-          opacity: 0;
+          opacity: 1;
           cursor: pointer;
           z-index: 2;
           appearance: none;
+          background: transparent;
+
+          &::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            background: transparent;
+          }
+
+          &::-moz-range-track {
+            width: 100%;
+            height: 4px;
+            background: transparent;
+          }
 
           &::-webkit-slider-thumb {
             appearance: none;
@@ -367,8 +373,13 @@
             background: $text-primary;
             border-radius: 50%;
             cursor: pointer;
-            opacity: 0;
-            transition: opacity 0.2s ease;
+            opacity: 1;
+            transition: transform 0.2s ease;
+            margin-top: -4px;
+            
+            &:hover {
+              transform: scale(1.2);
+            }
           }
 
           &::-moz-range-thumb {
@@ -378,8 +389,12 @@
             border-radius: 50%;
             border: none;
             cursor: pointer;
-            opacity: 0;
-            transition: opacity 0.2s ease;
+            opacity: 1;
+            transition: transform 0.2s ease;
+            
+            &:hover {
+              transform: scale(1.2);
+            }
           }
         }
 
@@ -399,6 +414,7 @@
   .player-volume {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: $spacing-md;
     min-width: 180px;
 
@@ -409,28 +425,42 @@
       transition: color $transition-fast;
 
       &:hover {
-        color: $primary-light;
+        color: $text-primary;
       }
     }
 
     .volume-slider {
       flex: 1;
-      height: 6px;
-      background: rgba($background-dark, 0.5);
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
       border-radius: $border-radius-full;
       outline: none;
       appearance: none;
       cursor: pointer;
 
+      &::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: $border-radius-full;
+      }
+
+      &::-moz-range-track {
+        width: 100%;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: $border-radius-full;
+      }
+
       &::-webkit-slider-thumb {
         appearance: none;
-        width: 14px;
-        height: 14px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        width: 12px;
+        height: 12px;
+        background: $text-primary;
         border-radius: 50%;
         cursor: pointer;
-        box-shadow: 0 0 20px rgba(102, 102, 241, 0.3);
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.2s ease;
+        margin-top: -4px;
 
         &:hover {
           transform: scale(1.2);
@@ -438,14 +468,13 @@
       }
 
       &::-moz-range-thumb {
-        width: 14px;
-        height: 14px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        width: 12px;
+        height: 12px;
+        background: $text-primary;
         border-radius: 50%;
         border: none;
         cursor: pointer;
-        box-shadow: 0 0 20px rgba(102, 102, 241, 0.3);
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.2s ease;
 
         &:hover {
           transform: scale(1.2);
@@ -453,14 +482,21 @@
       }
 
       &::-webkit-slider-runnable-track {
-        height: 6px;
         background: linear-gradient(
           to right,
           $primary-color 0%,
           $primary-color var(--volume-percent, 70%),
-          rgba($background-dark, 0.5) var(--volume-percent, 70%)
+          rgba(255, 255, 255, 0.1) var(--volume-percent, 70%)
         );
-        border-radius: $border-radius-full;
+      }
+
+      &::-moz-range-track {
+        background: linear-gradient(
+          to right,
+          $primary-color 0%,
+          $primary-color var(--volume-percent, 70%),
+          rgba(255, 255, 255, 0.1) var(--volume-percent, 70%)
+        );
       }
     }
   }
