@@ -29,7 +29,7 @@ public class TrackService {
 
     public Track getTrackById(Long id) {
         return trackRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Track not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Track not found with id: " + id));
     }
 
     public List<Track> searchTracks(String query) {
@@ -44,9 +44,8 @@ public class TrackService {
         try {
             Path filePath = Paths.get(musicStoragePath).resolve(track.getFilePath()).normalize();
             Resource resource = new UrlResource(filePath.toUri());
-            
+
             if (resource.exists() && resource.isReadable()) {
-                // Increment play count
                 track.setPlayCount(track.getPlayCount() + 1);
                 trackRepository.save(track);
                 return resource;
@@ -71,11 +70,11 @@ public class TrackService {
     public String getContentType(Long trackId) {
         Track track = getTrackById(trackId);
         String format = track.getFileFormat();
-        
+
         if (format == null) {
             return "audio/mpeg";
         }
-        
+
         return switch (format.toLowerCase()) {
             case "mp3" -> "audio/mpeg";
             case "wav" -> "audio/wav";
@@ -94,7 +93,6 @@ public class TrackService {
         trackRepository.deleteById(id);
     }
 
-    // Placeholder for YouTube/Spotify download
     public void downloadTrackFromExternal(String source, String url) {
         // TODO: Implement YouTube/Spotify download integration
         throw new UnsupportedOperationException("Download feature not yet implemented");

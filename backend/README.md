@@ -4,7 +4,7 @@ Backend service for Streamletz music streaming application.
 
 ## Tech Stack
 
-- Java 17+
+- Java 21 LTS
 - Spring Boot 3.2.0
 - PostgreSQL
 - JWT Authentication
@@ -14,7 +14,7 @@ Backend service for Streamletz music streaming application.
 
 ### Prerequisites
 
-- JDK 17+
+- JDK 21+
 - Maven 3.8+
 - PostgreSQL 14+
 

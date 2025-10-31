@@ -14,8 +14,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 @RestController
@@ -52,7 +50,7 @@ public class TrackController {
     public ResponseEntity<Resource> streamTrack(
             @PathVariable Long id,
             @RequestHeader(value = "Range", required = false) String rangeHeader) {
-        
+
         try {
             Resource resource = trackService.getTrackResource(id);
             long fileSize = trackService.getTrackFileSize(id);
@@ -63,27 +61,25 @@ public class TrackController {
             headers.add(HttpHeaders.ACCEPT_RANGES, "bytes");
 
             if (rangeHeader == null || rangeHeader.isEmpty()) {
-                // Full content
                 headers.setContentLength(fileSize);
                 return ResponseEntity.ok()
-                    .headers(headers)
-                    .body(resource);
+                        .headers(headers)
+                        .body(resource);
             } else {
-                // Partial content (range request)
                 List<HttpRange> ranges = HttpRange.parseRanges(rangeHeader);
                 HttpRange range = ranges.get(0);
-                
+
                 long start = range.getRangeStart(fileSize);
                 long end = range.getRangeEnd(fileSize);
                 long contentLength = end - start + 1;
 
-                headers.add(HttpHeaders.CONTENT_RANGE, 
-                    String.format("bytes %d-%d/%d", start, end, fileSize));
+                headers.add(HttpHeaders.CONTENT_RANGE,
+                        String.format("bytes %d-%d/%d", start, end, fileSize));
                 headers.setContentLength(contentLength);
 
                 return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
-                    .headers(headers)
-                    .body(resource);
+                        .headers(headers)
+                        .body(resource);
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -92,8 +88,7 @@ public class TrackController {
 
     @PostMapping("/download")
     @SecurityRequirement(name = "bearerAuth")
-    @Operation(summary = "Download track from external source", 
-               description = "Trigger download from YouTube or Spotify (placeholder)")
+    @Operation(summary = "Download track from external source", description = "Trigger download from YouTube or Spotify (placeholder)")
     public ResponseEntity<String> downloadFromExternal(
             @RequestParam String source,
             @RequestParam String url) {
@@ -102,7 +97,7 @@ public class TrackController {
             return ResponseEntity.ok("Download initiated");
         } catch (UnsupportedOperationException e) {
             return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
-                .body("Feature not yet implemented");
+                    .body("Feature not yet implemented");
         }
     }
 }

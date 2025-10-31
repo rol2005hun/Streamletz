@@ -42,10 +42,10 @@ public class Track {
     private String filePath;
 
     @Column
-    private String fileFormat; // mp3, flac, etc.
+    private String fileFormat;
 
     @Column
-    private Long fileSize; // in bytes
+    private Long fileSize;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "uploaded_by")

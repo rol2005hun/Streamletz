@@ -1,25 +1,25 @@
 {
-  "name": "streamletz-frontend",
-  "version": "1.0.0",
-  "description": "Streamletz - Your sound. Your stream. Your rules.",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "check": "svelte-check --tsconfig ./tsconfig.json"
-  },
-  "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^3.0.1",
-    "@tsconfig/svelte": "^5.0.2",
-    "sass": "^1.69.5",
-    "svelte": "^4.2.8",
-    "svelte-check": "^3.6.2",
-    "tslib": "^2.6.2",
-    "typescript": "^5.3.3",
-    "vite": "^5.0.8"
-  },
-  "dependencies": {
-    "axios": "^1.6.2"
-  }
+    "name": "streamletz-frontend",
+    "version": "1.0.0",
+    "description": "Streamletz - Your sound. Your stream. Your rules.",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview",
+        "check": "svelte-check --tsconfig ./tsconfig.json"
+    },
+    "devDependencies": {
+        "@sveltejs/vite-plugin-svelte": "^6.2.1",
+        "@tsconfig/svelte": "^5.0.5",
+        "sass": "^1.93.3",
+        "svelte": "^5.43.2",
+        "svelte-check": "^4.3.3",
+        "tslib": "^2.8.1",
+        "typescript": "^5.9.3",
+        "vite": "^7.1.12"
+    },
+    "dependencies": {
+        "axios": "^1.13.1"
+    }
 }

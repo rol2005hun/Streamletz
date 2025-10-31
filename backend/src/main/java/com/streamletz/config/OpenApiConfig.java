@@ -16,24 +16,24 @@ public class OpenApiConfig {
     @Bean
     public OpenAPI customOpenAPI() {
         final String securitySchemeName = "bearerAuth";
-        
+
         return new OpenAPI()
-            .info(new Info()
-                .title("Streamletz API")
-                .version("1.0.0")
-                .description("Music streaming API - Your sound. Your stream. Your rules.")
-                .contact(new Contact()
-                    .name("Streamletz Team")
-                    .url("https://streamletz.com"))
-                .license(new License()
-                    .name("MIT")
-                    .url("https://opensource.org/licenses/MIT")))
-            .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
-            .components(new Components()
-                .addSecuritySchemes(securitySchemeName, new SecurityScheme()
-                    .name(securitySchemeName)
-                    .type(SecurityScheme.Type.HTTP)
-                    .scheme("bearer")
-                    .bearerFormat("JWT")));
+                .info(new Info()
+                        .title("Streamletz API")
+                        .version("1.0.0")
+                        .description("Music streaming API - Your sound. Your stream. Your rules.")
+                        .contact(new Contact()
+                                .name("Streamletz Team")
+                                .url("https://streamletz.com"))
+                        .license(new License()
+                                .name("MIT")
+                                .url("https://opensource.org/licenses/MIT")))
+                .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
+                .components(new Components()
+                        .addSecuritySchemes(securitySchemeName, new SecurityScheme()
+                                .name(securitySchemeName)
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer")
+                                .bearerFormat("JWT")));
     }
 }

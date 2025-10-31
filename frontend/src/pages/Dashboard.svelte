@@ -4,14 +4,14 @@
   import { trackService, type Track } from '../lib/trackService';
   import AudioPlayer from '../components/AudioPlayer.svelte';
 
-  export let onLogout: () => void;
+  let { onLogout }: { onLogout: () => void } = $props();
 
   let user = authService.getUser();
-  let tracks: Track[] = [];
-  let currentTrack: Track | null = null;
-  let searchQuery = '';
-  let loading = true;
-  let error = '';
+  let tracks = $state<Track[]>([]);
+  let currentTrack = $state<Track | null>(null);
+  let searchQuery = $state('');
+  let loading = $state(true);
+  let error = $state('');
 
   onMount(async () => {
     await loadTracks();
@@ -22,7 +22,7 @@
       loading = true;
       tracks = await trackService.getAllTracks();
     } catch (err: any) {
-      error = 'Failed to load tracks. Please try again.';
+      error = "Failed to load tracks. Please try again.";
       console.error(err);
     } finally {
       loading = false;
@@ -39,7 +39,7 @@
       loading = true;
       tracks = await trackService.searchTracks(searchQuery);
     } catch (err: any) {
-      error = 'Search failed. Please try again.';
+      error = "Search failed. Please try again.";
       console.error(err);
     } finally {
       loading = false;
@@ -51,7 +51,7 @@
   }
 
   function handleLogoutClick() {
-    if (confirm('Are you sure you want to logout?')) {
+    if (confirm("Are you sure you want to logout?")) {
       onLogout();
     }
   }
@@ -59,7 +59,7 @@
   function formatDuration(seconds: number): string {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   }
 </script>
 
@@ -69,7 +69,7 @@
       <h1>Streamletz</h1>
       <div class="header-actions">
         <span class="user-info">Welcome, {user?.username}!</span>
-        <button class="btn btn-secondary" on:click={handleLogoutClick}>
+        <button class="btn btn-secondary" onclick={handleLogoutClick}>
           Logout
         </button>
       </div>
@@ -82,10 +82,10 @@
         <input
           type="text"
           bind:value={searchQuery}
-          on:keyup={(e) => e.key === 'Enter' && handleSearch()}
+          onkeyup={(e) => e.key === 'Enter' && handleSearch()}
           placeholder="Search for tracks, artists, or albums..."
         />
-        <button class="btn btn-primary" on:click={handleSearch}>
+        <button class="btn btn-primary" onclick={handleSearch}>
           Search
         </button>
       </div>
@@ -115,9 +115,9 @@
               {:else}
                 <div class="cover-placeholder">🎵</div>
               {/if}
-              <button class="play-overlay" on:click={() => playTrack(track)}>
+              <button class="play-overlay" onclick={() => playTrack(track)} aria-label="Play {track.title}">
                 <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M8 5v14l11-7z"/>
+                  <path d="M8 5v14l11-7z" />
                 </svg>
               </button>
             </div>
@@ -147,17 +147,22 @@
 </div>
 
 <style lang="scss">
+  @use '../styles/variables.scss' as *;
+
   .dashboard {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    padding-bottom: 110px; // Space for audio player
+    padding-bottom: 110px;
+    position: relative;
+    z-index: 1;
   }
 
   .dashboard-header {
-    background: $background-light;
-    padding: $spacing-lg $spacing-xl;
-    box-shadow: $shadow-sm;
+    background: rgba($background-card, 0.7);
+    backdrop-filter: blur(20px);
+    padding: $spacing-xl $spacing-xxl;
+    border-bottom: 1px solid rgba($primary-color, 0.1);
     position: sticky;
     top: 0;
     z-index: $z-header;
@@ -170,8 +175,11 @@
       align-items: center;
 
       h1 {
-        color: $primary-color;
-        font-size: 1.75rem;
+        font-size: 2rem;
+        background: $gradient-primary;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
       }
 
       .header-actions {
@@ -181,7 +189,8 @@
 
         .user-info {
           color: $text-secondary;
-          font-size: 0.9rem;
+          font-size: 0.95rem;
+          font-weight: 500;
         }
       }
     }
@@ -192,34 +201,42 @@
     max-width: 1400px;
     width: 100%;
     margin: 0 auto;
-    padding: $spacing-xxl $spacing-xl;
+    padding: $spacing-xxxl $spacing-xxl;
   }
 
   .search-section {
-    margin-bottom: $spacing-xxl;
+    margin-bottom: $spacing-xxxl;
 
     .search-bar {
       display: flex;
       gap: $spacing-md;
-      max-width: 600px;
+      max-width: 700px;
+      margin: 0 auto;
 
       input {
         flex: 1;
-        padding: $spacing-md $spacing-lg;
-        background: $background-light;
-        border: 2px solid transparent;
-        border-radius: $border-radius-lg;
+        padding: $spacing-lg $spacing-xl;
+        background: rgba($background-card, 0.6);
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba($primary-color, 0.1);
+        border-radius: $border-radius-full;
         color: $text-primary;
         font-size: 1rem;
-        transition: border-color $transition-fast;
+        transition: all $transition-normal;
 
         &:focus {
           border-color: $primary-color;
+          background: rgba($background-card, 0.9);
+          box-shadow: 0 0 0 4px rgba($primary-color, 0.1);
         }
 
         &::placeholder {
-          color: $text-secondary;
+          color: $text-muted;
         }
+      }
+
+      .btn {
+        padding: $spacing-lg $spacing-xxl;
       }
     }
   }
@@ -229,49 +246,88 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: $spacing-xxl;
+    padding: $spacing-xxxl;
     gap: $spacing-lg;
 
     p {
       color: $text-secondary;
+      font-size: 1.1rem;
     }
   }
 
   .empty-state {
     text-align: center;
-    padding: $spacing-xxl;
+    padding: $spacing-xxxl;
     color: $text-secondary;
 
     h3 {
       color: $text-primary;
       margin-bottom: $spacing-md;
+      font-size: 1.75rem;
+    }
+
+    p {
+      font-size: 1.1rem;
     }
   }
 
   .tracks-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: $spacing-xl;
   }
 
   .track-card {
-    background: $background-light;
+    background: rgba($background-card, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba($primary-color, 0.1);
     border-radius: $border-radius-lg;
     padding: $spacing-lg;
     transition: all $transition-normal;
     cursor: pointer;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: $gradient-primary;
+      opacity: 0;
+      transition: opacity $transition-normal;
+      pointer-events: none;
+    }
 
     &:hover {
-      transform: translateY(-4px);
-      box-shadow: $shadow-lg;
+      transform: translateY(-8px);
+      box-shadow: $shadow-xl;
+      border-color: rgba($primary-color, 0.3);
+
+      &::before {
+        opacity: 0.05;
+      }
 
       .play-overlay {
         opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
       }
     }
 
     &.playing {
       border: 2px solid $primary-color;
+      box-shadow: $shadow-glow;
+
+      .track-cover::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border: 3px solid $primary-color;
+        border-radius: $border-radius-md;
+        animation: pulse 2s infinite;
+      }
     }
 
     .track-cover {
@@ -295,40 +351,49 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 3rem;
+        font-size: 3.5rem;
+        background: $gradient-primary;
+        opacity: 0.3;
       }
 
       .play-overlay {
         position: absolute;
         top: 50%;
         left: 50%;
-        transform: translate(-50%, -50%);
-        width: 56px;
-        height: 56px;
-        background: $primary-color;
+        transform: translate(-50%, -50%) scale(0.8);
+        width: 64px;
+        height: 64px;
+        background: $gradient-primary;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         opacity: 0;
-        transition: opacity $transition-fast;
+        transition: all $transition-normal;
+        box-shadow: $shadow-glow;
+        z-index: 2;
 
         svg {
-          width: 24px;
-          height: 24px;
-          margin-left: 3px;
+          width: 28px;
+          height: 28px;
+          margin-left: 4px;
+          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
         }
 
         &:hover {
-          background: $accent-color;
+          transform: translate(-50%, -50%) scale(1.1);
+          box-shadow: $shadow-glow-hover;
         }
       }
     }
 
     .track-details {
+      position: relative;
+      z-index: 1;
+
       .track-title {
-        font-size: 1rem;
-        font-weight: 600;
+        font-size: 1.05rem;
+        font-weight: 700;
         color: $text-primary;
         margin-bottom: $spacing-xs;
         overflow: hidden;
@@ -337,17 +402,18 @@
       }
 
       .track-artist {
-        font-size: 0.875rem;
+        font-size: 0.9rem;
         color: $text-secondary;
         margin-bottom: $spacing-xs;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        font-weight: 500;
       }
 
       .track-album {
-        font-size: 0.8rem;
-        color: $text-secondary;
+        font-size: 0.85rem;
+        color: $text-muted;
         margin-bottom: $spacing-sm;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -357,30 +423,45 @@
       .track-meta {
         display: flex;
         justify-content: space-between;
-        font-size: 0.75rem;
-        color: $text-secondary;
+        font-size: 0.8rem;
+        color: $text-muted;
         padding-top: $spacing-sm;
-        border-top: 1px solid rgba($text-secondary, 0.2);
+        border-top: 1px solid rgba($primary-color, 0.1);
       }
     }
   }
 
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
   .dashboard-footer {
-    background: $background-light;
-    padding: $spacing-xl;
+    background: rgba($background-card, 0.7);
+    backdrop-filter: blur(20px);
+    padding: $spacing-xxl;
     text-align: center;
     margin-top: auto;
+    border-top: 1px solid rgba($primary-color, 0.1);
 
     .motto {
-      color: $primary-color;
-      font-style: italic;
-      font-size: 1.1rem;
+      background: $gradient-primary;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 600;
+      font-size: 1.2rem;
       margin-bottom: $spacing-sm;
     }
 
     .copyright {
-      color: $text-secondary;
-      font-size: 0.875rem;
+      color: $text-muted;
+      font-size: 0.9rem;
     }
   }
 
@@ -394,8 +475,12 @@
     }
 
     .tracks-grid {
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: $spacing-md;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: $spacing-lg;
+    }
+
+    .dashboard-content {
+      padding: $spacing-xxl $spacing-lg;
     }
   }
 
@@ -405,7 +490,12 @@
     }
 
     .tracks-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: $spacing-md;
+    }
+
+    .dashboard-content {
+      padding: $spacing-xl $spacing-md;
     }
   }
 </style>

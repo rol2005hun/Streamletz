@@ -1,4 +1,5 @@
-@import './variables.scss';
+@use 'sass:color';
+@use './variables.scss' as *;
 
 * {
   margin: 0;
@@ -7,17 +8,38 @@
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: $background-dark;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: $gradient-dark;
   color: $text-primary;
   line-height: 1.6;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #app {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(102, 102, 241, 0.05) 0%, transparent 50%);
+    animation: rotate 60s linear infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 a {
@@ -26,7 +48,7 @@ a {
   transition: color $transition-fast;
 
   &:hover {
-    color: $primary-color;
+    color: $primary-light;
   }
 }
 
@@ -35,38 +57,49 @@ button {
   cursor: pointer;
   border: none;
   outline: none;
-  transition: all $transition-fast;
+  transition: all $transition-normal;
 
   &:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
   }
 }
 
-input, textarea {
+input,
+textarea {
   font-family: inherit;
   outline: none;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-weight: 600;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 700;
   line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
 h1 {
-  font-size: 2.5rem;
+  font-size: 3rem;
+  background: $gradient-primary;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 h2 {
-  font-size: 2rem;
+  font-size: 2.25rem;
 }
 
 h3 {
-  font-size: 1.5rem;
+  font-size: 1.75rem;
 }
 
 ::-webkit-scrollbar {
-  width: 12px;
+  width: 10px;
 }
 
 ::-webkit-scrollbar-track {
@@ -75,46 +108,73 @@ h3 {
 
 ::-webkit-scrollbar-thumb {
   background: $background-light;
-  border-radius: $border-radius-md;
+  border-radius: $border-radius-full;
 
   &:hover {
-    background: lighten($background-light, 10%);
+    background: $primary-color;
   }
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 $spacing-lg;
+  padding: 0 $spacing-xl;
 }
 
 .btn {
-  padding: $spacing-md $spacing-xl;
-  border-radius: $border-radius-lg;
-  font-size: 1rem;
+  padding: $spacing-md $spacing-xxl;
+  border-radius: $border-radius-full;
+  font-size: 0.95rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   transition: all $transition-normal;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+
+  &:hover::before {
+    width: 300px;
+    height: 300px;
+  }
 
   &-primary {
-    background-color: $primary-color;
+    background: $gradient-primary;
     color: $text-primary;
+    box-shadow: $shadow-glow;
 
     &:hover:not(:disabled) {
-      background-color: darken($primary-color, 10%);
-      transform: scale(1.02);
+      transform: translateY(-2px);
+      box-shadow: $shadow-glow-hover;
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
     }
   }
 
   &-secondary {
-    background-color: transparent;
-    border: 2px solid $text-secondary;
-    color: $text-secondary;
+    background: rgba($background-light, 0.5);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba($text-secondary, 0.2);
+    color: $text-primary;
 
     &:hover:not(:disabled) {
-      border-color: $text-primary;
-      color: $text-primary;
+      border-color: $primary-color;
+      background: rgba($background-light, 0.8);
+      transform: translateY(-2px);
     }
   }
 }
@@ -125,55 +185,68 @@ h3 {
   label {
     display: block;
     margin-bottom: $spacing-sm;
-    font-weight: 500;
+    font-weight: 600;
     color: $text-secondary;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
   input {
     width: 100%;
-    padding: $spacing-md;
-    background-color: $background-light;
-    border: 2px solid transparent;
-    border-radius: $border-radius-md;
+    padding: $spacing-md $spacing-lg;
+    background: rgba($background-card, 0.6);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba($primary-color, 0.1);
+    border-radius: $border-radius-lg;
     color: $text-primary;
     font-size: 1rem;
-    transition: border-color $transition-fast;
+    transition: all $transition-normal;
 
     &:focus {
       border-color: $primary-color;
+      background: rgba($background-card, 0.9);
+      box-shadow: 0 0 0 4px rgba($primary-color, 0.1);
     }
 
     &::placeholder {
-      color: $text-secondary;
+      color: $text-muted;
     }
   }
 
   .error {
     color: $error-color;
     font-size: 0.875rem;
-    margin-top: $spacing-xs;
+    margin-top: $spacing-sm;
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
   }
 }
 
 .error-message {
-  background-color: rgba($error-color, 0.1);
-  border: 1px solid $error-color;
-  color: $error-color;
-  padding: $spacing-md;
+  background: rgba($error-color, 0.15);
+  border: 1px solid rgba($error-color, 0.3);
+  border-left: 4px solid $error-color;
+  color: $text-primary;
+  padding: $spacing-md $spacing-lg;
   border-radius: $border-radius-md;
   margin-bottom: $spacing-lg;
+  backdrop-filter: blur(10px);
 }
 
 .loading {
   display: inline-block;
   width: 20px;
   height: 20px;
-  border: 3px solid rgba($text-primary, 0.3);
+  border: 3px solid rgba($text-primary, 0.2);
   border-radius: 50%;
   border-top-color: $text-primary;
-  animation: spin 1s linear infinite;
+  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
