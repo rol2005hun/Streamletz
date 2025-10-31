@@ -1,26 +1,33 @@
-// Color palette - Modern gradient theme
-$primary-color: #6366f1;
-$primary-light: #818cf8;
-$primary-dark: #4f46e5;
-$secondary-color: #8b5cf6;
-$accent-color: #ec4899;
-$accent-light: #f472b6;
-$background-dark: #0f0f23;
-$background-medium: #1a1a2e;
-$background-light: #252545;
-$background-card: #1e1e3f;
-$text-primary: #f8fafc;
-$text-secondary: #94a3b8;
-$text-muted: #64748b;
-$error-color: #ef4444;
-$success-color: #10b981;
-$warning-color: #f59e0b;
+// Color palette - Spotify-inspired theme
+$spotify-green: #1db954;
+$spotify-green-hover: #1ed760;
+$spotify-dark: #121212;
+$spotify-elevated: #181818;
+$spotify-bright: #282828;
+$spotify-sidebar: #000000;
+
+$primary-color: $spotify-green;
+$primary-light: $spotify-green-hover;
+$primary-dark: #169c46;
+$secondary-color: #1ed760;
+$accent-color: #1db954;
+$accent-light: #1ed760;
+$background-dark: $spotify-dark;
+$background-medium: $spotify-elevated;
+$background-light: $spotify-bright;
+$background-card: $spotify-elevated;
+$text-primary: #ffffff;
+$text-secondary: #b3b3b3;
+$text-muted: #6a6a6a;
+$error-color: #e22134;
+$success-color: #1db954;
+$warning-color: #ffa42b;
 
 // Gradients
-$gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-$gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-$gradient-accent: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-$gradient-dark: linear-gradient(180deg, #1a1a2e 0%, #0f0f23 100%);
+$gradient-primary: linear-gradient(135deg, #1db954 0%, #1ed760 100%);
+$gradient-secondary: linear-gradient(135deg, #1ed760 0%, #1db954 100%);
+$gradient-accent: linear-gradient(135deg, #1db954 0%, #169c46 100%);
+$gradient-dark: linear-gradient(180deg, #181818 0%, #121212 100%);
 
 // Spacing
 $spacing-xs: 0.25rem;
@@ -39,12 +46,12 @@ $border-radius-xl: 24px;
 $border-radius-full: 9999px;
 
 // Shadows
-$shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
-$shadow-md: 0 4px 16px rgba(0, 0, 0, 0.2);
-$shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.3);
-$shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.4);
-$shadow-glow: 0 0 20px rgba(102, 102, 241, 0.3);
-$shadow-glow-hover: 0 0 30px rgba(102, 102, 241, 0.5);
+$shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.5);
+$shadow-md: 0 4px 12px rgba(0, 0, 0, 0.6);
+$shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.7);
+$shadow-xl: 0 16px 40px rgba(0, 0, 0, 0.8);
+$shadow-glow: 0 4px 20px rgba(29, 185, 84, 0.3);
+$shadow-glow-hover: 0 8px 30px rgba(29, 185, 84, 0.5);
 
 // Transitions
 $transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);

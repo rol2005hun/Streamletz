@@ -373,6 +373,7 @@
       color: $primary-light;
       padding: 0;
       font-weight: 600;
+      font-size: 1rem;
       text-decoration: none;
       border-bottom: 2px solid transparent;
       transition: all $transition-normal;

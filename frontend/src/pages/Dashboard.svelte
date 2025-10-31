@@ -167,10 +167,9 @@
   }
 
   .dashboard-header {
-    background: rgba($background-card, 0.7);
-    backdrop-filter: blur(20px);
+    background: $background-card;
     padding: $spacing-md $spacing-xxl;
-    border-bottom: 1px solid rgba($primary-color, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     position: sticky;
     top: 0;
     z-index: $z-header;
@@ -184,10 +183,8 @@
 
       h1 {
         font-size: 2rem;
-        background: $gradient-primary;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        color: $text-primary;
+        font-weight: 700;
       }
 
       .header-actions {
@@ -199,6 +196,21 @@
           color: $text-secondary;
           font-size: 0.95rem;
           font-weight: 500;
+        }
+
+        .btn {
+          padding: $spacing-sm $spacing-lg;
+          background: transparent;
+          border: 1px solid $text-secondary;
+          color: $text-primary;
+          font-size: 0.875rem;
+          font-weight: 600;
+          
+          &:hover {
+            border-color: $text-primary;
+            background: transparent;
+            transform: scale(1.05);
+          }
         }
       }
     }
@@ -223,19 +235,17 @@
 
       input {
         flex: 1;
-        padding: $spacing-lg $spacing-xl;
-        background: rgba($background-card, 0.6);
-        backdrop-filter: blur(10px);
-        border: 2px solid rgba($primary-color, 0.1);
+        padding: $spacing-md $spacing-xl;
+        background: $background-light;
+        border: none;
         border-radius: $border-radius-full;
         color: $text-primary;
-        font-size: 1rem;
+        font-size: 0.95rem;
         transition: all $transition-normal;
 
         &:focus {
-          border-color: $primary-color;
-          background: rgba($background-card, 0.9);
-          box-shadow: 0 0 0 4px rgba($primary-color, 0.1);
+          outline: 2px solid $text-primary;
+          background: $background-bright;
         }
 
         &::placeholder {
@@ -244,7 +254,15 @@
       }
 
       .btn {
-        padding: $spacing-lg $spacing-xxl;
+        padding: $spacing-md $spacing-xxl;
+        background: $primary-color;
+        color: $spotify-dark;
+        font-weight: 700;
+        
+        &:hover {
+          background: $primary-light;
+          transform: scale(1.05);
+        }
       }
     }
   }
@@ -281,14 +299,12 @@
 
   .tracks-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: $spacing-xl;
   }
 
   .track-card {
-    background: rgba($background-card, 0.6);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba($primary-color, 0.1);
+    background: $background-card;
     border-radius: $border-radius-lg;
     padding: $spacing-lg;
     transition: all $transition-normal;
@@ -296,27 +312,9 @@
     position: relative;
     overflow: hidden;
 
-    &::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: $gradient-primary;
-      opacity: 0;
-      transition: opacity $transition-normal;
-      pointer-events: none;
-    }
-
     &:hover {
-      transform: translateY(-8px);
-      box-shadow: $shadow-xl;
-      border-color: rgba($primary-color, 0.3);
-
-      &::before {
-        opacity: 0.05;
-      }
+      background: $background-light;
+      box-shadow: $shadow-lg;
 
       .play-overlay {
         opacity: 1;
@@ -325,16 +323,14 @@
     }
 
     &.playing {
-      border: 2px solid $primary-color;
-      box-shadow: $shadow-glow;
+      .track-title {
+        color: $primary-color;
+      }
 
-      .track-cover::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        border: 3px solid $primary-color;
-        border-radius: $border-radius-md;
-        animation: pulse 2s infinite;
+      .play-overlay {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+        background: $primary-color;
       }
     }
 
@@ -366,31 +362,31 @@
 
       .play-overlay {
         position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%) scale(0.8);
-        width: 64px;
-        height: 64px;
-        background: $gradient-primary;
+        bottom: $spacing-md;
+        right: $spacing-md;
+        width: 48px;
+        height: 48px;
+        background: $primary-color;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         opacity: 0;
-        transition: all $transition-normal;
-        box-shadow: $shadow-glow;
+        transform: scale(0.9);
+        transition: all 0.2s ease;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
         z-index: 2;
 
         svg {
-          width: 28px;
-          height: 28px;
-          margin-left: 4px;
-          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+          width: 20px;
+          height: 20px;
+          color: $spotify-dark;
+          margin-left: 2px;
         }
 
         &:hover {
-          transform: translate(-50%, -50%) scale(1.1);
-          box-shadow: $shadow-glow-hover;
+          transform: scale(1.05);
+          background: $primary-light;
         }
       }
     }

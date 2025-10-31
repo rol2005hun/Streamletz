@@ -117,7 +117,7 @@
     </div>
 
     <div class="player-controls">
-      <button class="control-btn" onclick={togglePlay}>
+      <button class="control-btn play-pause" onclick={togglePlay}>
         {#if isPlaying}
           <svg viewBox="0 0 24 24" fill="currentColor">
             <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
@@ -180,11 +180,10 @@
     bottom: 0;
     left: 0;
     right: 0;
-    background: rgba($background-card, 0.95);
-    backdrop-filter: blur(30px);
-    padding: $spacing-lg $spacing-xl;
+    background: $background-card;
+    padding: $spacing-sm $spacing-xl;
     box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.4);
-    border-top: 1px solid rgba($primary-color, 0.2);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
     display: flex;
     align-items: center;
     gap: $spacing-xl;
@@ -195,17 +194,6 @@
       display: flex;
       justify-content: center;
       align-items: center;
-    }
-
-    &::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: $gradient-primary;
-      opacity: 0.5;
     }
   }
 
@@ -277,29 +265,41 @@
     gap: $spacing-lg;
 
     .control-btn {
-      background: $gradient-primary;
-      width: 48px;
-      height: 48px;
+      background: transparent;
+      border: 2px solid transparent;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all $transition-normal;
-      box-shadow: $shadow-glow;
+      transition: all 0.2s ease;
+      color: $text-secondary;
 
       svg {
-        width: 24px;
-        height: 24px;
-        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        width: 20px;
+        height: 20px;
       }
 
       &:hover {
-        transform: scale(1.1);
-        box-shadow: $shadow-glow-hover;
+        color: $text-primary;
+        transform: scale(1.05);
       }
 
       &:active {
         transform: scale(0.95);
+      }
+      
+      &.play-pause {
+        background: $text-primary;
+        color: $spotify-dark;
+        width: 36px;
+        height: 36px;
+        
+        &:hover {
+          background: $text-primary;
+          transform: scale(1.08);
+        }
       }
     }
 
@@ -321,15 +321,28 @@
       .progress-wrapper {
         flex: 1;
         position: relative;
-        height: 6px;
-        background: rgba($background-dark, 0.5);
+        height: 4px;
+        background: rgba(255, 255, 255, 0.1);
         border-radius: $border-radius-full;
-        overflow: hidden;
+        overflow: visible;
+        cursor: pointer;
+
+        &:hover {
+          height: 6px;
+          
+          .progress-bar::-webkit-slider-thumb {
+            opacity: 1;
+          }
+          
+          .progress-bar::-moz-range-thumb {
+            opacity: 1;
+          }
+        }
 
         .buffer-bar {
           position: absolute;
           height: 100%;
-          background: rgba($primary-color, 0.2);
+          background: rgba(255, 255, 255, 0.15);
           border-radius: $border-radius-full;
           pointer-events: none;
           transition: width $transition-normal;
@@ -346,32 +359,24 @@
 
           &::-webkit-slider-thumb {
             appearance: none;
-            width: 16px;
-            height: 16px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 12px;
+            height: 12px;
+            background: $text-primary;
             border-radius: 50%;
             cursor: pointer;
-            box-shadow: 0 0 20px rgba(102, 102, 241, 0.3);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-            &:hover {
-              transform: scale(1.2);
-            }
+            opacity: 0;
+            transition: opacity 0.2s ease;
           }
 
           &::-moz-range-thumb {
-            width: 16px;
-            height: 16px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 12px;
+            height: 12px;
+            background: $text-primary;
             border-radius: 50%;
             border: none;
             cursor: pointer;
-            box-shadow: 0 0 20px rgba(102, 102, 241, 0.3);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-            &:hover {
-              transform: scale(1.2);
-            }
+            opacity: 0;
+            transition: opacity 0.2s ease;
           }
         }
 
@@ -379,11 +384,10 @@
           content: "";
           position: absolute;
           height: 100%;
-          background: $gradient-primary;
+          background: $primary-color;
           border-radius: $border-radius-full;
           width: calc(var(--progress) * 1%);
           pointer-events: none;
-          box-shadow: 0 0 10px rgba($primary-color, 0.5);
         }
       }
     }
