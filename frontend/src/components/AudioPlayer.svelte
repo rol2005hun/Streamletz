@@ -354,7 +354,6 @@
       }
 
       &:hover:not(:disabled) {
-        color: $text-primary;
         transform: scale(1.05);
       }
 
@@ -380,11 +379,11 @@
 
         &:hover {
           background: $text-primary;
-          transform: scale(1.08);
+          transform: scale(1.05);
         }
 
         &:active {
-          transform: scale(0.98);
+          transform: scale(0.95);
         }
       }
     }
@@ -420,23 +419,49 @@
         height: 4px;
         background: linear-gradient(
           to right,
-          $primary-color 0%,
-          $primary-color var(--volume-percent, 70%),
+          rgba(255, 255, 255, 0.7) 0%,
+          rgba(255, 255, 255, 0.7) var(--volume-percent, 70%),
           rgba(255, 255, 255, 0.1) var(--volume-percent, 70%)
         );
         border-radius: $border-radius-full;
+        transition: background 0.2s ease;
       }
 
       &::-moz-range-track {
         width: 100%;
         height: 4px;
-        background: linear-gradient(
-          to right,
-          $primary-color 0%,
-          $primary-color var(--volume-percent, 70%),
-          rgba(255, 255, 255, 0.1) var(--volume-percent, 70%)
-        );
+        background: rgba(255, 255, 255, 0.1);
         border-radius: $border-radius-full;
+      }
+
+      &::-moz-range-progress {
+        background: rgba(255, 255, 255, 0.7);
+        height: 4px;
+        border-radius: $border-radius-full;
+        transition: background 0.2s ease;
+      }
+
+      &:hover {
+        &::-webkit-slider-runnable-track {
+          background: linear-gradient(
+            to right,
+            $primary-color 0%,
+            $primary-color var(--volume-percent, 70%),
+            rgba(255, 255, 255, 0.1) var(--volume-percent, 70%)
+          );
+        }
+
+        &::-moz-range-progress {
+          background: $primary-color;
+        }
+
+        &::-webkit-slider-thumb {
+          opacity: 1;
+        }
+
+        &::-moz-range-thumb {
+          opacity: 1;
+        }
       }
 
       &::-webkit-slider-thumb {
@@ -446,7 +471,8 @@
         background: $text-primary;
         border-radius: 50%;
         cursor: pointer;
-        transition: all 0.2s ease;
+        opacity: 0;
+        transition: opacity 0.2s ease, transform 0.2s ease;
         margin-top: -4px;
 
         &:hover {
@@ -461,7 +487,8 @@
         border-radius: 50%;
         border: none;
         cursor: pointer;
-        transition: all 0.2s ease;
+        opacity: 0;
+        transition: opacity 0.2s ease, transform 0.2s ease;
 
         &:hover {
           transform: scale(1.2);
@@ -486,7 +513,7 @@
       flex-shrink: 0;
     }
 
-    .progress-wrapper {
+      .progress-wrapper {
       flex: 1;
       position: relative;
       height: 4px;
@@ -504,6 +531,19 @@
 
         .progress-bar::-moz-range-thumb {
           opacity: 1;
+        }
+
+        .progress-bar::-webkit-slider-runnable-track {
+          background: linear-gradient(
+            to right,
+            $primary-color 0%,
+            $primary-color calc(var(--current, 0) / var(--max, 100) * 100%),
+            transparent calc(var(--current, 0) / var(--max, 100) * 100%)
+          );
+        }
+
+        .progress-bar::-moz-range-progress {
+          background: $primary-color;
         }
       }
 
@@ -533,11 +573,12 @@
           height: 4px;
           background: linear-gradient(
             to right,
-            $primary-color 0%,
-            $primary-color calc(var(--current, 0) / var(--max, 100) * 100%),
+            rgba(255, 255, 255, 0.7) 0%,
+            rgba(255, 255, 255, 0.7) calc(var(--current, 0) / var(--max, 100) * 100%),
             transparent calc(var(--current, 0) / var(--max, 100) * 100%)
           );
           border-radius: $border-radius-full;
+          transition: background 0.2s ease;
         }
 
         &::-moz-range-track {
@@ -548,9 +589,10 @@
         }
 
         &::-moz-range-progress {
-          background: $primary-color;
+          background: rgba(255, 255, 255, 0.7);
           height: 4px;
           border-radius: $border-radius-full;
+          transition: background 0.2s ease;
         }
 
         &::-webkit-slider-thumb {
@@ -577,9 +619,7 @@
           border: none;
           cursor: pointer;
           opacity: 0;
-          transition: opacity 0.2s ease, transform 0.2s ease;
-
-          &:hover {
+          transition: opacity 0.2s ease, transform 0.2s ease;          &:hover {
             transform: scale(1.2);
           }
         }
