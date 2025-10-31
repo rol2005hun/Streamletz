@@ -65,6 +65,24 @@
     currentTrack = track;
   }
 
+  function playNext() {
+    if (!currentTrack || tracks.length === 0) return;
+    
+    const currentIndex = tracks.findIndex(t => t.id === currentTrack!.id);
+    if (currentIndex < tracks.length - 1) {
+      currentTrack = tracks[currentIndex + 1];
+    }
+  }
+
+  function playPrevious() {
+    if (!currentTrack || tracks.length === 0) return;
+    
+    const currentIndex = tracks.findIndex(t => t.id === currentTrack!.id);
+    if (currentIndex > 0) {
+      currentTrack = tracks[currentIndex - 1];
+    }
+  }
+
   function handleLogoutClick() {
     onLogout();
   }
@@ -168,7 +186,12 @@
     {/if}
   </main>
 
-  <AudioPlayer track={currentTrack} bind:isPlaying />
+  <AudioPlayer 
+    track={currentTrack} 
+    bind:isPlaying 
+    onNext={playNext}
+    onPrevious={playPrevious}
+  />
 </div>
 
 <style lang="scss">

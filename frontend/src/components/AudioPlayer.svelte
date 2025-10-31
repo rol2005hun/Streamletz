@@ -6,9 +6,13 @@
   let {
     track = $bindable(null),
     isPlaying = $bindable(false),
+    onNext,
+    onPrevious,
   }: {
     track: Track | null;
     isPlaying: boolean;
+    onNext?: () => void;
+    onPrevious?: () => void;
   } = $props();
 
   let audio: HTMLAudioElement | null = null;
@@ -18,7 +22,6 @@
   let buffered = $state(0);
   let seeking = $state(false);
 
-  // Load saved volume and track on mount
   onMount(() => {
     const savedVolume = localStorage.getItem('streamletz_volume');
     if (savedVolume) {
@@ -26,14 +29,12 @@
     }
   });
 
-  // Save volume to localStorage when it changes
   $effect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('streamletz_volume', volume.toString());
     }
   });
 
-  // Save current track and playback position
   $effect(() => {
     if (track && currentTime > 0 && typeof window !== 'undefined') {
       localStorage.setItem('streamletz_last_track', JSON.stringify({
@@ -60,7 +61,6 @@
     audio.src = streamUrl;
     audio.load();
 
-    // Check if we should restore playback position
     const savedData = localStorage.getItem('streamletz_last_track');
     if (savedData) {
       try {
@@ -77,7 +77,7 @@
       await audio.play();
       isPlaying = true;
     } catch (err) {
-      console.error("Playback failed:", err);
+      console.error('Playback failed: ', err);
       isPlaying = false;
     }
   }
@@ -141,7 +141,7 @@
   onDestroy(() => {
     if (audio) {
       audio.pause();
-      audio.src = "";
+      audio.src = '';
     }
   });
 </script>
@@ -168,6 +168,17 @@
     </div>
 
     <div class="player-controls">
+      <button 
+        class="control-btn" 
+        onclick={onPrevious}
+        disabled={!onPrevious}
+        aria-label="Previous track"
+      >
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
+        </svg>
+      </button>
+
       <button class="control-btn play-pause" onclick={togglePlay}>
         {#if isPlaying}
           <svg viewBox="0 0 24 24" fill="currentColor">
@@ -178,6 +189,17 @@
             <path d="M8 5v14l11-7z" />
           </svg>
         {/if}
+      </button>
+
+      <button 
+        class="control-btn" 
+        onclick={onNext}
+        disabled={!onNext}
+        aria-label="Next track"
+      >
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
+        </svg>
       </button>
 
       <div class="progress-container">
@@ -340,6 +362,16 @@
 
       &:active {
         transform: scale(0.95);
+      }
+
+      &:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+        
+        &:hover {
+          color: $text-secondary;
+          transform: none;
+        }
       }
 
       &.play-pause {
