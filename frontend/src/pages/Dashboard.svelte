@@ -71,6 +71,8 @@
     const currentIndex = tracks.findIndex((t) => t.id === currentTrack!.id);
     if (currentIndex < tracks.length - 1) {
       currentTrack = tracks[currentIndex + 1];
+    } else {
+      currentTrack = tracks[0];
     }
   }
 
@@ -80,6 +82,8 @@
     const currentIndex = tracks.findIndex((t) => t.id === currentTrack!.id);
     if (currentIndex > 0) {
       currentTrack = tracks[currentIndex - 1];
+    } else {
+      currentTrack = tracks[tracks.length - 1];
     }
   }
 
@@ -729,8 +733,8 @@
           right: $spacing-xs;
 
           svg {
-            width: 30px;
-            height: 30px;
+            width: 18px;
+            height: 18px;
           }
         }
       }
