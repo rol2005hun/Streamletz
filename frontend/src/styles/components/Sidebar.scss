@@ -222,6 +222,93 @@
     }
 }
 
+.playlists-section {
+    margin-top: $spacing-xl;
+    padding-top: $spacing-lg;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+
+    .section-header {
+        padding: 0 $spacing-md;
+        margin-bottom: $spacing-md;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: $text-secondary;
+    }
+
+    .playlists-list {
+        display: flex;
+        flex-direction: column;
+        gap: $spacing-xs;
+    }
+
+    .playlist-item {
+        display: flex;
+        align-items: center;
+        gap: $spacing-md;
+        padding: $spacing-sm $spacing-md;
+        border-radius: $border-radius-sm;
+        transition: background $transition-fast;
+        cursor: pointer;
+        text-decoration: none;
+        color: $text-secondary;
+        position: relative;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: $text-primary;
+
+            .playlist-icon {
+                transform: scale(1.1);
+            }
+        }
+
+        &.active {
+            background: rgba(59, 130, 246, 0.1);
+            color: $primary-color;
+
+            .playlist-icon {
+                background: rgba(59, 130, 246, 0.2);
+            }
+        }
+
+        .playlist-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: $border-radius-sm;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            transition: all $transition-fast;
+        }
+
+        .playlist-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+            flex: 1;
+
+            .playlist-name {
+                font-weight: 500;
+                font-size: 0.875rem;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .playlist-count {
+                font-size: 0.75rem;
+                color: $text-secondary;
+            }
+        }
+    }
+}
+
 .resize-handle {
     position: absolute;
     right: 0;

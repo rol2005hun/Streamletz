@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
+  import { playlistService, type Playlist } from "../lib/playlistService";
 
   let {
     collapsed = $bindable(false),
@@ -14,6 +15,8 @@
   let startWidth = 0;
   let currentPath = $state(window.location.pathname);
   let animationFrameId: number | null = null;
+  let playlists = $state<Playlist[]>([]);
+  let loadingPlaylists = $state(false);
 
   function toggleSidebar() {
     collapsed = !collapsed;
@@ -67,6 +70,17 @@
     currentPath = window.location.pathname;
   }
 
+  async function loadPlaylists() {
+    try {
+      loadingPlaylists = true;
+      playlists = await playlistService.getUserPlaylists();
+    } catch (err) {
+      console.error("Failed to load playlists in sidebar:", err);
+    } finally {
+      loadingPlaylists = false;
+    }
+  }
+
   onMount(() => {
     document.addEventListener("mousemove", handleResize);
     document.addEventListener("mouseup", stopResize);
@@ -81,6 +95,9 @@
     if (savedCollapsed === "true") {
       collapsed = true;
     }
+
+    // Load playlists
+    loadPlaylists();
   });
 
   onDestroy(() => {
@@ -175,6 +192,33 @@
             </div>
           </a>
         </div>
+
+        {#if playlists.length > 0}
+          <div class="playlists-section">
+            <div class="section-header">
+              <span>Playlists</span>
+            </div>
+            <div class="playlists-list">
+              {#each playlists as playlist}
+                <a
+                  href="/playlist/{playlist.id}"
+                  class="playlist-item"
+                  class:active={currentPath === `/playlist/${playlist.id}`}
+                  onclick={(e) => navigate(`/playlist/${playlist.id}`, e)}
+                  title={playlist.name}
+                >
+                  <div class="playlist-icon">🎵</div>
+                  <div class="playlist-info">
+                    <span class="playlist-name">{playlist.name}</span>
+                    <span class="playlist-count"
+                      >{playlist.trackCount} tracks</span
+                    >
+                  </div>
+                </a>
+              {/each}
+            </div>
+          </div>
+        {/if}
       </div>
     </div>
 

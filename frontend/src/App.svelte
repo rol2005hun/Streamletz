@@ -150,11 +150,7 @@
     {/if}
 
     {#if isAuthenticated && currentTrack}
-        <AudioPlayer
-            bind:track={currentTrack}
-            bind:isPlaying
-            bind:allTracks
-        />
+        <AudioPlayer bind:track={currentTrack} bind:isPlaying bind:allTracks />
     {/if}
 </main>
 
