@@ -242,12 +242,12 @@
 .sidebar-toggle {
     position: fixed;
     left: $spacing-md;
-    top: calc(73px + $spacing-md);
+    top: calc(80px + $spacing-md);
     background: $background-card;
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: $text-secondary;
     cursor: pointer;
-    padding: $spacing-md;
+    padding: $spacing-sm;
     border-radius: 50%;
     display: flex;
     align-items: center;

@@ -62,6 +62,15 @@
         previousTrackId = track.id;
         playCountIncremented = false;
         loadTrack(isPlaying);
+      } else {
+        if (isPlaying && audio.paused) {
+          audio.play().catch((err) => {
+            console.error("Failed to play:", err);
+            isPlaying = false;
+          });
+        } else if (!isPlaying && !audio.paused) {
+          audio.pause();
+        }
       }
     }
   });
@@ -72,7 +81,6 @@
     audio.pause();
     currentTime = 0;
     const willPlay = shouldAutoPlay;
-    isPlaying = false;
 
     const streamUrl = trackService.getStreamUrl(track.id);
     audio.src = streamUrl;
@@ -119,13 +127,19 @@
     }
 
     if (willPlay) {
-      try {
-        await audio.play();
-        isPlaying = true;
-      } catch (err) {
-        console.error("Playback failed: ", err);
-        isPlaying = false;
-      }
+      audio.addEventListener(
+        "canplay",
+        async () => {
+          try {
+            await audio!.play();
+            isPlaying = true;
+          } catch (err) {
+            console.error("Playback failed: ", err);
+            isPlaying = false;
+          }
+        },
+        { once: true },
+      );
     }
   }
 
@@ -215,8 +229,12 @@
     audio = new Audio();
     audio.volume = volume;
 
-    audio.addEventListener("play", () => (isPlaying = true));
-    audio.addEventListener("pause", () => (isPlaying = false));
+    audio.addEventListener("play", () => {
+      isPlaying = true;
+    });
+    audio.addEventListener("pause", () => {
+      isPlaying = false;
+    });
     audio.addEventListener("timeupdate", handleTimeUpdate);
     audio.addEventListener("loadedmetadata", handleLoadedMetadata);
     audio.addEventListener("progress", handleProgress);

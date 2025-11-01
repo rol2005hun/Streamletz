@@ -7,6 +7,7 @@
     import PlaylistDetail from "./pages/PlaylistDetail.svelte";
     import LikedSongs from "./pages/LikedSongs.svelte";
     import { authService } from "./lib/authService";
+    import type { Track } from "./lib/trackService";
 
     let currentPage = $state<
         | "login"
@@ -18,6 +19,10 @@
     >("login");
     let isAuthenticated = $state(false);
     let playlistId = $state<string>("");
+    
+    let currentTrack = $state<Track | null>(null);
+    let isPlaying = $state(false);
+    let allTracks = $state<Track[]>([]);
 
     onMount(() => {
         isAuthenticated = authService.isAuthenticated();
@@ -87,13 +92,31 @@
     {:else if currentPage === "register"}
         <Register onRegister={handleLogin} onSwitchToLogin={switchToLogin} />
     {:else if currentPage === "dashboard"}
-        <Dashboard onLogout={handleLogout} />
+        <Dashboard 
+            onLogout={handleLogout} 
+            bind:currentTrack 
+            bind:isPlaying 
+            bind:allTracks
+        />
     {:else if currentPage === "playlists"}
-        <Playlists />
+        <Playlists 
+            bind:currentTrack 
+            bind:isPlaying 
+            bind:allTracks
+        />
     {:else if currentPage === "playlist-detail"}
-        <PlaylistDetail id={playlistId} />
+        <PlaylistDetail 
+            id={playlistId} 
+            bind:currentTrack 
+            bind:isPlaying 
+            bind:allTracks
+        />
     {:else if currentPage === "liked-songs"}
-        <LikedSongs />
+        <LikedSongs 
+            bind:currentTrack 
+            bind:isPlaying 
+            bind:allTracks
+        />
     {/if}
 </main>
 

@@ -1,6 +1,18 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { playlistService, type Playlist } from "../lib/playlistService";
+    import type { Track } from "../lib/trackService";
+    import AudioPlayer from "../components/AudioPlayer.svelte";
+
+    let {
+        currentTrack = $bindable(null),
+        isPlaying = $bindable(false),
+        allTracks = $bindable([])
+    }: {
+        currentTrack: Track | null;
+        isPlaying: boolean;
+        allTracks: Track[];
+    } = $props();
 
     let playlists = $state<Playlist[]>([]);
     let showCreateModal = $state(false);
@@ -76,6 +88,32 @@
         window.history.pushState({}, "", "/dashboard");
         window.dispatchEvent(new PopStateEvent("popstate"));
     }
+
+    function playNext() {
+        if (!currentTrack || allTracks.length === 0) return;
+        const currentIndex = allTracks.findIndex((t) => t.id === currentTrack!.id);
+        if (currentIndex < allTracks.length - 1) {
+            currentTrack = allTracks[currentIndex + 1];
+        } else {
+            currentTrack = allTracks[0];
+        }
+    }
+
+    function playPrevious() {
+        if (!currentTrack || allTracks.length === 0) return;
+        const currentIndex = allTracks.findIndex((t) => t.id === currentTrack!.id);
+        if (currentIndex > 0) {
+            currentTrack = allTracks[currentIndex - 1];
+        } else {
+            currentTrack = allTracks[allTracks.length - 1];
+        }
+    }
+
+    function navigateToPlaylist(id: number, e: MouseEvent) {
+        e.preventDefault();
+        window.history.pushState({}, "", `/playlist/${id}`);
+        window.dispatchEvent(new PopStateEvent("popstate"));
+    }
 </script>
 
 <div class="playlists-container">
@@ -108,7 +146,11 @@
         <div class="playlists-grid">
             {#each playlists as playlist}
                 <div class="playlist-card">
-                    <a href={`#/playlist/${playlist.id}`} class="playlist-link">
+                    <a 
+                        href={`/playlist/${playlist.id}`} 
+                        class="playlist-link"
+                        onclick={(e) => navigateToPlaylist(playlist.id, e)}
+                    >
                         <div class="playlist-cover">
                             {#if playlist.coverImageUrl}
                                 <img
@@ -250,6 +292,13 @@
         </div>
     </div>
 {/if}
+
+<AudioPlayer
+    track={currentTrack}
+    bind:isPlaying
+    onNext={playNext}
+    onPrevious={playPrevious}
+/>
 
 <style scoped lang="scss">
     @use "../styles/pages/Playlists.scss";

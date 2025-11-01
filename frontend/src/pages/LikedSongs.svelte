@@ -1,8 +1,18 @@
 <script lang="ts">
-  import LikedSongs from "./LikedSongs.svelte";
   import { onMount } from "svelte";
   import { likedTrackService } from "../lib/likedTrackService";
   import type { Track } from "../lib/trackService";
+  import AudioPlayer from "../components/AudioPlayer.svelte";
+
+  let {
+    currentTrack = $bindable(null),
+    isPlaying = $bindable(false),
+    allTracks = $bindable([]),
+  }: {
+    currentTrack: Track | null;
+    isPlaying: boolean;
+    allTracks: Track[];
+  } = $props();
 
   let tracks = $state<Track[]>([]);
   let loading = $state(true);
@@ -17,6 +27,7 @@
     try {
       loading = true;
       tracks = await likedTrackService.getLikedTracks();
+      allTracks = tracks; // Sync with shared state
     } catch (err: any) {
       error = err.response?.data?.message || "Failed to load liked tracks";
     } finally {
@@ -53,8 +64,35 @@
     return `${minutes} min`;
   }
 
-  function playTrack(trackId: number) {
-    console.log("Playing track:", trackId);
+  function playTrack(track: Track) {
+    if (currentTrack?.id === track.id) {
+      // Toggle play/pause if clicking the same track
+      isPlaying = !isPlaying;
+    } else {
+      // Play new track
+      currentTrack = track;
+      isPlaying = true;
+    }
+  }
+
+  function playNext() {
+    if (!currentTrack || tracks.length === 0) return;
+    const currentIndex = tracks.findIndex((t) => t.id === currentTrack!.id);
+    if (currentIndex < tracks.length - 1) {
+      currentTrack = tracks[currentIndex + 1];
+    } else {
+      currentTrack = tracks[0];
+    }
+  }
+
+  function playPrevious() {
+    if (!currentTrack || tracks.length === 0) return;
+    const currentIndex = tracks.findIndex((t) => t.id === currentTrack!.id);
+    if (currentIndex > 0) {
+      currentTrack = tracks[currentIndex - 1];
+    } else {
+      currentTrack = tracks[tracks.length - 1];
+    }
   }
 
   function goBack() {
@@ -112,19 +150,38 @@
         {#each tracks as track, index}
           <div
             class="track-row"
+            class:playing={currentTrack?.id === track.id}
             role="button"
             tabindex="0"
             onmouseenter={() => (hoveredTrack = track.id)}
             onmouseleave={() => (hoveredTrack = null)}
+            onclick={() => playTrack(track)}
+            onkeydown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                playTrack(track);
+              }
+            }}
           >
             <div class="col-number">
-              {#if hoveredTrack === track.id}
+              {#if hoveredTrack === track.id || currentTrack?.id === track.id}
                 <button
                   class="play-btn"
-                  onclick={() => playTrack(track.id)}
+                  onclick={(e) => {
+                    e.stopPropagation();
+                    playTrack(track);
+                  }}
                   title="Play"
                 >
-                  ▶️
+                  {#if currentTrack?.id === track.id && isPlaying}
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+                    </svg>
+                  {:else}
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  {/if}
                 </button>
               {:else}
                 {index + 1}
@@ -134,9 +191,10 @@
               <div class="track-info">
                 {#if track.coverArtUrl}
                   <img
-                    src={track.coverArtUrl}
-                    alt={track.title}
-                    class="track-cover"
+                    src={track.coverArtUrl.startsWith("http")
+                      ? track.coverArtUrl
+                      : `http://localhost:8080${track.coverArtUrl}`}
+                    alt={track.album || track.title}
                   />
                 {:else}
                   <div class="track-cover placeholder">🎵</div>
@@ -157,7 +215,10 @@
             <div class="col-actions">
               <button
                 class="unlike-btn"
-                onclick={() => unlikeTrack(track.id)}
+                onclick={(e) => {
+                  e.stopPropagation();
+                  unlikeTrack(track.id);
+                }}
                 title="Remove from liked songs"
               >
                 ❤️
@@ -168,6 +229,13 @@
       </div>
     {/if}
   </div>
+
+  <AudioPlayer
+    track={currentTrack}
+    bind:isPlaying
+    onNext={playNext}
+    onPrevious={playPrevious}
+  />
 </div>
 
 <style scoped lang="scss">

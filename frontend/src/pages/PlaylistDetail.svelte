@@ -1,12 +1,23 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { playlistService, type Playlist } from "../lib/playlistService";
+  import type { Track } from "../lib/trackService";
+  import AudioPlayer from "../components/AudioPlayer.svelte";
 
   interface Props {
     id: string;
+    currentTrack: Track | null;
+    isPlaying: boolean;
+    allTracks: Track[];
   }
 
-  let { id }: Props = $props();
+  let {
+    id,
+    currentTrack = $bindable(null),
+    isPlaying = $bindable(false),
+    allTracks = $bindable([]),
+  }: Props = $props();
+
   let playlist = $state<Playlist | null>(null);
   let loading = $state(true);
   let error = $state("");
@@ -20,6 +31,15 @@
     try {
       loading = true;
       playlist = await playlistService.getPlaylistById(parseInt(id));
+      if (playlist?.tracks) {
+        allTracks = playlist.tracks.map((track) => ({
+          ...track,
+          album: track.album || "",
+          coverArtUrl: track.coverArtUrl || "",
+          filePath: "",
+          fileFormat: "",
+        }));
+      }
     } catch (err: any) {
       error = err.response?.data?.message || "Failed to load playlist";
     } finally {
@@ -56,8 +76,61 @@
     return `${minutes} min`;
   }
 
-  function playTrack(trackId: number) {
-    console.log("Playing track:", trackId);
+  function playTrack(track: any) {
+    const trackAsTrack: Track = {
+      ...track,
+      album: track.album || "",
+      coverArtUrl: track.coverArtUrl || "",
+      filePath: track.filePath || "",
+      fileFormat: track.fileFormat || "",
+    };
+
+    if (currentTrack?.id === trackAsTrack.id) {
+      isPlaying = !isPlaying;
+    } else {
+      currentTrack = trackAsTrack;
+      isPlaying = true;
+    }
+  }
+
+  function playNext() {
+    if (!currentTrack || !playlist?.tracks) return;
+    const tracks = playlist.tracks;
+    const currentIndex = tracks.findIndex((t) => t.id === currentTrack!.id);
+    const nextTrack =
+      currentIndex < tracks.length - 1 ? tracks[currentIndex + 1] : tracks[0];
+
+    currentTrack = {
+      id: nextTrack.id,
+      title: nextTrack.title,
+      artist: nextTrack.artist,
+      album: nextTrack.album || "",
+      duration: nextTrack.duration,
+      coverArtUrl: nextTrack.coverArtUrl || "",
+      playCount: nextTrack.playCount,
+      filePath: "",
+      fileFormat: "",
+    };
+  }
+
+  function playPrevious() {
+    if (!currentTrack || !playlist?.tracks) return;
+    const tracks = playlist.tracks;
+    const currentIndex = tracks.findIndex((t) => t.id === currentTrack!.id);
+    const prevTrack =
+      currentIndex > 0 ? tracks[currentIndex - 1] : tracks[tracks.length - 1];
+
+    currentTrack = {
+      id: prevTrack.id,
+      title: prevTrack.title,
+      artist: prevTrack.artist,
+      album: prevTrack.album || "",
+      duration: prevTrack.duration,
+      coverArtUrl: prevTrack.coverArtUrl || "",
+      playCount: prevTrack.playCount,
+      filePath: "",
+      fileFormat: "",
+    };
   }
 
   function goBack() {
@@ -122,19 +195,38 @@
           {#each playlist.tracks as track, index}
             <div
               class="track-row"
+              class:playing={currentTrack?.id === track.id}
               role="button"
               tabindex="0"
               onmouseenter={() => (hoveredTrack = track.id)}
               onmouseleave={() => (hoveredTrack = null)}
+              onclick={() => playTrack(track)}
+              onkeydown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  playTrack(track);
+                }
+              }}
             >
               <div class="col-number">
-                {#if hoveredTrack === track.id}
+                {#if hoveredTrack === track.id || currentTrack?.id === track.id}
                   <button
                     class="play-btn"
-                    onclick={() => playTrack(track.id)}
+                    onclick={(e) => {
+                      e.stopPropagation();
+                      playTrack(track);
+                    }}
                     title="Play"
                   >
-                    ▶️
+                    {#if currentTrack?.id === track.id && isPlaying}
+                      <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+                      </svg>
+                    {:else}
+                      <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    {/if}
                   </button>
                 {:else}
                   {index + 1}
@@ -144,9 +236,10 @@
                 <div class="track-info">
                   {#if track.coverArtUrl}
                     <img
-                      src={track.coverArtUrl}
-                      alt={track.title}
-                      class="track-cover"
+                      src={track.coverArtUrl.startsWith("http")
+                        ? track.coverArtUrl
+                        : `http://localhost:8080${track.coverArtUrl}`}
+                      alt={track.album || track.title}
                     />
                   {:else}
                     <div class="track-cover placeholder">🎵</div>
@@ -165,7 +258,10 @@
               <div class="col-actions">
                 <button
                   class="remove-btn"
-                  onclick={() => removeTrack(track.id)}
+                  onclick={(e) => {
+                    e.stopPropagation();
+                    removeTrack(track.id);
+                  }}
                   title="Remove from playlist"
                 >
                   ✕
@@ -181,6 +277,13 @@
         </div>
       {/if}
     </div>
+
+    <AudioPlayer
+      track={currentTrack}
+      bind:isPlaying
+      onNext={playNext}
+      onPrevious={playPrevious}
+    />
   </div>
 {/if}
 
