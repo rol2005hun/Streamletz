@@ -38,23 +38,24 @@
   $effect(() => {
     if (track && currentTime > 0 && typeof window !== "undefined") {
       localStorage.setItem(
-        "streamletz_last_track",
+        "streamletz_last_playback",
         JSON.stringify({
           trackId: track.id,
           position: currentTime,
+          timestamp: Date.now(),
         }),
       );
     }
   });
 
   let previousTrackId = $state<number | null>(null);
+  let isInitialLoad = $state(true);
 
   $effect(() => {
     if (track && audio) {
       const isNewTrack = previousTrackId !== track.id;
       if (isNewTrack) {
         previousTrackId = track.id;
-        localStorage.removeItem("streamletz_last_track");
       }
       loadTrack();
     }
@@ -71,18 +72,28 @@
     audio.src = streamUrl;
     audio.load();
 
-    const savedData = localStorage.getItem("streamletz_last_track");
-    
-    if (savedData) {
-      try {
-        const { trackId, position } = JSON.parse(savedData);
-        if (trackId === track.id && position > 0 && position < duration - 5) {
-          audio.currentTime = position;
-          currentTime = position;
+    if (isInitialLoad) {
+      const savedData = localStorage.getItem("streamletz_last_playback");
+      if (savedData) {
+        try {
+          const { trackId, position } = JSON.parse(savedData);
+          if (trackId === track.id && position > 0) {
+            audio.addEventListener(
+              "loadedmetadata",
+              () => {
+                if (position < audio!.duration - 5) {
+                  audio!.currentTime = position;
+                  currentTime = position;
+                }
+              },
+              { once: true },
+            );
+          }
+        } catch (e) {
+          console.error("Failed to restore playback position:", e);
         }
-      } catch (e) {
-        console.error("Failed to restore playback position:", e);
       }
+      isInitialLoad = false;
     }
 
     try {
@@ -236,7 +247,9 @@
           onmousedown={() => (seeking = true)}
           onmouseup={() => (seeking = false)}
           class="progress-bar"
-          style="--progress-percent: {duration > 0 ? (currentTime / duration) * 100 : 0}%"
+          style="--progress-percent: {duration > 0
+            ? (currentTime / duration) * 100
+            : 0}%"
         />
       </div>
       <span class="time">{formatTime(duration)}</span>
@@ -489,7 +502,9 @@
         border-radius: 50%;
         cursor: pointer;
         opacity: 0;
-        transition: opacity 0.2s ease, transform 0.2s ease;
+        transition:
+          opacity 0.2s ease,
+          transform 0.2s ease;
         margin-top: -4px;
 
         &:hover {
@@ -505,7 +520,9 @@
         border: none;
         cursor: pointer;
         opacity: 0;
-        transition: opacity 0.2s ease, transform 0.2s ease;
+        transition:
+          opacity 0.2s ease,
+          transform 0.2s ease;
 
         &:hover {
           transform: scale(1.2);
@@ -530,7 +547,7 @@
       flex-shrink: 0;
     }
 
-      .progress-wrapper {
+    .progress-wrapper {
       flex: 1;
       position: relative;
       height: 4px;
@@ -621,7 +638,9 @@
           border-radius: 50%;
           cursor: pointer;
           opacity: 0;
-          transition: opacity 0.2s ease, transform 0.2s ease;
+          transition:
+            opacity 0.2s ease,
+            transform 0.2s ease;
           margin-top: -4px;
 
           &:hover {
@@ -637,7 +656,10 @@
           border: none;
           cursor: pointer;
           opacity: 0;
-          transition: opacity 0.2s ease, transform 0.2s ease;          &:hover {
+          transition:
+            opacity 0.2s ease,
+            transform 0.2s ease;
+          &:hover {
             transform: scale(1.2);
           }
         }

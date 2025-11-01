@@ -24,7 +24,7 @@
       loading = true;
       tracks = await trackService.getAllTracks();
 
-      const savedData = localStorage.getItem("streamletz_last_track");
+      const savedData = localStorage.getItem("streamletz_last_playback");
       if (savedData && tracks.length > 0) {
         try {
           const { trackId } = JSON.parse(savedData);
