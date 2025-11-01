@@ -22,6 +22,8 @@
   let volume = $state(0.7);
   let buffered = $state(0);
   let seeking = $state(false);
+  let isMuted = $state(false);
+  let previousVolume = $state(0.7);
 
   onMount(() => {
     const savedVolume = localStorage.getItem("streamletz_volume");
@@ -143,6 +145,24 @@
     const target = e.target as HTMLInputElement;
     volume = parseFloat(target.value);
     audio.volume = volume;
+    if (volume > 0) {
+      isMuted = false;
+    }
+  }
+
+  function toggleMute() {
+    if (!audio) return;
+
+    if (isMuted) {
+      volume = previousVolume;
+      audio.volume = previousVolume;
+      isMuted = false;
+    } else {
+      previousVolume = volume;
+      volume = 0;
+      audio.volume = 0;
+      isMuted = true;
+    }
   }
 
   function formatTime(seconds: number): string {
@@ -296,11 +316,39 @@
     </div>
 
     <div class="player-volume">
-      <svg viewBox="0 0 24 24" fill="currentColor" class="volume-icon">
-        <path
-          d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"
-        />
-      </svg>
+      <button
+        class="volume-icon-btn"
+        onclick={toggleMute}
+        aria-label={isMuted ? "Unmute" : "Mute"}
+        title={isMuted ? "Unmute" : "Mute"}
+      >
+        {#if isMuted || volume === 0}
+          <svg viewBox="0 0 24 24" fill="currentColor" class="volume-icon">
+            <path
+              d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"
+            />
+          </svg>
+        {:else if volume < 0.2}
+          <svg viewBox="0 0 24 24" fill="currentColor" class="volume-icon">
+            <path d="M3 9v6h4l5 5V4L7 9H3z" />
+          </svg>
+        {:else if volume < 0.5}
+          <svg viewBox="0 0 24 24" fill="currentColor" class="volume-icon">
+            <path
+              d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"
+            />
+          </svg>
+        {:else}
+          <svg viewBox="0 0 24 24" fill="currentColor" class="volume-icon">
+            <path
+              d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"
+            />
+            <path
+              d="M19 12c0-2.99-1.73-5.58-4.24-6.79v1.53c1.72.94 2.88 2.76 2.88 4.89s-1.16 3.95-2.88 4.89v1.53C17.27 17.58 19 14.99 19 12z"
+            />
+          </svg>
+        {/if}
+      </button>
       <input
         type="range"
         min="0"

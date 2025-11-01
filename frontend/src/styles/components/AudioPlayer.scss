@@ -173,14 +173,37 @@
     gap: $spacing-sm;
     justify-content: flex-end;
 
-    .volume-icon {
-        width: 16px;
-        height: 16px;
-        color: #b3b3b3;
-        flex-shrink: 0;
+    .volume-icon-btn {
+        background: none;
+        border: none;
+        padding: 0;
         cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        transition: transform $transition-fast;
+        width: 25px;
+        height: 25px;
+        flex-shrink: 0;
 
         &:hover {
+            transform: scale(1.1);
+        }
+
+        &:active {
+            transform: scale(0.95);
+        }
+    }
+
+    .volume-icon {
+        width: 25px;
+        height: 25px;
+        color: #b3b3b3;
+        flex-shrink: 0;
+        transition: color $transition-fast;
+        display: block;
+
+        .volume-icon-btn:hover & {
             color: $text-primary;
         }
     }
