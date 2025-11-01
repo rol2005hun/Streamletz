@@ -1,6 +1,5 @@
 package com.streamletz.controller;
 
-import com.streamletz.model.User;
 import com.streamletz.service.PlaylistService;
 import com.streamletz.util.dto.CreatePlaylistRequest;
 import com.streamletz.util.dto.PlaylistResponse;
@@ -33,8 +32,7 @@ public class PlaylistController {
     public ResponseEntity<PlaylistResponse> createPlaylist(
             @Valid @RequestBody CreatePlaylistRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
-        User user = (User) userDetails;
-        PlaylistResponse playlist = playlistService.createPlaylist(request, user);
+        PlaylistResponse playlist = playlistService.createPlaylist(request, userDetails.getUsername());
         return ResponseEntity.status(HttpStatus.CREATED).body(playlist);
     }
 
@@ -42,8 +40,7 @@ public class PlaylistController {
     @Operation(summary = "Get current user's playlists")
     public ResponseEntity<List<PlaylistResponse>> getUserPlaylists(
             @AuthenticationPrincipal UserDetails userDetails) {
-        User user = (User) userDetails;
-        List<PlaylistResponse> playlists = playlistService.getUserPlaylists(user);
+        List<PlaylistResponse> playlists = playlistService.getUserPlaylists(userDetails.getUsername());
         return ResponseEntity.ok(playlists);
     }
 
@@ -59,8 +56,7 @@ public class PlaylistController {
     public ResponseEntity<PlaylistResponse> getPlaylistById(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDetails userDetails) {
-        User user = (User) userDetails;
-        PlaylistResponse playlist = playlistService.getPlaylistById(id, user);
+        PlaylistResponse playlist = playlistService.getPlaylistById(id, userDetails.getUsername());
         return ResponseEntity.ok(playlist);
     }
 
@@ -70,8 +66,7 @@ public class PlaylistController {
             @PathVariable Long id,
             @Valid @RequestBody UpdatePlaylistRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
-        User user = (User) userDetails;
-        PlaylistResponse playlist = playlistService.updatePlaylist(id, request, user);
+        PlaylistResponse playlist = playlistService.updatePlaylist(id, request, userDetails.getUsername());
         return ResponseEntity.ok(playlist);
     }
 
@@ -80,8 +75,7 @@ public class PlaylistController {
     public ResponseEntity<Void> deletePlaylist(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDetails userDetails) {
-        User user = (User) userDetails;
-        playlistService.deletePlaylist(id, user);
+        playlistService.deletePlaylist(id, userDetails.getUsername());
         return ResponseEntity.noContent().build();
     }
 
@@ -91,8 +85,7 @@ public class PlaylistController {
             @PathVariable Long id,
             @PathVariable Long trackId,
             @AuthenticationPrincipal UserDetails userDetails) {
-        User user = (User) userDetails;
-        PlaylistResponse playlist = playlistService.addTrackToPlaylist(id, trackId, user);
+        PlaylistResponse playlist = playlistService.addTrackToPlaylist(id, trackId, userDetails.getUsername());
         return ResponseEntity.ok(playlist);
     }
 
@@ -102,8 +95,7 @@ public class PlaylistController {
             @PathVariable Long id,
             @PathVariable Long trackId,
             @AuthenticationPrincipal UserDetails userDetails) {
-        User user = (User) userDetails;
-        PlaylistResponse playlist = playlistService.removeTrackFromPlaylist(id, trackId, user);
+        PlaylistResponse playlist = playlistService.removeTrackFromPlaylist(id, trackId, userDetails.getUsername());
         return ResponseEntity.ok(playlist);
     }
 
@@ -113,9 +105,8 @@ public class PlaylistController {
             @PathVariable Long id,
             @RequestBody Map<String, List<Long>> request,
             @AuthenticationPrincipal UserDetails userDetails) {
-        User user = (User) userDetails;
         List<Long> trackIds = request.get("trackIds");
-        PlaylistResponse playlist = playlistService.reorderTracks(id, trackIds, user);
+        PlaylistResponse playlist = playlistService.reorderTracks(id, trackIds, userDetails.getUsername());
         return ResponseEntity.ok(playlist);
     }
 
@@ -124,8 +115,7 @@ public class PlaylistController {
     public ResponseEntity<List<PlaylistResponse>> searchPlaylists(
             @RequestParam String query,
             @AuthenticationPrincipal UserDetails userDetails) {
-        User user = (User) userDetails;
-        List<PlaylistResponse> playlists = playlistService.searchPlaylists(query, user);
+        List<PlaylistResponse> playlists = playlistService.searchPlaylists(query, userDetails.getUsername());
         return ResponseEntity.ok(playlists);
     }
 }

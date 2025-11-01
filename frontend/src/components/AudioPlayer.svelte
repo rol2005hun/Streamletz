@@ -2,7 +2,6 @@
   import { onMount, onDestroy } from "svelte";
   import type { Track } from "../lib/trackService";
   import { trackService } from "../lib/trackService";
-  import "../styles/components/AudioPlayer.scss";
 
   let {
     track = $bindable(null),
@@ -401,3 +400,7 @@
     </div>
   {/if}
 </div>
+
+<style scoped lang="scss">
+  @use "../styles/components/AudioPlayer.scss";
+</style>

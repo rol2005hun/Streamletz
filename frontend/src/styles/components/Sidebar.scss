@@ -1,0 +1,271 @@
+@use "../variables.scss" as *;
+
+.sidebar {
+    min-width: 200px;
+    max-width: 400px;
+    background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
+    flex-shrink: 0;
+    position: fixed;
+    left: 0;
+    top: 73px;
+    height: calc(100vh - 73px);
+    transition: width 0.2s ease;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    z-index: $z-sidebar;
+    overflow: hidden;
+}
+
+.sidebar-inner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: $spacing-lg;
+
+    &::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    }
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $spacing-xl;
+    padding-bottom: $spacing-md;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+    .library-badge {
+        display: flex;
+        align-items: center;
+        gap: $spacing-sm;
+        color: $text-primary;
+        font-weight: 700;
+        font-size: 1rem;
+
+        svg {
+            width: 24px;
+            height: 24px;
+            color: $primary-color;
+        }
+    }
+
+    .collapse-btn {
+        background: rgba(255, 255, 255, 0.05);
+        border: none;
+        color: $text-secondary;
+        cursor: pointer;
+        padding: $spacing-sm;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all $transition-fast;
+        width: 32px;
+        height: 32px;
+
+        svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: $text-primary;
+            transform: scale(1.05);
+        }
+    }
+}
+
+.sidebar-content {
+    flex: 1;
+}
+
+.nav-section {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    padding: $spacing-md;
+    color: $text-secondary;
+    text-decoration: none;
+    border-radius: $border-radius-md;
+    transition: all $transition-fast;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: $primary-color;
+        transform: scaleY(0);
+        transition: transform $transition-fast;
+    }
+
+    .link-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: $border-radius-md;
+        background: rgba(255, 255, 255, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: all $transition-fast;
+
+        svg {
+            width: 24px;
+            height: 24px;
+            transition: transform $transition-fast;
+        }
+
+        &.liked {
+            background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+        }
+
+        &.playlists {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+        }
+    }
+
+    .link-content {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        flex: 1;
+        min-width: 0;
+
+        .link-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: inherit;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .link-subtitle {
+            font-size: 0.8rem;
+            color: $text-muted;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+
+    &:hover {
+        color: $text-primary;
+        background: rgba(255, 255, 255, 0.05);
+
+        .link-icon {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+            svg {
+                transform: scale(1.1);
+            }
+
+            &.liked,
+            &.playlists {
+                box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+            }
+        }
+    }
+
+    &.active {
+        color: $text-primary;
+        background: rgba(59, 130, 246, 0.1);
+
+        &::before {
+            transform: scaleY(1);
+        }
+
+        .link-icon {
+            background: $gradient-primary;
+            box-shadow: $shadow-glow;
+
+            &.liked {
+                background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+            }
+
+            &.playlists {
+                background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+            }
+        }
+
+        .link-subtitle {
+            color: $text-secondary;
+        }
+    }
+}
+
+.resize-handle {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    cursor: col-resize;
+    background: transparent;
+    transition: background $transition-fast;
+    z-index: 10;
+
+    &:hover,
+    &.resizing {
+        background: $primary-color;
+    }
+}
+
+.sidebar-toggle {
+    position: fixed;
+    left: $spacing-md;
+    top: calc(73px + $spacing-md);
+    background: $background-card;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: $text-secondary;
+    cursor: pointer;
+    padding: $spacing-md;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all $transition-fast;
+    z-index: $z-sidebar;
+    box-shadow: $shadow-md;
+
+    svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    &:hover {
+        background: $primary-color;
+        color: $text-primary;
+        border-color: $primary-color;
+        transform: scale(1.1);
+        box-shadow: $shadow-glow;
+    }
+}

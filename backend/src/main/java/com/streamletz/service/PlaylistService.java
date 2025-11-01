@@ -5,6 +5,7 @@ import com.streamletz.model.Track;
 import com.streamletz.model.User;
 import com.streamletz.repository.PlaylistRepository;
 import com.streamletz.repository.TrackRepository;
+import com.streamletz.repository.UserRepository;
 import com.streamletz.util.dto.CreatePlaylistRequest;
 import com.streamletz.util.dto.PlaylistResponse;
 import com.streamletz.util.dto.UpdatePlaylistRequest;
@@ -21,9 +22,13 @@ public class PlaylistService {
 
     private final PlaylistRepository playlistRepository;
     private final TrackRepository trackRepository;
+    private final UserRepository userRepository;
 
     @Transactional
-    public PlaylistResponse createPlaylist(CreatePlaylistRequest request, User user) {
+    public PlaylistResponse createPlaylist(CreatePlaylistRequest request, String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         Playlist playlist = new Playlist();
         playlist.setName(request.getName());
         playlist.setDescription(request.getDescription());
@@ -35,7 +40,9 @@ public class PlaylistService {
     }
 
     @Transactional(readOnly = true)
-    public List<PlaylistResponse> getUserPlaylists(User user) {
+    public List<PlaylistResponse> getUserPlaylists(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
         return playlistRepository.findByOwnerOrderByCreatedAtDesc(user).stream()
                 .map(playlist -> convertToResponse(playlist, false))
                 .collect(Collectors.toList());
@@ -49,10 +56,13 @@ public class PlaylistService {
     }
 
     @Transactional(readOnly = true)
-    public PlaylistResponse getPlaylistById(Long id, User user) {
+    public PlaylistResponse getPlaylistById(Long id, String username) {
         if (id == null) {
             throw new RuntimeException("Playlist ID cannot be null");
         }
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         Playlist playlist = playlistRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Playlist not found"));
@@ -65,7 +75,10 @@ public class PlaylistService {
     }
 
     @Transactional
-    public PlaylistResponse updatePlaylist(Long id, UpdatePlaylistRequest request, User user) {
+    public PlaylistResponse updatePlaylist(Long id, UpdatePlaylistRequest request, String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         Playlist playlist = playlistRepository.findByIdAndOwner(id, user)
                 .orElseThrow(() -> new RuntimeException("Playlist not found or access denied"));
 
@@ -80,7 +93,10 @@ public class PlaylistService {
     }
 
     @Transactional
-    public void deletePlaylist(Long id, User user) {
+    public void deletePlaylist(Long id, String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         Playlist playlist = playlistRepository.findByIdAndOwner(id, user)
                 .orElseThrow(() -> new RuntimeException("Playlist not found or access denied"));
 
@@ -90,7 +106,10 @@ public class PlaylistService {
     }
 
     @Transactional
-    public PlaylistResponse addTrackToPlaylist(Long playlistId, Long trackId, User user) {
+    public PlaylistResponse addTrackToPlaylist(Long playlistId, Long trackId, String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         Playlist playlist = playlistRepository.findByIdAndOwner(playlistId, user)
                 .orElseThrow(() -> new RuntimeException("Playlist not found or access denied"));
 
@@ -110,7 +129,10 @@ public class PlaylistService {
     }
 
     @Transactional
-    public PlaylistResponse removeTrackFromPlaylist(Long playlistId, Long trackId, User user) {
+    public PlaylistResponse removeTrackFromPlaylist(Long playlistId, Long trackId, String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         Playlist playlist = playlistRepository.findByIdAndOwner(playlistId, user)
                 .orElseThrow(() -> new RuntimeException("Playlist not found or access denied"));
 
@@ -128,7 +150,10 @@ public class PlaylistService {
     }
 
     @Transactional
-    public PlaylistResponse reorderTracks(Long playlistId, List<Long> trackIds, User user) {
+    public PlaylistResponse reorderTracks(Long playlistId, List<Long> trackIds, String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         Playlist playlist = playlistRepository.findByIdAndOwner(playlistId, user)
                 .orElseThrow(() -> new RuntimeException("Playlist not found or access denied"));
 
@@ -147,7 +172,9 @@ public class PlaylistService {
     }
 
     @Transactional(readOnly = true)
-    public List<PlaylistResponse> searchPlaylists(String query, User user) {
+    public List<PlaylistResponse> searchPlaylists(String query, String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
         return playlistRepository.searchPlaylists(user, query).stream()
                 .map(playlist -> convertToResponse(playlist, false))
                 .collect(Collectors.toList());

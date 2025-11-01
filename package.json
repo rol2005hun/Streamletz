@@ -3,7 +3,8 @@
     "docker:rebuild": "docker-compose build --no-cache && docker-compose up -d",
     "docker:restart": "docker-compose restart",
     "docker:logs": "docker-compose logs -f",
-    "docker:clean": "docker-compose down && docker volume rm streamletz_postgres_data && docker-compose up -d"
+    "docker:clean": "docker-compose down && docker volume rm streamletz_postgres_data && docker-compose up -d",
+    "db:clear-tracks": "docker exec -it streamletz-db psql -U streamletz_user -d streamletz -c \"DELETE FROM tracks;\""
   },
   "devDependencies": {
     "@tsconfig/svelte": "^5.0.5"

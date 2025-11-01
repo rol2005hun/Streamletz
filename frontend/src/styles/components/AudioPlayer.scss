@@ -188,6 +188,10 @@
 
         &:hover {
             transform: scale(1.1);
+
+            .volume-icon {
+                color: $text-primary;
+            }
         }
 
         &:active {
@@ -202,10 +206,6 @@
         flex-shrink: 0;
         transition: color $transition-fast;
         display: block;
-
-        .volume-icon-btn:hover & {
-            color: $text-primary;
-        }
     }
 
     .volume-slider {

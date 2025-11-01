@@ -227,39 +227,6 @@
 }
 
 @media (max-width: $breakpoint-tablet) {
-    .dashboard-header {
-        padding: $spacing-sm $spacing-md;
-
-        .header-content {
-            gap: $spacing-md;
-
-            h1 {
-                font-size: 1.5rem;
-            }
-
-            .search-bar {
-                max-width: 300px;
-
-                input {
-                    font-size: 0.9rem;
-                    padding: $spacing-xs $spacing-sm $spacing-xs 40px;
-                }
-
-                .search-icon {
-                    left: $spacing-sm;
-                    width: 18px;
-                    height: 18px;
-                }
-            }
-
-            .profile-dropdown .profile-btn .profile-avatar {
-                width: 36px;
-                height: 36px;
-                font-size: 1rem;
-            }
-        }
-    }
-
     .dashboard-content {
         padding: $spacing-xxl $spacing-lg;
     }
@@ -271,27 +238,6 @@
 }
 
 @media (max-width: $breakpoint-mobile) {
-    .dashboard-header {
-        .header-content {
-            flex-wrap: wrap;
-
-            h1 {
-                font-size: 1.3rem;
-                flex: 0 0 auto;
-            }
-
-            .search-bar {
-                flex: 1 1 100%;
-                max-width: 100%;
-                order: 3;
-            }
-
-            .profile-dropdown {
-                flex: 0 0 auto;
-            }
-        }
-    }
-
     .dashboard-content {
         padding: $spacing-xl $spacing-md;
     }

@@ -1,0 +1,385 @@
+@use "sass:color";
+@use "../variables.scss" as *;
+
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    gap: 1rem;
+
+    .spinner {
+        width: 48px;
+        height: 48px;
+        border: 4px solid rgba($primary-color, 0.2);
+        border-radius: 50%;
+        border-top-color: $primary-color;
+        animation: spin 0.8s linear infinite;
+    }
+
+    p {
+        color: $text-secondary;
+        font-size: 1rem;
+        margin: 0;
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.error {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: $error-color;
+    font-size: 1.1rem;
+}
+
+.playlist-detail {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.back-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: $text-primary;
+    padding: 0.5rem 1rem;
+    border-radius: $border-radius-lg;
+    font-size: 0.95rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    transition: all $transition-fast;
+    backdrop-filter: blur(10px);
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.3);
+        transform: translateX(-4px);
+    }
+
+    &:active {
+        transform: translateX(-2px);
+    }
+}
+
+.playlist-header {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    padding: 3rem 2rem;
+    background: linear-gradient(180deg, rgba($primary-color, 0.4) 0%, rgba($primary-color, 0.1) 100%);
+    border-radius: $border-radius-md;
+    box-shadow: $shadow-xl;
+
+    .cover {
+        flex-shrink: 0;
+        width: 232px;
+        height: 232px;
+        border-radius: $border-radius-md;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        transition: transform $transition-fast;
+
+        &:hover {
+            transform: scale(1.02);
+        }
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .default-cover {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, $primary-color, color.adjust($primary-color, $lightness: -20%));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            span {
+                font-size: 6rem;
+                filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+            }
+        }
+    }
+
+    .info {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 0.75rem;
+
+        .type {
+            font-size: 0.875rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: $text-primary;
+            letter-spacing: 0.1em;
+        }
+
+        h1 {
+            font-size: 4rem;
+            font-weight: 900;
+            color: $text-primary;
+            margin: 0;
+            line-height: 1.5;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .description {
+            color: rgba($text-primary, 0.9);
+            margin: 0.5rem 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .meta {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: $text-primary;
+            font-size: 0.9rem;
+            font-weight: 600;
+
+            .owner {
+                font-weight: 700;
+
+                &:hover {
+                    text-decoration: underline;
+                    cursor: pointer;
+                }
+            }
+
+            .separator {
+                color: rgba($text-primary, 0.7);
+            }
+        }
+    }
+}
+
+.tracks-section {
+    background: $background-card;
+    border-radius: $border-radius-md;
+    padding: 1.5rem;
+    box-shadow: $shadow-md;
+}
+
+.tracks-header {
+    display: grid;
+    grid-template-columns: 50px 1fr 1fr 100px 100px 50px;
+    gap: 1rem;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: $text-secondary;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.tracks-list {
+    .track-row {
+        display: grid;
+        grid-template-columns: 50px 1fr 1fr 100px 100px 50px;
+        gap: 1rem;
+        padding: 0.75rem 1rem;
+        border-radius: $border-radius-sm;
+        align-items: center;
+        transition: background $transition-fast;
+        cursor: pointer;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.08);
+
+            .remove-btn {
+                opacity: 1;
+            }
+        }
+
+        .col-number {
+            color: $text-secondary;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            .play-btn {
+                background: none;
+                border: none;
+                cursor: pointer;
+                font-size: 1rem;
+                padding: 0;
+                transition: transform $transition-fast;
+
+                &:hover {
+                    transform: scale(1.2);
+                }
+            }
+        }
+
+        .col-title {
+            min-width: 0;
+
+            .track-info {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                min-width: 0;
+
+                .track-cover {
+                    width: 48px;
+                    height: 48px;
+                    border-radius: $border-radius-sm;
+                    object-fit: cover;
+                    flex-shrink: 0;
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+
+                    &.placeholder {
+                        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 1.5rem;
+                    }
+                }
+
+                .track-text {
+                    min-width: 0;
+                    flex: 1;
+                }
+
+                .track-title {
+                    color: $text-primary;
+                    font-weight: 600;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    margin-bottom: 0.25rem;
+                    font-size: 0.95rem;
+                }
+
+                .track-artist {
+                    color: $text-secondary;
+                    font-size: 0.875rem;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+
+                    &:hover {
+                        color: $text-primary;
+                        text-decoration: underline;
+                    }
+                }
+            }
+        }
+
+        .col-album {
+            color: $text-secondary;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 0.9rem;
+
+            &:hover {
+                color: $text-primary;
+                text-decoration: underline;
+            }
+        }
+
+        .col-plays {
+            color: $text-secondary;
+            font-size: 0.9rem;
+        }
+
+        .col-duration {
+            color: $text-secondary;
+            font-size: 0.9rem;
+            text-align: right;
+        }
+
+        .col-actions {
+            display: flex;
+            justify-content: center;
+
+            .remove-btn {
+                background: none;
+                border: none;
+                color: $text-secondary;
+                cursor: pointer;
+                font-size: 1.25rem;
+                opacity: 0;
+                transition: all $transition-fast;
+                padding: 0.5rem;
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+                &:hover {
+                    color: $error-color;
+                    background: rgba(255, 255, 255, 0.1);
+                    transform: scale(1.1);
+                }
+            }
+        }
+    }
+}
+
+.empty-playlist {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+    border-radius: $border-radius-md;
+    margin: 2rem 0;
+
+    p {
+        font-size: 1.3rem;
+        color: $text-primary;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+
+    .hint {
+        font-size: 1rem;
+        color: $text-secondary;
+        margin-top: 1rem;
+    }
+}
+
+@media (max-width: $breakpoint-tablet) {
+    .playlist-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+
+        .cover {
+            width: 180px;
+            height: 180px;
+        }
+
+        .info h1 {
+            font-size: 2rem;
+        }
+    }
+
+    .tracks-header,
+    .track-row {
+        grid-template-columns: 30px 1fr 80px 40px;
+
+        .col-album,
+        .col-plays {
+            display: none;
+        }
+    }
+}

@@ -5,6 +5,7 @@ import com.streamletz.model.Track;
 import com.streamletz.model.User;
 import com.streamletz.repository.LikedTrackRepository;
 import com.streamletz.repository.TrackRepository;
+import com.streamletz.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,12 +18,16 @@ public class LikedTrackService {
 
     private final LikedTrackRepository likedTrackRepository;
     private final TrackRepository trackRepository;
+    private final UserRepository userRepository;
 
     @Transactional
-    public void likeTrack(Long trackId, User user) {
+    public void likeTrack(Long trackId, String username) {
         if (trackId == null) {
             throw new IllegalArgumentException("Track ID cannot be null");
         }
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         Track track = trackRepository.findById(trackId)
                 .orElseThrow(() -> new RuntimeException("Track not found"));
@@ -36,10 +41,13 @@ public class LikedTrackService {
     }
 
     @Transactional
-    public void unlikeTrack(Long trackId, User user) {
+    public void unlikeTrack(Long trackId, String username) {
         if (trackId == null) {
             throw new IllegalArgumentException("Track ID cannot be null");
         }
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         Track track = trackRepository.findById(trackId)
                 .orElseThrow(() -> new RuntimeException("Track not found"));
@@ -48,15 +56,20 @@ public class LikedTrackService {
     }
 
     @Transactional(readOnly = true)
-    public List<Track> getLikedTracks(User user) {
+    public List<Track> getLikedTracks(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
         return likedTrackRepository.findLikedTracksByUser(user);
     }
 
     @Transactional(readOnly = true)
-    public boolean isTrackLiked(Long trackId, User user) {
+    public boolean isTrackLiked(Long trackId, String username) {
         if (trackId == null) {
             throw new IllegalArgumentException("Track ID cannot be null");
         }
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         Track track = trackRepository.findById(trackId)
                 .orElseThrow(() -> new RuntimeException("Track not found"));
@@ -65,7 +78,9 @@ public class LikedTrackService {
     }
 
     @Transactional(readOnly = true)
-    public long getLikedTracksCount(User user) {
+    public long getLikedTracksCount(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
         return likedTrackRepository.countByUser(user);
     }
 }

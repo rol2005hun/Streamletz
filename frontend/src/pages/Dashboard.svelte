@@ -5,7 +5,6 @@
   import AudioPlayer from "../components/AudioPlayer.svelte";
   import Navbar from "../components/Navbar.svelte";
   import Sidebar from "../components/Sidebar.svelte";
-  import "../styles/pages/Dashboard.scss";
 
   let { onLogout }: { onLogout: () => void } = $props();
 
@@ -224,3 +223,7 @@
     onPrevious={playPrevious}
   />
 </div>
+
+<style scoped lang="scss">
+  @use "../styles/pages/Dashboard.scss";
+</style>

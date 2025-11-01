@@ -1,7 +1,6 @@
 package com.streamletz.controller;
 
 import com.streamletz.model.Track;
-import com.streamletz.model.User;
 import com.streamletz.service.LikedTrackService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -29,8 +28,7 @@ public class LikedTrackController {
     public ResponseEntity<Map<String, String>> likeTrack(
             @PathVariable Long trackId,
             @AuthenticationPrincipal UserDetails userDetails) {
-        User user = (User) userDetails;
-        likedTrackService.likeTrack(trackId, user);
+        likedTrackService.likeTrack(trackId, userDetails.getUsername());
         return ResponseEntity.ok(Map.of("message", "Track liked successfully"));
     }
 
@@ -39,8 +37,7 @@ public class LikedTrackController {
     public ResponseEntity<Map<String, String>> unlikeTrack(
             @PathVariable Long trackId,
             @AuthenticationPrincipal UserDetails userDetails) {
-        User user = (User) userDetails;
-        likedTrackService.unlikeTrack(trackId, user);
+        likedTrackService.unlikeTrack(trackId, userDetails.getUsername());
         return ResponseEntity.ok(Map.of("message", "Track unliked successfully"));
     }
 
@@ -48,8 +45,7 @@ public class LikedTrackController {
     @Operation(summary = "Get all liked tracks")
     public ResponseEntity<List<Track>> getLikedTracks(
             @AuthenticationPrincipal UserDetails userDetails) {
-        User user = (User) userDetails;
-        List<Track> tracks = likedTrackService.getLikedTracks(user);
+        List<Track> tracks = likedTrackService.getLikedTracks(userDetails.getUsername());
         return ResponseEntity.ok(tracks);
     }
 
@@ -58,8 +54,7 @@ public class LikedTrackController {
     public ResponseEntity<Map<String, Boolean>> isTrackLiked(
             @PathVariable Long trackId,
             @AuthenticationPrincipal UserDetails userDetails) {
-        User user = (User) userDetails;
-        boolean isLiked = likedTrackService.isTrackLiked(trackId, user);
+        boolean isLiked = likedTrackService.isTrackLiked(trackId, userDetails.getUsername());
         return ResponseEntity.ok(Map.of("isLiked", isLiked));
     }
 
@@ -67,8 +62,7 @@ public class LikedTrackController {
     @Operation(summary = "Get liked tracks count")
     public ResponseEntity<Map<String, Long>> getLikedTracksCount(
             @AuthenticationPrincipal UserDetails userDetails) {
-        User user = (User) userDetails;
-        long count = likedTrackService.getLikedTracksCount(user);
+        long count = likedTrackService.getLikedTracksCount(userDetails.getUsername());
         return ResponseEntity.ok(Map.of("count", count));
     }
 }

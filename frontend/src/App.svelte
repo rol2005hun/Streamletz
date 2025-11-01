@@ -22,24 +22,26 @@
     onMount(() => {
         isAuthenticated = authService.isAuthenticated();
 
-        const handleHashChange = () => {
-            const hash = window.location.hash.slice(1);
-            if (!isAuthenticated && hash !== "/register") {
+        const handleRouteChange = () => {
+            const path = window.location.pathname;
+            if (!isAuthenticated && path !== "/register") {
                 currentPage = "login";
                 return;
             }
 
-            if (hash === "/dashboard") {
+            if (path === "/dashboard" || path === "/") {
                 currentPage = "dashboard";
-            } else if (hash === "/playlists") {
+            } else if (path === "/playlists") {
                 currentPage = "playlists";
-            } else if (hash.startsWith("/playlist/")) {
-                playlistId = hash.split("/")[2];
+            } else if (path.startsWith("/playlist/")) {
+                playlistId = path.split("/")[2];
                 currentPage = "playlist-detail";
-            } else if (hash === "/liked") {
+            } else if (path === "/liked") {
                 currentPage = "liked-songs";
-            } else if (hash === "/register") {
+            } else if (path === "/register") {
                 currentPage = "register";
+            } else if (path === "/login") {
+                currentPage = "login";
             } else if (isAuthenticated) {
                 currentPage = "dashboard";
             } else {
@@ -47,31 +49,35 @@
             }
         };
 
-        handleHashChange();
-        window.addEventListener("hashchange", handleHashChange);
+        handleRouteChange();
+        window.addEventListener("popstate", handleRouteChange);
 
         return () => {
-            window.removeEventListener("hashchange", handleHashChange);
+            window.removeEventListener("popstate", handleRouteChange);
         };
     });
 
     function handleLogin() {
         isAuthenticated = true;
-        window.location.hash = "#/dashboard";
+        window.history.pushState({}, "", "/dashboard");
+        currentPage = "dashboard";
     }
 
     function handleLogout() {
         authService.logout();
         isAuthenticated = false;
-        window.location.hash = "#/login";
+        window.history.pushState({}, "", "/login");
+        currentPage = "login";
     }
 
     function switchToRegister() {
-        window.location.hash = "#/register";
+        window.history.pushState({}, "", "/register");
+        currentPage = "register";
     }
 
     function switchToLogin() {
-        window.location.hash = "#/login";
+        window.history.pushState({}, "", "/login");
+        currentPage = "login";
     }
 </script>
 
@@ -91,7 +97,7 @@
     {/if}
 </main>
 
-<style lang="scss">
+<style scoped lang="scss">
     @use "./styles/variables.scss" as *;
 
     .app {
