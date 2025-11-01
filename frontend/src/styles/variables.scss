@@ -1,17 +1,21 @@
-// Color palette - Spotify-inspired theme
-$spotify-green: #1db954;
-$spotify-green-hover: #1ed760;
+// Color palette - Modern Blue/Cyan theme
+$primary-blue: #3b82f6;
+$primary-blue-hover: #60a5fa;
+$primary-blue-dark: #2563eb;
+$accent-cyan: #06b6d4;
+$accent-sky: #0ea5e9;
+
 $spotify-dark: #121212;
 $spotify-elevated: #181818;
 $spotify-bright: #282828;
 $spotify-sidebar: #000000;
 
-$primary-color: $spotify-green;
-$primary-light: $spotify-green-hover;
-$primary-dark: #169c46;
-$secondary-color: #1ed760;
-$accent-color: #1db954;
-$accent-light: #1ed760;
+$primary-color: $primary-blue;
+$primary-light: $primary-blue-hover;
+$primary-dark: $primary-blue-dark;
+$secondary-color: $accent-cyan;
+$accent-color: $accent-sky;
+$accent-light: $primary-blue-hover;
 $background-dark: $spotify-dark;
 $background-medium: $spotify-elevated;
 $background-light: $spotify-bright;
@@ -19,14 +23,14 @@ $background-card: $spotify-elevated;
 $text-primary: #ffffff;
 $text-secondary: #b3b3b3;
 $text-muted: #6a6a6a;
-$error-color: #e22134;
-$success-color: #1db954;
-$warning-color: #ffa42b;
+$error-color: #ef4444;
+$success-color: #10b981;
+$warning-color: #f59e0b;
 
 // Gradients
-$gradient-primary: linear-gradient(135deg, #1db954 0%, #1ed760 100%);
-$gradient-secondary: linear-gradient(135deg, #1ed760 0%, #1db954 100%);
-$gradient-accent: linear-gradient(135deg, #1db954 0%, #169c46 100%);
+$gradient-primary: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+$gradient-secondary: linear-gradient(135deg, #06b6d4 0%, #0ea5e9 100%);
+$gradient-accent: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
 $gradient-dark: linear-gradient(180deg, #181818 0%, #121212 100%);
 
 // Spacing
@@ -50,8 +54,8 @@ $shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.5);
 $shadow-md: 0 4px 12px rgba(0, 0, 0, 0.6);
 $shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.7);
 $shadow-xl: 0 16px 40px rgba(0, 0, 0, 0.8);
-$shadow-glow: 0 4px 20px rgba(29, 185, 84, 0.3);
-$shadow-glow-hover: 0 8px 30px rgba(29, 185, 84, 0.5);
+$shadow-glow: 0 4px 20px rgba(59, 130, 246, 0.3);
+$shadow-glow-hover: 0 8px 30px rgba(59, 130, 246, 0.5);
 
 // Transitions
 $transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
