@@ -38,7 +38,6 @@ services:
       - streamletz-network
     volumes:
       - ./backend/music:/app/music
-      - ./backend/covers:/app/covers
 
   # Svelte + Vite Frontend (Dev mode)
   frontend:

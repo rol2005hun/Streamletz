@@ -113,8 +113,6 @@ vite.config.ts.timestamp-*
 backend/.github/
 backend/music/*
 !backend/music/README.md
-backend/covers/*
-!backend/covers/.gitkeep
 
 # Other
 PROJECT_SETUP.md
