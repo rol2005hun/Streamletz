@@ -373,7 +373,7 @@
           animation: slideDown 0.2s ease;
 
           .dropdown-header {
-            padding: $spacing-lg;
+            padding: $spacing-md;
             display: flex;
             align-items: center;
             gap: $spacing-md;
