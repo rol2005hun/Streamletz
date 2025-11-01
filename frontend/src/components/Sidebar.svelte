@@ -37,12 +37,10 @@
   function handleResize(e: MouseEvent) {
     if (!isResizing) return;
 
-    // Cancel previous animation frame if exists
     if (animationFrameId !== null) {
       cancelAnimationFrame(animationFrameId);
     }
 
-    // Use requestAnimationFrame for smooth updates
     animationFrameId = requestAnimationFrame(() => {
       const delta = e.clientX - startX;
       const newWidth = Math.max(200, Math.min(400, startWidth + delta));
@@ -57,8 +55,7 @@
       document.body.style.cursor = "";
       document.body.style.userSelect = "";
       localStorage.setItem("streamletz_sidebar_width", width.toString());
-      
-      // Cancel any pending animation frame
+
       if (animationFrameId !== null) {
         cancelAnimationFrame(animationFrameId);
         animationFrameId = null;
@@ -90,7 +87,7 @@
     document.removeEventListener("mousemove", handleResize);
     document.removeEventListener("mouseup", stopResize);
     window.removeEventListener("popstate", handlePathChange);
-    
+
     // Clean up any pending animation frame
     if (animationFrameId !== null) {
       cancelAnimationFrame(animationFrameId);

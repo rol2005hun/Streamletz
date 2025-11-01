@@ -186,6 +186,14 @@
     font-size: 0.875rem;
     font-weight: 600;
     text-transform: uppercase;
+
+    .col-number {
+        text-align: center;
+    }
+
+    .col-duration {
+        text-align: right;
+    }
 }
 
 .tracks-list {
@@ -225,6 +233,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            width: 100%;
+            height: 100%;
 
             .play-btn {
                 background: none;
@@ -240,8 +250,8 @@
                 color: $text-primary;
 
                 svg {
-                    width: 16px;
-                    height: 16px;
+                    width: 24px;
+                    height: 24px;
                 }
 
                 &:hover {
