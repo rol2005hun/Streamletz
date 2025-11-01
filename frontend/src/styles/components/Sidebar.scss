@@ -9,10 +9,10 @@
     left: 0;
     top: 73px;
     height: calc(100vh - 73px);
-    transition: width 0.2s ease;
     border-right: 1px solid rgba(255, 255, 255, 0.05);
     z-index: $z-sidebar;
     overflow: hidden;
+    will-change: width;
 }
 
 .sidebar-inner {

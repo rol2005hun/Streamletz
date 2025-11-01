@@ -23,8 +23,8 @@
     overflow-x: hidden;
     padding: $spacing-xl;
     padding-bottom: 130px;
-    transition: margin-left 0.2s ease;
     height: 100%;
+    will-change: margin-left;
 }
 
 .loading-container {
