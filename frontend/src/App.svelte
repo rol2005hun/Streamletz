@@ -57,6 +57,15 @@
 
         const handleRouteChange = () => {
             const path = window.location.pathname;
+            
+            // Redirect authenticated users away from login/register pages
+            if (isAuthenticated && (path === "/login" || path === "/register")) {
+                window.history.replaceState({}, "", "/dashboard");
+                currentPage = "dashboard";
+                return;
+            }
+
+            // Redirect unauthenticated users to login
             if (!isAuthenticated && path !== "/register") {
                 currentPage = "login";
                 return;
