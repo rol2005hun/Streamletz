@@ -306,7 +306,7 @@ Contributions are welcome! Please check out our [Contributing Guidelines](CONTRI
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](https://github.com/rol2005hun/Streamletz/tree/master?tab=GPL-3.0-1-ov-file) file for details.
 
 ### ⚖️ Copyright and Legal Compliance
 
