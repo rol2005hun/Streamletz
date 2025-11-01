@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, onDestroy } from "svelte";
+  import { onMount, onDestroy, untrack } from "svelte";
   import { authService } from "../lib/authService";
   import { trackService, type Track } from "../lib/trackService";
   import AudioPlayer from "../components/AudioPlayer.svelte";
@@ -15,9 +15,24 @@
   let loading = $state(true);
   let error = $state("");
   let dropdownOpen = $state(false);
+  let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
   onMount(async () => {
     await loadTracks();
+  });
+
+  $effect(() => {
+    searchQuery;
+
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+
+    searchTimeout = setTimeout(() => {
+      untrack(() => {
+        handleSearch();
+      });
+    }, 300);
   });
 
   async function loadTracks() {
@@ -111,6 +126,9 @@
 
   onDestroy(() => {
     document.removeEventListener("click", handleClickOutside);
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
   });
 
   function formatDuration(seconds: number): string {
@@ -134,7 +152,6 @@
         <input
           type="text"
           bind:value={searchQuery}
-          onkeyup={(e) => e.key === "Enter" && handleSearch()}
           placeholder="Search for tracks, artists, or albums..."
         />
       </div>
