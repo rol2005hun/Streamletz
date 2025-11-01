@@ -6,13 +6,11 @@
   let {
     track = $bindable(null),
     isPlaying = $bindable(false),
-    onNext,
-    onPrevious,
+    allTracks = $bindable([]),
   }: {
     track: Track | null;
     isPlaying: boolean;
-    onNext?: () => void;
-    onPrevious?: () => void;
+    allTracks: Track[];
   } = $props();
 
   let audio: HTMLAudioElement | null = null;
@@ -245,11 +243,37 @@
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   }
 
-  function handleEnded() {
-    if (onNext) {
-      isPlaying = true;
-      onNext();
+  function handleNext() {
+    if (allTracks.length === 0) return;
+
+    const currentIndex = allTracks.findIndex((t) => t.id === track?.id);
+
+    // If at the end of the list, go back to the start
+    if (currentIndex >= allTracks.length - 1) {
+      track = allTracks[0];
+    } else {
+      track = allTracks[currentIndex + 1];
     }
+    isPlaying = true;
+  }
+
+  function handlePrevious() {
+    if (allTracks.length === 0) return;
+
+    const currentIndex = allTracks.findIndex((t) => t.id === track?.id);
+
+    // If at the start of the list, go to the end
+    if (currentIndex <= 0) {
+      track = allTracks[allTracks.length - 1];
+    } else {
+      track = allTracks[currentIndex - 1];
+    }
+    isPlaying = true;
+  }
+
+  function handleEnded() {
+    // Automatically play next track when current one ends
+    handleNext();
   }
 
   onDestroy(() => {
@@ -300,8 +324,8 @@
 
         <button
           class="control-btn"
-          onclick={onPrevious}
-          disabled={!onPrevious}
+          onclick={handlePrevious}
+          disabled={allTracks.length === 0}
           aria-label="Previous track"
           title="Previous"
         >
@@ -334,8 +358,8 @@
 
         <button
           class="control-btn"
-          onclick={onNext}
-          disabled={!onNext}
+          onclick={handleNext}
+          disabled={allTracks.length === 0}
           aria-label="Next track"
           title="Next"
         >

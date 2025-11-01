@@ -122,26 +122,6 @@
         window.history.pushState({}, "", "/login");
         currentPage = "login";
     }
-
-    function handleNext() {
-        const currentIndex = allTracks.findIndex(
-            (t) => t.id === currentTrack?.id,
-        );
-        if (currentIndex >= 0 && currentIndex < allTracks.length - 1) {
-            currentTrack = allTracks[currentIndex + 1];
-            isPlaying = true;
-        }
-    }
-
-    function handlePrevious() {
-        const currentIndex = allTracks.findIndex(
-            (t) => t.id === currentTrack?.id,
-        );
-        if (currentIndex > 0) {
-            currentTrack = allTracks[currentIndex - 1];
-            isPlaying = true;
-        }
-    }
 </script>
 
 <main class="app">
@@ -173,8 +153,7 @@
         <AudioPlayer
             bind:track={currentTrack}
             bind:isPlaying
-            onNext={handleNext}
-            onPrevious={handlePrevious}
+            bind:allTracks
         />
     {/if}
 </main>
