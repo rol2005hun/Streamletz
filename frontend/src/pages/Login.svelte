@@ -54,19 +54,46 @@
 </script>
 
 <div class="login-container">
+  <div class="background-decoration">
+    <div class="circle circle-1"></div>
+    <div class="circle circle-2"></div>
+    <div class="circle circle-3"></div>
+  </div>
+
   <div class="login-card">
     <div class="login-header">
-      <h1>Streamletz</h1>
-      <p class="motto">Your sound. Your stream. Your rules.</p>
+      <div class="logo-container">
+        <svg viewBox="0 0 24 24" fill="currentColor" class="logo-icon">
+          <path
+            d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"
+          />
+        </svg>
+      </div>
+      <h1>Welcome Back</h1>
+      <p class="motto">Sign in to continue to Streamletz</p>
     </div>
 
     <form onsubmit={handleSubmit} action="javascript:void(0);">
       {#if error}
-        <div class="error-message">{error}</div>
+        <div class="error-message">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+            />
+          </svg>
+          {error}
+        </div>
       {/if}
 
       <div class="form-group">
-        <label for="username">Username</label>
+        <label for="username">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+            />
+          </svg>
+          Username
+        </label>
         <input
           type="text"
           id="username"
@@ -77,7 +104,14 @@
       </div>
 
       <div class="form-group">
-        <label for="password">Password</label>
+        <label for="password">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"
+            />
+          </svg>
+          Password
+        </label>
         <div class="password-input-wrapper">
           <input
             type={showPassword ? "text" : "password"}
@@ -122,15 +156,23 @@
       <button type="submit" class="btn btn-primary" disabled={loading}>
         {#if loading}
           <span class="loading"></span>
+          <span>Signing in...</span>
         {:else}
-          Login
+          <span>Sign In</span>
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
+          </svg>
         {/if}
       </button>
+
+      <div class="divider">
+        <span>or</span>
+      </div>
 
       <p class="signup-link">
         Don't have an account?
         <button type="button" class="link-btn" onclick={onSwitchToRegister}>
-          Sign up
+          Create account
         </button>
       </p>
     </form>

@@ -92,7 +92,8 @@ public class TrackController {
     @PostMapping("/{id}/play")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Increment play count", description = "Increment play count when track is played to 90%")
-    public ResponseEntity<Void> incrementPlayCount(@PathVariable Long id) {
+    public ResponseEntity<Void> incrementPlayCount(@PathVariable("id") Long id) {
+        System.out.println("Received play count increment request for track: " + id);
         trackService.incrementPlayCount(id);
         return ResponseEntity.ok().build();
     }

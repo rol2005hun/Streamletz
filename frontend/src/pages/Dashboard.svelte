@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, onDestroy, untrack } from "svelte";
+  import { onMount, onDestroy } from "svelte";
   import { authService } from "../lib/authService";
   import { trackService, type Track } from "../lib/trackService";
   import AudioPlayer from "../components/AudioPlayer.svelte";
@@ -16,22 +16,46 @@
   let error = $state("");
   let dropdownOpen = $state(false);
   let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+  let isFirstLoad = true;
 
   onMount(async () => {
     await loadTracks();
+    isFirstLoad = false;
   });
 
   $effect(() => {
-    searchQuery;
+    //console.log("Search query changed: ", searchQuery);
+
+    if (isFirstLoad) return;
+
+    const currentQuery = searchQuery;
 
     if (searchTimeout) {
       clearTimeout(searchTimeout);
     }
 
-    searchTimeout = setTimeout(() => {
-      untrack(() => {
-        handleSearch();
-      });
+    searchTimeout = setTimeout(async () => {
+      if (!currentQuery.trim()) {
+        try {
+          loading = true;
+          tracks = await trackService.getAllTracks();
+        } catch (err: any) {
+          error = "Failed to load tracks. Please try again.";
+          console.error(err);
+        } finally {
+          loading = false;
+        }
+      } else {
+        try {
+          loading = true;
+          tracks = await trackService.searchTracks(currentQuery);
+        } catch (err: any) {
+          error = "Search failed. Please try again.";
+          console.error(err);
+        } finally {
+          loading = false;
+        }
+      }
     }, 300);
   });
 
@@ -60,47 +84,35 @@
     }
   }
 
-  async function handleSearch() {
-    if (!searchQuery.trim()) {
-      await loadTracks();
-      return;
-    }
-
-    try {
-      loading = true;
-      tracks = await trackService.searchTracks(searchQuery);
-    } catch (err: any) {
-      error = "Search failed. Please try again.";
-      console.error(err);
-    } finally {
-      loading = false;
-    }
-  }
-
   function playTrack(track: Track) {
     currentTrack = track;
+    isPlaying = true;
   }
 
   function playNext() {
     if (!currentTrack || tracks.length === 0) return;
 
+    const wasPlaying = isPlaying;
     const currentIndex = tracks.findIndex((t) => t.id === currentTrack!.id);
     if (currentIndex < tracks.length - 1) {
       currentTrack = tracks[currentIndex + 1];
     } else {
       currentTrack = tracks[0];
     }
+    isPlaying = wasPlaying;
   }
 
   function playPrevious() {
     if (!currentTrack || tracks.length === 0) return;
 
+    const wasPlaying = isPlaying;
     const currentIndex = tracks.findIndex((t) => t.id === currentTrack!.id);
     if (currentIndex > 0) {
       currentTrack = tracks[currentIndex - 1];
     } else {
       currentTrack = tracks[tracks.length - 1];
     }
+    isPlaying = wasPlaying;
   }
 
   function handleLogoutClick() {

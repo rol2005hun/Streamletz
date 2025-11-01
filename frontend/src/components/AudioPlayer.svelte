@@ -47,6 +47,7 @@
           trackId: track.id,
           position: currentTime,
           timestamp: Date.now(),
+          wasPlaying: isPlaying,
         }),
       );
     }
@@ -61,16 +62,17 @@
       if (isNewTrack) {
         previousTrackId = track.id;
         playCountIncremented = false;
+        loadTrack(isPlaying);
       }
-      loadTrack();
     }
   });
 
-  async function loadTrack() {
+  async function loadTrack(shouldAutoPlay = false) {
     if (!track || !audio) return;
 
     audio.pause();
     currentTime = 0;
+    const willPlay = shouldAutoPlay;
     isPlaying = false;
 
     const streamUrl = trackService.getStreamUrl(track.id);
@@ -81,7 +83,7 @@
       const savedData = localStorage.getItem("streamletz_last_playback");
       if (savedData) {
         try {
-          const { trackId, position } = JSON.parse(savedData);
+          const { trackId, position, wasPlaying } = JSON.parse(savedData);
           if (trackId === track.id && position > 0) {
             audio.addEventListener(
               "loadedmetadata",
@@ -93,20 +95,38 @@
               },
               { once: true },
             );
+
+            if (wasPlaying === true) {
+              audio.addEventListener(
+                "canplay",
+                async () => {
+                  try {
+                    await audio!.play();
+                    isPlaying = true;
+                  } catch (err) {
+                    console.error("Auto-resume failed:", err);
+                  }
+                },
+                { once: true },
+              );
+            }
           }
         } catch (e) {
           console.error("Failed to restore playback position:", e);
         }
       }
       isInitialLoad = false;
+      return;
     }
 
-    try {
-      await audio.play();
-      isPlaying = true;
-    } catch (err) {
-      console.error("Playback failed: ", err);
-      isPlaying = false;
+    if (willPlay) {
+      try {
+        await audio.play();
+        isPlaying = true;
+      } catch (err) {
+        console.error("Playback failed: ", err);
+        isPlaying = false;
+      }
     }
   }
 
@@ -130,6 +150,8 @@
         playCountIncremented = true;
         trackService.incrementPlayCount(track.id).catch((err) => {
           console.error("Failed to increment play count:", err);
+          console.error("Error details:", err.response?.data);
+          console.error("Status:", err.response?.status);
         });
       }
     }
@@ -185,6 +207,7 @@
 
   function handleEnded() {
     if (onNext) {
+      isPlaying = true;
       onNext();
     }
   }
