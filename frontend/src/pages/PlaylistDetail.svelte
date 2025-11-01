@@ -2,7 +2,6 @@
   import { onMount } from "svelte";
   import { playlistService, type Playlist } from "../lib/playlistService";
   import type { Track } from "../lib/trackService";
-  import AudioPlayer from "../components/AudioPlayer.svelte";
 
   interface Props {
     id: string;
@@ -91,46 +90,6 @@
       currentTrack = trackAsTrack;
       isPlaying = true;
     }
-  }
-
-  function playNext() {
-    if (!currentTrack || !playlist?.tracks) return;
-    const tracks = playlist.tracks;
-    const currentIndex = tracks.findIndex((t) => t.id === currentTrack!.id);
-    const nextTrack =
-      currentIndex < tracks.length - 1 ? tracks[currentIndex + 1] : tracks[0];
-
-    currentTrack = {
-      id: nextTrack.id,
-      title: nextTrack.title,
-      artist: nextTrack.artist,
-      album: nextTrack.album || "",
-      duration: nextTrack.duration,
-      coverArtUrl: nextTrack.coverArtUrl || "",
-      playCount: nextTrack.playCount,
-      filePath: "",
-      fileFormat: "",
-    };
-  }
-
-  function playPrevious() {
-    if (!currentTrack || !playlist?.tracks) return;
-    const tracks = playlist.tracks;
-    const currentIndex = tracks.findIndex((t) => t.id === currentTrack!.id);
-    const prevTrack =
-      currentIndex > 0 ? tracks[currentIndex - 1] : tracks[tracks.length - 1];
-
-    currentTrack = {
-      id: prevTrack.id,
-      title: prevTrack.title,
-      artist: prevTrack.artist,
-      album: prevTrack.album || "",
-      duration: prevTrack.duration,
-      coverArtUrl: prevTrack.coverArtUrl || "",
-      playCount: prevTrack.playCount,
-      filePath: "",
-      fileFormat: "",
-    };
   }
 
   function goBack() {
@@ -277,13 +236,6 @@
         </div>
       {/if}
     </div>
-
-    <AudioPlayer
-      track={currentTrack}
-      bind:isPlaying
-      onNext={playNext}
-      onPrevious={playPrevious}
-    />
   </div>
 {/if}
 

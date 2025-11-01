@@ -4,7 +4,6 @@
   import { trackService, type Track } from "../lib/trackService";
   import { playlistService, type Playlist } from "../lib/playlistService";
   import { likedTrackService } from "../lib/likedTrackService";
-  import AudioPlayer from "../components/AudioPlayer.svelte";
   import Navbar from "../components/Navbar.svelte";
   import Sidebar from "../components/Sidebar.svelte";
 
@@ -42,11 +41,9 @@
   });
 
   $effect(() => {
-    console.log("Search query changed: ", searchQuery);
+    const currentQuery = searchQuery;
 
     if (isFirstLoad) return;
-
-    const currentQuery = searchQuery;
 
     if (searchTimeout) {
       clearTimeout(searchTimeout);
@@ -82,19 +79,6 @@
       loading = true;
       tracks = await trackService.getAllTracks();
       allTracks = tracks;
-
-      const savedData = localStorage.getItem("streamletz_last_playback");
-      if (savedData && tracks.length > 0) {
-        try {
-          const { trackId } = JSON.parse(savedData);
-          const lastTrack = tracks.find((t) => t.id === trackId);
-          if (lastTrack) {
-            currentTrack = lastTrack;
-          }
-        } catch (e) {
-          console.error("Failed to restore last track: ", e);
-        }
-      }
     } catch (err: any) {
       error = "Failed to load tracks. Please try again.";
       console.error(err);
@@ -119,32 +103,6 @@
       currentTrack = track;
       isPlaying = true;
     }
-  }
-
-  function playNext() {
-    if (!currentTrack || tracks.length === 0) return;
-
-    const wasPlaying = isPlaying;
-    const currentIndex = tracks.findIndex((t) => t.id === currentTrack!.id);
-    if (currentIndex < tracks.length - 1) {
-      currentTrack = tracks[currentIndex + 1];
-    } else {
-      currentTrack = tracks[0];
-    }
-    isPlaying = wasPlaying;
-  }
-
-  function playPrevious() {
-    if (!currentTrack || tracks.length === 0) return;
-
-    const wasPlaying = isPlaying;
-    const currentIndex = tracks.findIndex((t) => t.id === currentTrack!.id);
-    if (currentIndex > 0) {
-      currentTrack = tracks[currentIndex - 1];
-    } else {
-      currentTrack = tracks[tracks.length - 1];
-    }
-    isPlaying = wasPlaying;
   }
 
   onMount(async () => {
@@ -291,7 +249,9 @@
                 </button>
                 <button
                   class="play-overlay"
-                  onclick={() => playTrack(track)}
+                  onclick={() => {
+                    playTrack(track);
+                  }}
                   aria-label="Play {track.title}"
                 >
                   {#if currentTrack?.id === track.id && isPlaying}
@@ -329,13 +289,6 @@
       {/if}
     </main>
   </div>
-
-  <AudioPlayer
-    track={currentTrack}
-    bind:isPlaying
-    onNext={playNext}
-    onPrevious={playPrevious}
-  />
 
   {#if showPlaylistModal}
     <div

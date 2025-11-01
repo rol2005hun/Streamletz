@@ -2,7 +2,6 @@
   import { onMount } from "svelte";
   import { likedTrackService } from "../lib/likedTrackService";
   import type { Track } from "../lib/trackService";
-  import AudioPlayer from "../components/AudioPlayer.svelte";
 
   let {
     currentTrack = $bindable(null),
@@ -66,32 +65,10 @@
 
   function playTrack(track: Track) {
     if (currentTrack?.id === track.id) {
-      // Toggle play/pause if clicking the same track
       isPlaying = !isPlaying;
     } else {
-      // Play new track
       currentTrack = track;
       isPlaying = true;
-    }
-  }
-
-  function playNext() {
-    if (!currentTrack || tracks.length === 0) return;
-    const currentIndex = tracks.findIndex((t) => t.id === currentTrack!.id);
-    if (currentIndex < tracks.length - 1) {
-      currentTrack = tracks[currentIndex + 1];
-    } else {
-      currentTrack = tracks[0];
-    }
-  }
-
-  function playPrevious() {
-    if (!currentTrack || tracks.length === 0) return;
-    const currentIndex = tracks.findIndex((t) => t.id === currentTrack!.id);
-    if (currentIndex > 0) {
-      currentTrack = tracks[currentIndex - 1];
-    } else {
-      currentTrack = tracks[tracks.length - 1];
     }
   }
 
@@ -229,13 +206,6 @@
       </div>
     {/if}
   </div>
-
-  <AudioPlayer
-    track={currentTrack}
-    bind:isPlaying
-    onNext={playNext}
-    onPrevious={playPrevious}
-  />
 </div>
 
 <style scoped lang="scss">

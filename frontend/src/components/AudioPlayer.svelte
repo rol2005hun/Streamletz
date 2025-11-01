@@ -26,10 +26,24 @@
   let playCountIncremented = $state(false);
 
   onMount(() => {
+    audio = new Audio();
+
     const savedVolume = localStorage.getItem("streamletz_volume");
     if (savedVolume) {
       volume = parseFloat(savedVolume);
     }
+    audio.volume = volume;
+
+    audio.addEventListener("play", () => {
+      isPlaying = true;
+    });
+    audio.addEventListener("pause", () => {
+      isPlaying = false;
+    });
+    audio.addEventListener("timeupdate", handleTimeUpdate);
+    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+    audio.addEventListener("progress", handleProgress);
+    audio.addEventListener("ended", handleEnded);
   });
 
   $effect(() => {
@@ -53,80 +67,81 @@
   });
 
   let previousTrackId = $state<number | null>(null);
-  let isInitialLoad = $state(true);
+  let shouldRestoreState = $state(true);
 
   $effect(() => {
-    if (track && audio) {
-      const isNewTrack = previousTrackId !== track.id;
+    const currentTrack = track;
+    const currentAudio = audio;
+
+    if (currentTrack && currentAudio) {
+      const isNewTrack = previousTrackId !== currentTrack.id;
+
       if (isNewTrack) {
-        previousTrackId = track.id;
+        previousTrackId = currentTrack.id;
         playCountIncremented = false;
-        loadTrack(isPlaying);
-      } else {
-        if (isPlaying && audio.paused) {
-          audio.play().catch((err) => {
-            console.error("Failed to play:", err);
-            isPlaying = false;
-          });
-        } else if (!isPlaying && !audio.paused) {
-          audio.pause();
-        }
+        loadTrack();
       }
     }
   });
 
-  async function loadTrack(shouldAutoPlay = false) {
-    if (!track || !audio) return;
+  $effect(() => {
+    const playing = isPlaying;
+    const currentAudio = audio;
+
+    if (currentAudio && track) {
+      if (playing && currentAudio.paused) {
+        currentAudio.play().catch((err) => {
+          console.error("Failed to play:", err);
+          isPlaying = false;
+        });
+      } else if (!playing && !currentAudio.paused) {
+        currentAudio.pause();
+      }
+    }
+  });
+
+  async function loadTrack() {
+    if (!track || !audio) {
+      return;
+    }
 
     audio.pause();
     currentTime = 0;
-    const willPlay = shouldAutoPlay;
 
     const streamUrl = trackService.getStreamUrl(track.id);
     audio.src = streamUrl;
     audio.load();
 
-    if (isInitialLoad) {
-      const savedData = localStorage.getItem("streamletz_last_playback");
-      if (savedData) {
-        try {
-          const { trackId, position, wasPlaying } = JSON.parse(savedData);
-          if (trackId === track.id && position > 0) {
-            audio.addEventListener(
-              "loadedmetadata",
-              () => {
-                if (position < audio!.duration - 5) {
-                  audio!.currentTime = position;
-                  currentTime = position;
-                }
-              },
-              { once: true },
-            );
+    const savedData = localStorage.getItem("streamletz_last_playback");
+    let shouldAutoPlay = false;
+    let savedPosition = 0;
 
-            if (wasPlaying === true) {
-              audio.addEventListener(
-                "canplay",
-                async () => {
-                  try {
-                    await audio!.play();
-                    isPlaying = true;
-                  } catch (err) {
-                    console.error("Auto-resume failed:", err);
-                  }
-                },
-                { once: true },
-              );
-            }
-          }
-        } catch (e) {
-          console.error("Failed to restore playback position:", e);
+    if (savedData) {
+      try {
+        const { trackId, position, wasPlaying } = JSON.parse(savedData);
+
+        if (trackId === track.id && shouldRestoreState) {
+          savedPosition = position;
+          shouldAutoPlay = wasPlaying === true;
+          shouldRestoreState = false;
         }
+      } catch (e) {
+        console.error("[AudioPlayer] Failed to restore playback position:", e);
       }
-      isInitialLoad = false;
-      return;
     }
 
-    if (willPlay) {
+    audio.addEventListener(
+      "loadedmetadata",
+      () => {
+        if (savedPosition > 0 && savedPosition < audio!.duration - 5) {
+          audio!.currentTime = savedPosition;
+          currentTime = savedPosition;
+        }
+      },
+      { once: true },
+    );
+
+    if (shouldAutoPlay) {
       audio.addEventListener(
         "canplay",
         async () => {
@@ -134,7 +149,19 @@
             await audio!.play();
             isPlaying = true;
           } catch (err) {
-            console.error("Playback failed: ", err);
+            console.error("[AudioPlayer] Auto-resume failed:", err);
+          }
+        },
+        { once: true },
+      );
+    } else if (isPlaying) {
+      audio.addEventListener(
+        "canplay",
+        async () => {
+          try {
+            await audio!.play();
+          } catch (err) {
+            console.error("[AudioPlayer] Playback failed:", err);
             isPlaying = false;
           }
         },
@@ -224,22 +251,6 @@
       onNext();
     }
   }
-
-  onMount(() => {
-    audio = new Audio();
-    audio.volume = volume;
-
-    audio.addEventListener("play", () => {
-      isPlaying = true;
-    });
-    audio.addEventListener("pause", () => {
-      isPlaying = false;
-    });
-    audio.addEventListener("timeupdate", handleTimeUpdate);
-    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
-    audio.addEventListener("progress", handleProgress);
-    audio.addEventListener("ended", handleEnded);
-  });
 
   onDestroy(() => {
     if (audio) {

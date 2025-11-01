@@ -136,6 +136,7 @@
           id="username"
           bind:value={username}
           placeholder="Choose a username"
+          autocomplete="username"
           required
         />
         {#if errors.username}
@@ -157,6 +158,7 @@
           id="email"
           bind:value={email}
           placeholder="Enter your email"
+          autocomplete="email"
           required
         />
         {#if errors.email}
@@ -179,6 +181,7 @@
             id="password"
             bind:value={password}
             placeholder="Create a password"
+            autocomplete="new-password"
             required
           />
           <button
@@ -232,6 +235,7 @@
             id="confirmPassword"
             bind:value={confirmPassword}
             placeholder="Confirm your password"
+            autocomplete="new-password"
             required
           />
           <button

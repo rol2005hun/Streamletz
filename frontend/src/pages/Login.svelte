@@ -98,6 +98,7 @@
           id="username"
           bind:value={username}
           placeholder="Enter your username"
+          autocomplete="username"
           required
         />
       </div>
@@ -117,6 +118,7 @@
             id="password"
             bind:value={password}
             placeholder="Enter your password"
+            autocomplete="current-password"
             required
           />
           <button
