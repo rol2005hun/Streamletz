@@ -47,8 +47,15 @@
     }
   });
 
+  let previousTrackId = $state<number | null>(null);
+
   $effect(() => {
     if (track && audio) {
+      const isNewTrack = previousTrackId !== track.id;
+      if (isNewTrack) {
+        previousTrackId = track.id;
+        localStorage.removeItem("streamletz_last_track");
+      }
       loadTrack();
     }
   });
@@ -65,11 +72,13 @@
     audio.load();
 
     const savedData = localStorage.getItem("streamletz_last_track");
+    
     if (savedData) {
       try {
         const { trackId, position } = JSON.parse(savedData);
         if (trackId === track.id && position > 0 && position < duration - 5) {
           audio.currentTime = position;
+          currentTime = position;
         }
       } catch (e) {
         console.error("Failed to restore playback position:", e);
@@ -130,6 +139,12 @@
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   }
 
+  function handleEnded() {
+    if (onNext) {
+      onNext();
+    }
+  }
+
   onMount(() => {
     audio = new Audio();
     audio.volume = volume;
@@ -139,6 +154,7 @@
     audio.addEventListener("timeupdate", handleTimeUpdate);
     audio.addEventListener("loadedmetadata", handleLoadedMetadata);
     audio.addEventListener("progress", handleProgress);
+    audio.addEventListener("ended", handleEnded);
   });
 
   onDestroy(() => {
