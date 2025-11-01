@@ -133,10 +133,13 @@ public class MusicScannerService implements CommandLineRunner {
                 track.setArtist(artist != null && !artist.isEmpty() ? artist : "Unknown Artist");
 
                 String album = tag.getFirst(org.jaudiotagger.tag.FieldKey.ALBUM);
-                track.setAlbum(album != null && !album.isEmpty() ? album : null);
+                log.debug("Album value for {}: '{}' (length: {}, is null: {}, is empty: {})", 
+                    fileName, album, album != null ? album.length() : -1, album == null, album != null && album.isEmpty());
+                track.setAlbum(album != null && !album.isEmpty() && !"0".equals(album) ? album : "Unknown Album");
             } else {
                 track.setTitle(getFileNameWithoutExtension(fileName));
                 track.setArtist("Unknown Artist");
+                track.setAlbum("Unknown Album");
             }
 
             int durationInSeconds = audioFile.getAudioHeader().getTrackLength();
