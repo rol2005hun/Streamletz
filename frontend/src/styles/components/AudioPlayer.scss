@@ -492,12 +492,4 @@
     .audio-player {
         padding: $spacing-sm;
     }
-
-    .control-btn {
-
-        &.shuffle,
-        &.repeat {
-            display: none !important;
-        }
-    }
 }
