@@ -1,197 +1,30 @@
 @use "../variables.scss" as *;
 
 .dashboard {
-    min-height: 100vh;
+    height: 100vh;
     display: flex;
     flex-direction: column;
-    padding-bottom: 110px;
     position: relative;
     z-index: 1;
+    overflow: hidden;
 }
 
-.dashboard-header {
-    background: $background-card;
-    padding: $spacing-md $spacing-lg;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    position: sticky;
-    top: 0;
-    z-index: $z-header;
-
-    .header-content {
-        max-width: 1400px;
-        margin: 0 auto;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: $spacing-lg;
-
-        h1 {
-            font-size: 1.75rem;
-            color: $text-primary;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        .search-bar {
-            flex: 1;
-            max-width: 500px;
-            position: relative;
-            display: flex;
-            align-items: center;
-
-            .search-icon {
-                position: absolute;
-                left: $spacing-md;
-                width: 20px;
-                height: 20px;
-                color: $text-secondary;
-                pointer-events: none;
-                z-index: 1;
-            }
-
-            input {
-                width: 100%;
-                padding: $spacing-sm $spacing-md $spacing-sm 48px;
-                background: $background-dark;
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                border-radius: $border-radius-full;
-                color: $text-primary;
-                font-size: 0.95rem;
-                transition: all $transition-fast;
-
-                &::placeholder {
-                    color: $text-muted;
-                }
-
-                &:focus {
-                    outline: none;
-                    border-color: $primary-color;
-                    background: $background-light;
-                }
-            }
-        }
-
-        .profile-dropdown {
-            position: relative;
-            flex-shrink: 0;
-
-            .profile-btn {
-                background: transparent;
-                border: none;
-                padding: 0;
-                cursor: pointer;
-                transition: transform $transition-fast;
-
-                &:hover {
-                    transform: scale(1.05);
-                }
-
-                .profile-avatar {
-                    width: 40px;
-                    height: 40px;
-                    border-radius: 50%;
-                    background: $gradient-primary;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-weight: 700;
-                    font-size: 1.1rem;
-                    color: $text-primary;
-                    box-shadow: $shadow-md;
-                }
-            }
-
-            .dropdown-menu {
-                position: absolute;
-                top: calc(100% + $spacing-sm);
-                right: 0;
-                min-width: 240px;
-                background: $background-card;
-                border-radius: $border-radius-lg;
-                box-shadow: $shadow-xl;
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                overflow: hidden;
-                animation: slideDown 0.2s ease;
-
-                .dropdown-header {
-                    padding: $spacing-md;
-                    display: flex;
-                    align-items: center;
-                    gap: $spacing-md;
-
-                    .dropdown-avatar {
-                        width: 50px;
-                        height: 50px;
-                        border-radius: 50%;
-                        background: $gradient-primary;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        font-weight: 700;
-                        font-size: 1.3rem;
-                        color: $text-primary;
-                    }
-
-                    .dropdown-user-info {
-                        flex: 1;
-
-                        .dropdown-username {
-                            font-weight: 600;
-                            color: $text-primary;
-                            font-size: 1rem;
-                        }
-                    }
-                }
-
-                .dropdown-divider {
-                    height: 1px;
-                    background: rgba(255, 255, 255, 0.1);
-                }
-
-                .dropdown-item {
-                    width: 100%;
-                    display: flex;
-                    align-items: center;
-                    gap: $spacing-md;
-                    padding: $spacing-md $spacing-lg;
-                    background: transparent;
-                    border: none;
-                    color: $text-primary;
-                    font-size: 0.95rem;
-                    font-weight: 500;
-                    cursor: pointer;
-                    transition: background $transition-fast;
-                    text-align: left;
-
-                    svg {
-                        width: 20px;
-                        height: 20px;
-                        color: $text-secondary;
-                    }
-
-                    &:hover {
-                        background: rgba(255, 255, 255, 0.05);
-                    }
-
-                    &:last-child {
-                        color: #f87171;
-
-                        svg {
-                            color: #f87171;
-                        }
-                    }
-                }
-            }
-        }
-    }
+.main-view {
+    flex: 1;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+    min-height: 0;
 }
 
 .dashboard-content {
     flex: 1;
-    max-width: 1400px;
-    width: 100%;
-    margin: 0 auto;
-    padding: $spacing-xxxl $spacing-xxl;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: $spacing-xl;
+    padding-bottom: 130px;
+    transition: margin-left 0.2s ease;
+    height: 100%;
 }
 
 .loading-container {
