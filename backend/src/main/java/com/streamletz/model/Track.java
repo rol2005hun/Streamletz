@@ -32,7 +32,7 @@ public class Track {
     private String album;
 
     @Column
-    private Integer duration; // in seconds
+    private Integer duration;
 
     @Column
     private String coverArtUrl;

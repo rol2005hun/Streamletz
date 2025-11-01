@@ -36,7 +36,6 @@ public class CoverController {
             @SuppressWarnings("null")
             Resource resource = new FileSystemResource(coverPath);
 
-            // Determine content type based on file extension
             String contentType = Files.probeContentType(coverPath);
             if (contentType == null) {
                 contentType = MediaType.IMAGE_JPEG_VALUE;
