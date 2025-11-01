@@ -124,7 +124,7 @@ public class MusicScannerService implements CommandLineRunner {
         try {
             AudioFile audioFile = AudioFileIO.read(file);
             Tag tag = audioFile.getTag();
-            
+
             if (tag != null) {
                 String title = tag.getFirst(org.jaudiotagger.tag.FieldKey.TITLE);
                 track.setTitle(title != null && !title.isEmpty() ? title : getFileNameWithoutExtension(fileName));
@@ -133,8 +133,9 @@ public class MusicScannerService implements CommandLineRunner {
                 track.setArtist(artist != null && !artist.isEmpty() ? artist : "Unknown Artist");
 
                 String album = tag.getFirst(org.jaudiotagger.tag.FieldKey.ALBUM);
-                log.debug("Album value for {}: '{}' (length: {}, is null: {}, is empty: {})", 
-                    fileName, album, album != null ? album.length() : -1, album == null, album != null && album.isEmpty());
+                log.debug("Album value for {}: '{}' (length: {}, is null: {}, is empty: {})",
+                        fileName, album, album != null ? album.length() : -1, album == null,
+                        album != null && album.isEmpty());
                 track.setAlbum(album != null && !album.isEmpty() && !"0".equals(album) ? album : "Unknown Album");
             } else {
                 track.setTitle(getFileNameWithoutExtension(fileName));
