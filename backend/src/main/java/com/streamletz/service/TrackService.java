@@ -53,9 +53,6 @@ public class TrackService {
             Resource resource = new UrlResource(uri);
 
             if (resource.exists() && resource.isReadable()) {
-                Integer currentPlayCount = track.getPlayCount();
-                track.setPlayCount(currentPlayCount != null ? currentPlayCount + 1 : 1);
-                trackRepository.save(track);
                 return resource;
             } else {
                 throw new RuntimeException("File not found or not readable: " + track.getFilePath());
@@ -63,6 +60,13 @@ public class TrackService {
         } catch (Exception e) {
             throw new RuntimeException("Error loading track file: " + e.getMessage());
         }
+    }
+
+    public void incrementPlayCount(Long trackId) {
+        Track track = getTrackById(trackId);
+        Integer currentPlayCount = track.getPlayCount();
+        track.setPlayCount(currentPlayCount != null ? currentPlayCount + 1 : 1);
+        trackRepository.save(track);
     }
 
     public long getTrackFileSize(Long trackId) {

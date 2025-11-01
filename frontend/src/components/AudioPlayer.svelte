@@ -24,6 +24,7 @@
   let seeking = $state(false);
   let isMuted = $state(false);
   let previousVolume = $state(0.7);
+  let playCountIncremented = $state(false);
 
   onMount(() => {
     const savedVolume = localStorage.getItem("streamletz_volume");
@@ -59,6 +60,7 @@
       const isNewTrack = previousTrackId !== track.id;
       if (isNewTrack) {
         previousTrackId = track.id;
+        playCountIncremented = false;
       }
       loadTrack();
     }
@@ -121,6 +123,16 @@
   function handleTimeUpdate() {
     if (!audio || seeking) return;
     currentTime = audio.currentTime;
+
+    if (!playCountIncremented && track && duration > 0) {
+      const progressPercent = (currentTime / duration) * 100;
+      if (progressPercent >= 90) {
+        playCountIncremented = true;
+        trackService.incrementPlayCount(track.id).catch((err) => {
+          console.error("Failed to increment play count:", err);
+        });
+      }
+    }
   }
 
   function handleLoadedMetadata() {

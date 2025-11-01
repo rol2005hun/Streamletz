@@ -33,6 +33,10 @@ export const trackService = {
     return `${baseUrl}/tracks/stream/${trackId}`;
   },
 
+  async incrementPlayCount(trackId: number): Promise<void> {
+    await api.post(`/tracks/${trackId}/play`);
+  },
+
   async downloadFromExternal(source: string, url: string): Promise<void> {
     await api.post("/tracks/download", null, {
       params: { source, url }

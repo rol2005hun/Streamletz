@@ -89,6 +89,14 @@ public class TrackController {
         }
     }
 
+    @PostMapping("/{id}/play")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Increment play count", description = "Increment play count when track is played to 90%")
+    public ResponseEntity<Void> incrementPlayCount(@PathVariable Long id) {
+        trackService.incrementPlayCount(id);
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/download")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Download track from external source", description = "Trigger download from YouTube or Spotify (placeholder)")

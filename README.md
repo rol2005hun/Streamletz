@@ -4,9 +4,29 @@
 
 A modern, full-stack music streaming application inspired by Spotify, built with cutting-edge technologies.
 
+![Streamletz Banner](https://img.shields.io/badge/Streamletz-Music%20Streaming-1DB954?style=for-the-badge&logo=spotify&logoColor=white)
+![Java](https://img.shields.io/badge/Java-17+-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-6DB33F?style=for-the-badge&logo=spring-boot)
+![Svelte](https://img.shields.io/badge/Svelte-5-FF3E00?style=for-the-badge&logo=svelte&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-336791?style=for-the-badge&logo=postgresql&logoColor=white)
+
 ## 🎯 Overview
 
-Streamletz is a music streaming platform that gives you complete control over your listening experience. Stream your favorite tracks, discover new music, and enjoy a seamless audio experience across all your devices.
+Streamletz is a **self-hosted** music streaming platform that gives you complete control over your listening experience. Stream your favorite tracks, discover new music, and enjoy a seamless audio experience with a modern, intuitive interface.
+
+### 🏠 Self-Hosted Solution
+
+**Important:** This application is designed for **personal, private use only**. It allows you to stream your own music collection that you legally own. 
+
+- ✅ Stream your personal music library
+- ✅ Full control over your data and privacy
+- ✅ No subscription fees or cloud dependencies
+- ✅ Host it on your own server or local network
+- ❌ **NOT** for public streaming services
+- ❌ **NOT** for distributing copyrighted content
+
+**Legal Notice:** Users are responsible for ensuring they have the legal rights to stream any music files they add to their library. This software is provided for personal use only and should not be used to infringe on copyright laws.
 
 ## 🛠️ Tech Stack
 
@@ -28,15 +48,42 @@ Streamletz is a music streaming platform that gives you complete control over yo
 - **GitHub Actions** CI/CD
 - **Railway/Render** deployment ready
 
-## 🚀 Features
+## ✨ Features
 
-- 🔐 User authentication (registration & login)
-- 🎵 Audio streaming with HTTP Range support
-- ⏯️ Full-featured audio player (play/pause, seek, volume control)
-- 🖼️ Album cover art and metadata display
-- 📥 YouTube/Spotify download integration (placeholder)
-- 📱 Fully responsive design
-- 🎨 Modern, Spotify-inspired UI
+### 🔐 Authentication & Security
+- JWT-based user authentication
+- Secure registration and login
+- Token-based session management
+
+### 🎵 Music Streaming
+- HTTP Range support for seamless streaming
+- Smart play count tracking (90% threshold)
+- High-quality audio playback
+- Track metadata management
+
+### 🎮 Audio Player
+- Play, pause, skip controls
+- Real-time progress tracking
+- Volume control with mute
+- Seek functionality
+- Buffer visualization
+- Persistent playback state
+
+### 🎨 User Interface
+- Modern, Spotify-inspired design
+- Hover-activated play buttons
+- Responsive grid layout
+- Real-time search
+- Album cover art display
+- Smooth animations and transitions
+- Mobile-friendly design
+
+### 🛠️ Developer Features
+- RESTful API with Swagger documentation
+- Docker support for easy deployment
+- CI/CD pipeline with GitHub Actions
+- Clean architecture (MVC pattern)
+- Type-safe frontend with TypeScript
 
 ## 📋 Prerequisites
 
@@ -48,47 +95,76 @@ Streamletz is a music streaming platform that gives you complete control over yo
 
 ## 🏃 Getting Started
 
-### Local Development with Docker
+### Quick Start with Docker (Recommended)
 
-1. Clone the repository:
+1. **Clone the repository:**
 ```bash
-git clone <repository-url>
+git clone https://github.com/rol2005hun/Streamletz.git
 cd Streamletz
 ```
 
-2. Create environment file:
+2. **Create environment file:**
 ```bash
 cp .env.example .env
-# Edit .env with your configuration
+# Edit .env with your configuration (database credentials, JWT secret, etc.)
 ```
 
-3. Start all services:
+3. **Create music directory:**
+```bash
+mkdir -p backend/music
+```
+
+4. **Start all services:**
 ```bash
 docker-compose up -d
 ```
 
-4. Access the application:
-   - Frontend: http://localhost:5173
-   - Backend API: http://localhost:8080
-   - API Documentation: http://localhost:8080/swagger-ui.html
+5. **Access the application:**
+   - 🎵 Frontend: http://localhost:5173
+   - 🔧 Backend API: http://localhost:8080
+   - 📚 API Docs: http://localhost:8080/swagger-ui.html
+   - 🗄️ Database: localhost:5432
 
-### Manual Setup
+### Manual Setup (Development)
 
-#### Backend
+#### 1. Database Setup
+```bash
+# Create PostgreSQL database
+psql -U postgres
+CREATE DATABASE streamletz;
+CREATE USER streamletz_user WITH PASSWORD 'your_password';
+GRANT ALL PRIVILEGES ON DATABASE streamletz TO streamletz_user;
+\q
+```
 
+#### 2. Backend
 ```bash
 cd backend
+
+# Install dependencies
 mvn clean install
+
+# Run the application
 mvn spring-boot:run
+
+# Backend will be available at http://localhost:8080
 ```
 
-#### Frontend
-
+#### 3. Frontend
 ```bash
 cd frontend
+
+# Install dependencies
 npm install
+
+# Run development server
 npm run dev
+
+# Frontend will be available at http://localhost:5173
 ```
+
+#### 4. Add Music Files
+Place your music files (.mp3, .flac, .wav, etc.) in `backend/music/` directory. The application will automatically scan and index them on startup.
 
 ## 📁 Project Structure
 
@@ -126,28 +202,139 @@ Streamletz/
 
 ## 🔧 Configuration
 
-Key environment variables (see `.env.example`):
+### Environment Variables
 
-- `DATABASE_URL` - PostgreSQL connection string
-- `JWT_SECRET` - Secret key for JWT tokens
-- `API_BASE_URL` - Backend API URL
-- `PORT` - Application port
+Create a `.env` file in the root directory (see `.env.example` for reference):
+
+```env
+# Database
+DATABASE_URL=jdbc:postgresql://localhost:5432/streamletz
+DATABASE_USERNAME=streamletz_user
+DATABASE_PASSWORD=your_password
+
+# Backend
+JWT_SECRET=your-super-secret-jwt-key-change-in-production
+MUSIC_STORAGE_PATH=./music
+
+# Frontend
+VITE_API_BASE_URL=http://localhost:8080/api
+```
+
+### Backend Configuration (`application.properties`)
+
+Key settings:
+- `spring.datasource.*` - Database connection
+- `jwt.secret` - JWT signing key
+- `jwt.expiration` - Token validity (default: 86400000ms = 24h)
+- `music.storage.path` - Music files location
+- `server.port` - Backend port (default: 8080)
 
 ## 🚢 Deployment
 
-The project includes GitHub Actions workflows for automated deployment to Railway or Render.
+The project is containerized and ready for **self-hosted deployment** on your own server or local network.
 
-1. Set up secrets in your GitHub repository
-2. Push to main branch
-3. GitHub Actions will automatically build and deploy
+### 🏠 Self-Hosting Options
+
+**Local Network (Recommended for Personal Use)**
+- Run on a home server or NAS
+- Access within your local network only
+- Most secure and private option
+
+**Private VPS/Cloud Server**
+- Deploy to your own VPS (DigitalOcean, Linode, etc.)
+- Keep it password-protected and private
+- Use VPN for remote access
+
+**⚠️ Important Security Notes:**
+- **Do NOT expose this publicly** without proper authentication and legal compliance
+- Use strong passwords and enable HTTPS in production
+- Consider using a VPN for remote access instead of public exposure
+- This is intended for personal use, not as a public streaming service
+
+### Docker Deployment
+
+```bash
+# Build images
+docker-compose build
+
+# Deploy
+docker-compose up -d
+```
+
+### Platform-Specific Deployment
+
+**For Personal/Private Use Only:**
+
+- **Home Server**: Best option for complete privacy and control
+- **Private VPN**: Deploy and access through WireGuard/OpenVPN
+- **Local Docker**: Run on your personal computer or NAS
+- **Private Cloud**: VPS with firewall rules (block public access)
+
+**NOT Recommended for Public Deployment:**
+- ❌ Public hosting without authentication
+- ❌ Sharing with unauthorized users
+- ❌ Commercial use or public streaming service
+
+## 🧪 API Documentation
+
+Once the backend is running, visit the Swagger UI for interactive API documentation:
+
+**http://localhost:8080/swagger-ui.html**
+
+### Main Endpoints
+
+#### Authentication
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/login` - Login and receive JWT token
+
+#### Tracks
+- `GET /api/tracks` - Get all tracks
+- `GET /api/tracks/{id}` - Get track by ID
+- `GET /api/tracks/search?query={q}` - Search tracks
+- `GET /api/tracks/stream/{id}` - Stream audio file
+- `POST /api/tracks/{id}/play` - Increment play count
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please check out our [Contributing Guidelines](CONTRIBUTING.md) for details.
 
-## 📄 License
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-This project is licensed under the MIT License.
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+### ⚖️ Copyright and Legal Compliance
+
+**This software is for personal, self-hosted use only.**
+
+- You must own or have legal rights to all music files you add to your library
+- Do not use this software to distribute copyrighted content
+- Do not make this publicly accessible for unauthorized users
+- Respect artists' rights and support them through legal means
+
+**The developers of Streamletz are not responsible for any copyright infringement or illegal use of this software.**
+
+## 👤 Author
+
+**rol2005hun**
+- GitHub: [@rol2005hun](https://github.com/rol2005hun)
+
+## 🙏 Acknowledgments
+
+- Spotify for UI/UX inspiration
+- The Spring Boot and Svelte communities
+- All contributors and supporters
+
+---
+
+<p align="center">
+  <strong>Your sound. Your stream. Your rules.</strong> 🎵
+</p>
 
 ## 💬 Motto
 
