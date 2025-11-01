@@ -1,0 +1,497 @@
+@use "../variables.scss" as *;
+
+.dashboard {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 110px;
+    position: relative;
+    z-index: 1;
+}
+
+.dashboard-header {
+    background: $background-card;
+    padding: $spacing-md $spacing-lg;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    position: sticky;
+    top: 0;
+    z-index: $z-header;
+
+    .header-content {
+        max-width: 1400px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: $spacing-lg;
+
+        h1 {
+            font-size: 1.75rem;
+            color: $text-primary;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .search-bar {
+            flex: 1;
+            max-width: 500px;
+            position: relative;
+            display: flex;
+            align-items: center;
+
+            .search-icon {
+                position: absolute;
+                left: $spacing-md;
+                width: 20px;
+                height: 20px;
+                color: $text-secondary;
+                pointer-events: none;
+                z-index: 1;
+            }
+
+            input {
+                width: 100%;
+                padding: $spacing-sm $spacing-md $spacing-sm 48px;
+                background: $background-dark;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: $border-radius-full;
+                color: $text-primary;
+                font-size: 0.95rem;
+                transition: all $transition-fast;
+
+                &::placeholder {
+                    color: $text-muted;
+                }
+
+                &:focus {
+                    outline: none;
+                    border-color: $primary-color;
+                    background: $background-light;
+                }
+            }
+        }
+
+        .profile-dropdown {
+            position: relative;
+            flex-shrink: 0;
+
+            .profile-btn {
+                background: transparent;
+                border: none;
+                padding: 0;
+                cursor: pointer;
+                transition: transform $transition-fast;
+
+                &:hover {
+                    transform: scale(1.05);
+                }
+
+                .profile-avatar {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    background: $gradient-primary;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-weight: 700;
+                    font-size: 1.1rem;
+                    color: $text-primary;
+                    box-shadow: $shadow-md;
+                }
+            }
+
+            .dropdown-menu {
+                position: absolute;
+                top: calc(100% + $spacing-sm);
+                right: 0;
+                min-width: 240px;
+                background: $background-card;
+                border-radius: $border-radius-lg;
+                box-shadow: $shadow-xl;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                overflow: hidden;
+                animation: slideDown 0.2s ease;
+
+                .dropdown-header {
+                    padding: $spacing-md;
+                    display: flex;
+                    align-items: center;
+                    gap: $spacing-md;
+
+                    .dropdown-avatar {
+                        width: 48px;
+                        height: 48px;
+                        border-radius: 50%;
+                        background: $gradient-primary;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-weight: 700;
+                        font-size: 1.3rem;
+                        color: $text-primary;
+                    }
+
+                    .dropdown-user-info {
+                        flex: 1;
+
+                        .dropdown-username {
+                            font-weight: 600;
+                            color: $text-primary;
+                            font-size: 1rem;
+                        }
+                    }
+                }
+
+                .dropdown-divider {
+                    height: 1px;
+                    background: rgba(255, 255, 255, 0.1);
+                }
+
+                .dropdown-item {
+                    width: 100%;
+                    display: flex;
+                    align-items: center;
+                    gap: $spacing-md;
+                    padding: $spacing-md $spacing-lg;
+                    background: transparent;
+                    border: none;
+                    color: $text-primary;
+                    font-size: 0.95rem;
+                    font-weight: 500;
+                    cursor: pointer;
+                    transition: background $transition-fast;
+                    text-align: left;
+
+                    svg {
+                        width: 20px;
+                        height: 20px;
+                        color: $text-secondary;
+                    }
+
+                    &:hover {
+                        background: rgba(255, 255, 255, 0.05);
+                    }
+
+                    &:last-child {
+                        color: #f87171;
+
+                        svg {
+                            color: #f87171;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+.dashboard-content {
+    flex: 1;
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+    padding: $spacing-xxxl $spacing-xxl;
+}
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: $spacing-xxxl;
+    gap: $spacing-lg;
+
+    p {
+        color: $text-secondary;
+        font-size: 1.1rem;
+    }
+}
+
+.empty-state {
+    text-align: center;
+    padding: $spacing-xxxl;
+    color: $text-secondary;
+
+    h3 {
+        color: $text-primary;
+        margin-bottom: $spacing-md;
+        font-size: 1.75rem;
+    }
+
+    p {
+        font-size: 1.1rem;
+    }
+}
+
+.tracks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: $spacing-xl;
+}
+
+.track-card {
+    background: $background-card;
+    border-radius: $border-radius-lg;
+    padding: $spacing-lg;
+    transition: all $transition-normal;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+
+    &:hover {
+        background: $background-light;
+        box-shadow: $shadow-lg;
+
+        .play-overlay {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    &.playing {
+        .track-title {
+            color: $primary-color;
+        }
+
+        .play-overlay {
+            opacity: 1;
+            transform: scale(1);
+            background: $primary-color;
+        }
+    }
+
+    .track-cover {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1;
+        border-radius: $border-radius-md;
+        overflow: hidden;
+        background: $background-dark;
+        margin-bottom: $spacing-md;
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .cover-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+            background: $gradient-primary;
+            opacity: 0.3;
+        }
+
+        .play-overlay {
+            position: absolute;
+            bottom: $spacing-sm;
+            right: $spacing-sm;
+            width: 40px;
+            height: 40px;
+            background: $primary-color;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.9;
+            transform: scale(1);
+            transition: all 0.2s ease;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+            z-index: 2;
+
+            svg {
+                width: 20px;
+                height: 20px;
+                color: $spotify-dark;
+                margin-left: 2px;
+            }
+
+            &:hover {
+                transform: scale(1.1);
+                background: $primary-light;
+                opacity: 1;
+            }
+        }
+    }
+
+    .track-details {
+        position: relative;
+        z-index: 1;
+
+        .track-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: $text-primary;
+            margin-bottom: $spacing-xs;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .track-artist {
+            font-size: 0.9rem;
+            color: $text-secondary;
+            margin-bottom: $spacing-xs;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-weight: 500;
+        }
+
+        .track-album {
+            font-size: 0.85rem;
+            color: $text-muted;
+            margin-bottom: $spacing-sm;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .track-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: $text-muted;
+            padding-top: $spacing-sm;
+            border-top: 1px solid rgba($primary-color, 0.1);
+        }
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: $breakpoint-tablet) {
+    .dashboard-header {
+        padding: $spacing-sm $spacing-md;
+
+        .header-content {
+            gap: $spacing-md;
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .search-bar {
+                max-width: 300px;
+
+                input {
+                    font-size: 0.9rem;
+                    padding: $spacing-xs $spacing-sm $spacing-xs 40px;
+                }
+
+                .search-icon {
+                    left: $spacing-sm;
+                    width: 18px;
+                    height: 18px;
+                }
+            }
+
+            .profile-dropdown .profile-btn .profile-avatar {
+                width: 36px;
+                height: 36px;
+                font-size: 1rem;
+            }
+        }
+    }
+
+    .dashboard-content {
+        padding: $spacing-xxl $spacing-lg;
+    }
+
+    .tracks-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: $spacing-lg;
+    }
+}
+
+@media (max-width: $breakpoint-mobile) {
+    .dashboard-header {
+        .header-content {
+            flex-wrap: wrap;
+
+            h1 {
+                font-size: 1.3rem;
+                flex: 0 0 auto;
+            }
+
+            .search-bar {
+                flex: 1 1 100%;
+                max-width: 100%;
+                order: 3;
+            }
+
+            .profile-dropdown {
+                flex: 0 0 auto;
+            }
+        }
+    }
+
+    .dashboard-content {
+        padding: $spacing-xl $spacing-md;
+    }
+
+    .tracks-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: $spacing-md;
+    }
+
+    .track-card {
+        .track-cover {
+            height: 140px;
+
+            .play-overlay {
+                width: 36px;
+                height: 36px;
+                bottom: $spacing-xs;
+                right: $spacing-xs;
+
+                svg {
+                    width: 18px;
+                    height: 18px;
+                }
+            }
+        }
+
+        .track-details {
+            .track-title {
+                font-size: 0.95rem;
+            }
+
+            .track-artist,
+            .track-album {
+                font-size: 0.85rem;
+            }
+
+            .track-meta {
+                font-size: 0.75rem;
+            }
+        }
+    }
+}

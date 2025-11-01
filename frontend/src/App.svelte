@@ -5,7 +5,7 @@
     import Dashboard from "./pages/Dashboard.svelte";
     import { authService } from "./lib/authService";
 
-    let currentPage = $state<'login' | 'register' | 'dashboard'>('login');
+    let currentPage = $state<"login" | "register" | "dashboard">("login");
     let isAuthenticated = $state(false);
 
     onMount(() => {
@@ -46,8 +46,8 @@
 </main>
 
 <style lang="scss">
-    @use './styles/variables.scss' as *;
-    
+    @use "./styles/variables.scss" as *;
+
     .app {
         min-height: 100vh;
         display: flex;

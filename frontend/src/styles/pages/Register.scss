@@ -1,0 +1,151 @@
+@use "sass:color";
+@use "../variables.scss" as *;
+
+.register-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: $spacing-xl;
+    position: relative;
+    z-index: 1;
+}
+
+.register-card {
+    background: rgba($background-card, 0.7);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba($primary-color, 0.1);
+    border-radius: $border-radius-xl;
+    padding: $spacing-xxxl;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: $shadow-xl;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: $gradient-secondary;
+    }
+
+    &::after {
+        content: "";
+        position: absolute;
+        bottom: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle,
+                rgba($accent-color, 0.05) 0%,
+                transparent 70%);
+        pointer-events: none;
+    }
+}
+
+.register-header {
+    text-align: center;
+    margin-bottom: $spacing-xxxl;
+    position: relative;
+    z-index: 1;
+
+    h1 {
+        font-size: 2.75rem;
+        margin-bottom: $spacing-md;
+        background: $gradient-secondary;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        letter-spacing: -0.02em;
+    }
+
+    .motto {
+        color: $text-secondary;
+        font-size: 1.1rem;
+        font-weight: 300;
+        letter-spacing: 0.5px;
+    }
+}
+
+form {
+    position: relative;
+    z-index: 1;
+
+    button[type="submit"] {
+        width: 100%;
+        margin-top: $spacing-xl;
+        padding: $spacing-lg;
+        font-size: 1rem;
+    }
+}
+
+.password-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    input {
+        flex: 1;
+        padding-right: 3rem;
+    }
+
+    .password-toggle {
+        position: absolute;
+        right: $spacing-md;
+        background: none;
+        border: none;
+        color: $text-muted;
+        cursor: pointer;
+        padding: $spacing-sm;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color $transition-fast;
+
+        svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        &:hover {
+            color: $primary-color;
+        }
+    }
+}
+
+.login-link {
+    text-align: center;
+    margin-top: $spacing-xl;
+    color: $text-secondary;
+    font-size: 0.95rem;
+
+    .link-btn {
+        background: none;
+        color: $primary-light;
+        padding: 0;
+        font-weight: 600;
+        font-size: 1rem;
+        text-decoration: none;
+        border-bottom: 2px solid transparent;
+        transition: all $transition-normal;
+
+        &:hover {
+            color: $accent-light;
+            border-bottom-color: $accent-light;
+        }
+    }
+}
+
+@media (max-width: $breakpoint-mobile) {
+    .register-card {
+        padding: $spacing-xxl;
+    }
+
+    .register-header h1 {
+        font-size: 2.25rem;
+    }
+}
