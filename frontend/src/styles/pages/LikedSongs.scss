@@ -387,10 +387,17 @@
 }
 
 @media (max-width: $breakpoint-tablet) {
+    .liked-songs {
+        padding: $spacing-lg;
+        padding-bottom: 130px;
+    }
+
     .header {
         flex-direction: column;
         align-items: center;
         text-align: center;
+        padding: $spacing-xl;
+        gap: $spacing-lg;
 
         .cover {
             width: 180px;
@@ -413,6 +420,116 @@
         .col-album,
         .col-plays {
             display: none;
+        }
+    }
+}
+
+@media (max-width: $breakpoint-mobile) {
+    .liked-songs {
+        padding: $spacing-sm;
+        padding-bottom: 130px;
+    }
+
+    .back-btn {
+        padding: $spacing-xs $spacing-sm;
+        font-size: 0.875rem;
+        margin-bottom: $spacing-sm;
+    }
+
+    .header {
+        padding: $spacing-md;
+        gap: $spacing-sm;
+
+        .cover {
+            width: 120px;
+            height: 120px;
+
+            .heart-icon {
+                font-size: 3.5rem;
+            }
+        }
+
+        .info {
+            h1 {
+                font-size: 1.25rem;
+            }
+
+            .meta {
+                font-size: 0.8125rem;
+            }
+        }
+    }
+
+    .tracks-section {
+        padding: $spacing-xs;
+        border-radius: $border-radius-sm;
+    }
+
+    .tracks-header {
+        display: none;
+    }
+
+    .tracks-list .track-row {
+        grid-template-columns: 32px 1fr 32px;
+        gap: $spacing-xs;
+        padding: $spacing-xs;
+        border-radius: $border-radius-sm;
+
+        .col-album,
+        .col-plays,
+        .col-duration {
+            display: none;
+        }
+
+        .col-number {
+            font-size: 0.75rem;
+            width: 32px;
+            height: 32px;
+
+            .play-btn {
+                width: 20px;
+                height: 20px;
+
+                svg {
+                    width: 18px;
+                    height: 18px;
+                }
+            }
+        }
+
+        .col-title {
+            min-width: 0;
+
+            .track-info {
+                gap: $spacing-xs;
+
+                .track-cover,
+                img {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: $border-radius-sm;
+                }
+            }
+
+            .track-title {
+                font-size: 0.875rem;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .track-artist {
+                font-size: 0.75rem;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
+
+        .unlike-btn {
+            width: 32px;
+            height: 32px;
+            opacity: 1;
         }
     }
 }
