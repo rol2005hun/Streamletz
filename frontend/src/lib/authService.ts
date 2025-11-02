@@ -3,12 +3,14 @@ import api from "./api";
 export interface User {
   username: string;
   email: string;
+  profileImage?: string | null;
 }
 
 export interface AuthResponse {
   token: string;
   username: string;
   email: string;
+  profileImage?: string | null;
 }
 
 export interface LoginData {

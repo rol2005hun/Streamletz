@@ -114,6 +114,13 @@
     border: 4px solid $background-dark;
     position: relative;
     z-index: 10;
+    overflow: hidden;
+
+    .avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
 }
 
 .username {
@@ -170,66 +177,6 @@
     font-weight: 700;
     margin-bottom: $spacing-md;
     color: $text-primary;
-}
-
-.info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: $spacing-lg;
-}
-
-.info-card {
-    display: flex;
-    gap: $spacing-lg;
-    padding: $spacing-lg;
-    background: $background-light;
-    border-radius: $border-radius-md;
-    border: 1px solid rgba($primary-color, 0.1);
-    transition: all $transition-normal;
-
-    &:hover {
-        border-color: rgba($primary-color, 0.3);
-        background: $background-medium;
-    }
-}
-
-.info-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: $border-radius-md;
-    background: $gradient-primary;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-
-    svg {
-        color: $text-primary;
-        width: 20px;
-        height: 20px;
-    }
-}
-
-.info-content {
-    flex: 1;
-    min-width: 0;
-
-    .info-label {
-        display: block;
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: $text-secondary;
-        margin-bottom: $spacing-xs;
-    }
-
-    p {
-        font-size: 0.9375rem;
-        color: $text-primary;
-        font-weight: 500;
-        word-break: break-word;
-    }
 }
 
 .recent-tracks {
@@ -378,10 +325,6 @@
 
     .profile-content {
         padding: 0 $spacing-md $spacing-xxxl;
-    }
-
-    .info-grid {
-        grid-template-columns: 1fr;
     }
 
     .stats-grid {

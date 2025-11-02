@@ -6,21 +6,55 @@
     searchQuery = $bindable(""),
     onLogout,
   }: {
-    user: { username: string } | null;
+    user: { username: string; profileImage?: string | null } | null;
     searchQuery: string;
     onLogout: () => void;
   } = $props();
 
   let dropdownOpen = $state(false);
+  let mobileSearchOpen = $state(false);
+  let wasMobileSearchOpen = $state(false);
 
   function toggleDropdown() {
     dropdownOpen = !dropdownOpen;
+  }
+
+  function toggleMobileSearch() {
+    mobileSearchOpen = !mobileSearchOpen;
+    if (mobileSearchOpen) {
+      // Focus the input after opening
+      setTimeout(() => {
+        const input = document.querySelector('.mobile-search-modal input');
+        if (input) (input as HTMLInputElement).focus();
+      }, 100);
+    }
+  }
+
+  function handleResize() {
+    const isMobile = window.innerWidth <= 480;
+    
+    if (!isMobile && mobileSearchOpen) {
+      // Screen became larger - close mobile search
+      wasMobileSearchOpen = true;
+      mobileSearchOpen = false;
+    } else if (isMobile && wasMobileSearchOpen && !mobileSearchOpen) {
+      // Screen became smaller again - reopen mobile search
+      mobileSearchOpen = true;
+      wasMobileSearchOpen = false;
+      setTimeout(() => {
+        const input = document.querySelector('.mobile-search-modal input');
+        if (input) (input as HTMLInputElement).focus();
+      }, 100);
+    }
   }
 
   function handleClickOutside(event: MouseEvent) {
     const target = event.target as HTMLElement;
     if (!target.closest(".profile-dropdown")) {
       dropdownOpen = false;
+    }
+    if (!target.closest(".mobile-search-modal") && !target.closest(".mobile-search-btn")) {
+      mobileSearchOpen = false;
     }
   }
 
@@ -37,10 +71,12 @@
 
   onMount(() => {
     document.addEventListener("click", handleClickOutside);
+    window.addEventListener("resize", handleResize);
   });
 
   onDestroy(() => {
     document.removeEventListener("click", handleClickOutside);
+    window.removeEventListener("resize", handleResize);
   });
 </script>
 
@@ -68,10 +104,22 @@
       />
     </div>
 
+    <button class="mobile-search-btn" onclick={toggleMobileSearch} aria-label="Search">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path
+          d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+        />
+      </svg>
+    </button>
+
     <div class="profile-dropdown">
       <button class="profile-btn" onclick={toggleDropdown}>
         <div class="profile-avatar">
-          {user?.username?.charAt(0).toUpperCase()}
+          {#if user?.profileImage}
+            <img src={user.profileImage} alt={user.username} class="avatar-img" />
+          {:else}
+            {user?.username?.charAt(0).toUpperCase()}
+          {/if}
         </div>
         <span class="profile-name">{user?.username}</span>
         <svg
@@ -88,7 +136,11 @@
         <div class="dropdown-menu">
           <div class="dropdown-header">
             <div class="dropdown-avatar">
-              {user?.username?.charAt(0).toUpperCase()}
+              {#if user?.profileImage}
+                <img src={user.profileImage} alt={user.username} class="avatar-img" />
+              {:else}
+                {user?.username?.charAt(0).toUpperCase()}
+              {/if}
             </div>
             <div class="dropdown-user-info">
               <div class="dropdown-username">{user?.username}</div>
@@ -124,6 +176,30 @@
       {/if}
     </div>
   </div>
+
+  {#if mobileSearchOpen}
+    <div class="mobile-search-modal">
+      <div class="mobile-search-content">
+        <button class="close-search-btn" onclick={toggleMobileSearch} aria-label="Close search">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+          </svg>
+        </button>
+        <div class="mobile-search-input">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+            />
+          </svg>
+          <input
+            type="text"
+            bind:value={searchQuery}
+            placeholder="Search for tracks, artists, or albums..."
+          />
+        </div>
+      </div>
+    </div>
+  {/if}
 </header>
 
 <style scoped lang="scss">

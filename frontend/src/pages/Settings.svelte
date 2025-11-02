@@ -1,11 +1,31 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { authService } from "../lib/authService";
+    import {
+        userService,
+        type UserProfile,
+        type UpdatePasswordRequest,
+    } from "../lib/userService";
 
     let loading = $state(true);
     let saving = $state(false);
     let message = $state("");
     let messageType = $state<"success" | "error" | "">("");
+    let profileLoading = $state(false);
+    let passwordLoading = $state(false);
+
+    let userProfile = $state<UserProfile | null>(null);
+    let profileForm = $state({
+        username: "",
+        email: "",
+        profileImage: "",
+    });
+
+    let passwordForm = $state<UpdatePasswordRequest>({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+    });
 
     let settings = $state({
         notifications: {
@@ -35,8 +55,108 @@
     onMount(() => {
         authService.getUser();
         loadSettings();
+        loadUserProfile();
         loading = false;
     });
+
+    async function loadUserProfile() {
+        try {
+            userProfile = await userService.getUserProfile();
+            profileForm.username = userProfile.username;
+            profileForm.email = userProfile.email;
+            profileForm.profileImage = userProfile.profileImage || "";
+        } catch (error) {
+            console.error("Failed to load user profile:", error);
+            messageType = "error";
+            message = "Failed to load profile information";
+            setTimeout(() => {
+                message = "";
+                messageType = "";
+            }, 3000);
+        }
+    }
+
+    async function updateProfile() {
+        profileLoading = true;
+        try {
+            const updatedProfile = await userService.updateProfile({
+                username:
+                    profileForm.username !== userProfile?.username
+                        ? profileForm.username
+                        : undefined,
+                email:
+                    profileForm.email !== userProfile?.email
+                        ? profileForm.email
+                        : undefined,
+                profileImage:
+                    profileForm.profileImage !== userProfile?.profileImage
+                        ? profileForm.profileImage
+                        : undefined,
+            });
+            userProfile = updatedProfile;
+
+            // Update localStorage user with new profile image
+            const currentUser = authService.getUser();
+            if (currentUser) {
+                localStorage.setItem(
+                    "user",
+                    JSON.stringify({
+                        ...currentUser,
+                        username: updatedProfile.username,
+                        email: updatedProfile.email,
+                        profileImage: updatedProfile.profileImage,
+                    }),
+                );
+            }
+
+            messageType = "success";
+            message = "Profile updated successfully!";
+        } catch (error: any) {
+            messageType = "error";
+            message =
+                error.response?.data?.message || "Failed to update profile";
+        } finally {
+            profileLoading = false;
+            setTimeout(() => {
+                message = "";
+                messageType = "";
+            }, 3000);
+        }
+    }
+
+    async function changePassword() {
+        if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+            messageType = "error";
+            message = "New passwords do not match";
+            setTimeout(() => {
+                message = "";
+                messageType = "";
+            }, 3000);
+            return;
+        }
+
+        passwordLoading = true;
+        try {
+            await userService.changePassword(passwordForm);
+            messageType = "success";
+            message = "Password changed successfully!";
+            passwordForm = {
+                currentPassword: "",
+                newPassword: "",
+                confirmPassword: "",
+            };
+        } catch (error: any) {
+            messageType = "error";
+            message =
+                error.response?.data?.message || "Failed to change password";
+        } finally {
+            passwordLoading = false;
+            setTimeout(() => {
+                message = "";
+                messageType = "";
+            }, 3000);
+        }
+    }
 
     function loadSettings() {
         const savedSettings = localStorage.getItem("streamletz_settings");
@@ -133,6 +253,190 @@
         {/if}
 
         <div class="settings-content">
+            <!-- Account Settings Section -->
+            <div class="settings-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <svg
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"
+                            ></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2>Account Settings</h2>
+                        <p class="section-description">
+                            Manage your profile and account information
+                        </p>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <form
+                        onsubmit={(e) => {
+                            e.preventDefault();
+                            updateProfile();
+                        }}
+                    >
+                        <div class="setting-item form-item">
+                            <div class="setting-info">
+                                <label for="username">Username</label>
+                                <span class="setting-hint"
+                                    >Your public display name</span
+                                >
+                            </div>
+                            <input
+                                type="text"
+                                id="username"
+                                bind:value={profileForm.username}
+                                placeholder="Enter username"
+                                class="form-input"
+                                autocomplete="username"
+                            />
+                        </div>
+
+                        <div class="setting-item form-item">
+                            <div class="setting-info">
+                                <label for="email">Email</label>
+                                <span class="setting-hint"
+                                    >Your email address</span
+                                >
+                            </div>
+                            <input
+                                type="email"
+                                id="email"
+                                bind:value={profileForm.email}
+                                placeholder="Enter email"
+                                class="form-input"
+                                autocomplete="email"
+                            />
+                        </div>
+
+                        <div class="setting-item form-item">
+                            <div class="setting-info">
+                                <label for="profile-image"
+                                    >Profile Image URL</label
+                                >
+                                <span class="setting-hint"
+                                    >URL to your profile picture</span
+                                >
+                            </div>
+                            <input
+                                type="text"
+                                id="profile-image"
+                                bind:value={profileForm.profileImage}
+                                placeholder="https://example.com/image.jpg"
+                                class="form-input"
+                                autocomplete="photo"
+                            />
+                        </div>
+
+                        <button
+                            type="submit"
+                            class="save-profile-btn"
+                            disabled={profileLoading}
+                        >
+                            {#if profileLoading}
+                                <span class="btn-spinner"></span>
+                                Saving...
+                            {:else}
+                                Save Profile
+                            {/if}
+                        </button>
+                    </form>
+                </div>
+
+                <div class="section-divider"></div>
+
+                <!-- Password Change -->
+                <div class="settings-group">
+                    <h3 class="subsection-title">Change Password</h3>
+
+                    <form
+                        onsubmit={(e) => {
+                            e.preventDefault();
+                            changePassword();
+                        }}
+                    >
+                        <!-- Hidden username field for accessibility -->
+                        <input
+                            type="text"
+                            name="username"
+                            value={userProfile?.username || ""}
+                            autocomplete="username"
+                            style="display: none;"
+                            readonly
+                        />
+
+                        <div class="setting-item form-item">
+                            <div class="setting-info">
+                                <label for="current-password"
+                                    >Current Password</label
+                                >
+                            </div>
+                            <input
+                                type="password"
+                                id="current-password"
+                                bind:value={passwordForm.currentPassword}
+                                placeholder="Enter current password"
+                                class="form-input"
+                                autocomplete="current-password"
+                            />
+                        </div>
+
+                        <div class="setting-item form-item">
+                            <div class="setting-info">
+                                <label for="new-password">New Password</label>
+                            </div>
+                            <input
+                                type="password"
+                                id="new-password"
+                                bind:value={passwordForm.newPassword}
+                                placeholder="Enter new password"
+                                class="form-input"
+                                autocomplete="new-password"
+                            />
+                        </div>
+
+                        <div class="setting-item form-item">
+                            <div class="setting-info">
+                                <label for="confirm-password"
+                                    >Confirm New Password</label
+                                >
+                            </div>
+                            <input
+                                type="password"
+                                id="confirm-password"
+                                bind:value={passwordForm.confirmPassword}
+                                placeholder="Confirm new password"
+                                class="form-input"
+                                autocomplete="new-password"
+                            />
+                        </div>
+
+                        <button
+                            type="submit"
+                            class="save-profile-btn"
+                            disabled={passwordLoading}
+                        >
+                            {#if passwordLoading}
+                                <span class="btn-spinner"></span>
+                                Changing...
+                            {:else}
+                                Change Password
+                            {/if}
+                        </button>
+                    </form>
+                </div>
+            </div>
+
             <!-- Notifications Section -->
             <div class="settings-section">
                 <div class="section-header">

@@ -71,7 +71,11 @@
             <div class="profile-info">
                 <div class="avatar-container">
                     <div class="avatar-large">
-                        {getUserInitials(user.username)}
+                        {#if user.profileImage}
+                            <img src={user.profileImage} alt={user.username} class="avatar-img" />
+                        {:else}
+                            {getUserInitials(user.username)}
+                        {/if}
                     </div>
                 </div>
                 <div class="user-details">

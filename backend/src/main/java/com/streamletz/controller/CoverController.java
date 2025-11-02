@@ -29,7 +29,7 @@ public class CoverController {
             Path coverPath = Paths.get(coversPath, filename);
 
             if (!Files.exists(coverPath)) {
-                log.warn("Cover not found: {}", filename);
+                log.debug("Cover not found: {}", filename);
                 return ResponseEntity.notFound().build();
             }
 
@@ -46,7 +46,7 @@ public class CoverController {
                     .body(resource);
 
         } catch (Exception e) {
-            log.error("Error serving cover {}: {}", filename, e.getMessage());
+            log.error("Error serving cover {}: {}", filename, e.getMessage(), e);
             return ResponseEntity.internalServerError().build();
         }
     }

@@ -4,7 +4,7 @@
     "docker:restart": "docker-compose restart",
     "docker:logs": "docker-compose logs -f",
     "docker:clean": "docker-compose down && docker volume rm streamletz_postgres_data && docker-compose up -d",
-    "db:clear-tracks": "docker exec -it streamletz-db psql -U streamletz_user -d streamletz -c \"DELETE FROM tracks;\""
+    "db:clear-tracks": "docker exec -it streamletz-db psql -U streamletz_user -d streamletz -c \"DELETE FROM liked_tracks; DELETE FROM playlist_tracks; DELETE FROM tracks; DELETE FROM playlists;\""
   },
   "devDependencies": {
     "@tsconfig/svelte": "^5.0.5"

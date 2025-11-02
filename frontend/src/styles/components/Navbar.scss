@@ -110,6 +110,13 @@
             justify-content: center;
             font-weight: 700;
             font-size: 0.9rem;
+            overflow: hidden;
+
+            .avatar-img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
         }
 
         .profile-name {
@@ -178,6 +185,13 @@
             justify-content: center;
             font-weight: 700;
             font-size: 1rem;
+            overflow: hidden;
+
+            .avatar-img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
         }
 
         .dropdown-user-info {
@@ -231,6 +245,282 @@
             &:hover {
                 background: rgba(239, 68, 68, 0.1);
                 color: #fca5a5;
+            }
+        }
+    }
+}
+
+.mobile-search-btn {
+    display: none;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: $background-light;
+    border-radius: 50%;
+    color: $text-primary;
+    cursor: pointer;
+    transition: all $transition-fast;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    &:hover {
+        background: $background-medium;
+        color: $primary-color;
+        transform: scale(1.05);
+    }
+
+    &:active {
+        transform: scale(0.95);
+    }
+}
+
+.mobile-search-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: $z-modal;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: $spacing-md;
+    animation: fadeIn 0.2s ease;
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+}
+
+.mobile-search-content {
+    width: 100%;
+    max-width: 600px;
+    margin-top: 80px;
+    animation: slideDown 0.3s ease;
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}
+
+.close-search-btn {
+    position: absolute;
+    top: $spacing-lg;
+    right: $spacing-lg;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: $background-card;
+    border-radius: 50%;
+    color: $text-primary;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all $transition-fast;
+    box-shadow: $shadow-lg;
+
+    svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    &:hover {
+        background: $background-light;
+        color: $error-color;
+        transform: rotate(90deg);
+    }
+
+    &:active {
+        transform: rotate(90deg) scale(0.95);
+    }
+}
+
+.mobile-search-input {
+    position: relative;
+    width: 100%;
+
+    .search-icon {
+        position: absolute;
+        left: $spacing-lg;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 24px;
+        height: 24px;
+        color: $text-secondary;
+        pointer-events: none;
+    }
+
+    input {
+        width: 100%;
+        padding: $spacing-lg $spacing-lg $spacing-lg 64px;
+        background: $background-card;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: $border-radius-full;
+        color: $text-primary;
+        font-size: 1.125rem;
+        transition: all $transition-fast;
+        box-shadow: $shadow-xl;
+
+        &::placeholder {
+            color: $text-secondary;
+        }
+
+        &:focus {
+            outline: none;
+            border-color: $primary-color;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2), $shadow-xl;
+        }
+    }
+}
+
+@media (max-width: $breakpoint-tablet) {
+    .navbar-content {
+        padding: $spacing-sm $spacing-md;
+        gap: $spacing-sm;
+    }
+
+    .navbar-brand {
+        min-width: auto;
+        gap: $spacing-sm;
+
+        .logo-icon {
+            width: 28px;
+            height: 28px;
+        }
+
+        h1 {
+            font-size: 1.25rem;
+        }
+    }
+
+    .search-bar {
+        max-width: 300px;
+
+        input {
+            font-size: 0.875rem;
+            padding: $spacing-sm $spacing-sm $spacing-sm 42px;
+        }
+
+        .search-icon {
+            width: 18px;
+            height: 18px;
+            left: $spacing-sm;
+        }
+    }
+
+    .profile-dropdown {
+        .dropdown-menu {
+            right: -$spacing-sm;
+            width: 220px;
+        }
+    }
+}
+
+@media (max-width: $breakpoint-mobile) {
+    .navbar-content {
+        padding: $spacing-sm;
+        gap: $spacing-xs;
+    }
+
+    .navbar-brand {
+        h1 {
+            font-size: 1.125rem;
+        }
+    }
+
+    .search-bar {
+        display: none;
+    }
+
+    .mobile-search-btn {
+        display: flex;
+    }
+
+    .mobile-search-content {
+        margin-top: 60px;
+    }
+
+    .close-search-btn {
+        top: $spacing-md;
+        right: $spacing-md;
+    }
+
+    .mobile-search-input {
+        input {
+            font-size: 1rem;
+            padding: $spacing-md $spacing-md $spacing-md 45px;
+        }
+
+        .search-icon {
+            width: 20px;
+            height: 20px;
+            left: $spacing-md;
+        }
+    }
+
+    .profile-dropdown {
+        .profile-btn {
+            padding: $spacing-xs $spacing-sm;
+            gap: $spacing-xs;
+
+            .profile-avatar {
+                width: 28px;
+                height: 28px;
+                font-size: 0.8rem;
+            }
+        }
+
+        .dropdown-menu {
+            right: -$spacing-xs;
+            width: 200px;
+            padding: $spacing-xs;
+        }
+
+        .dropdown-header {
+            padding: $spacing-xs;
+            gap: $spacing-sm;
+
+            .dropdown-avatar {
+                width: 36px;
+                height: 36px;
+                font-size: 0.9rem;
+            }
+
+            .dropdown-user-info .dropdown-username {
+                font-size: 0.875rem;
+            }
+        }
+
+        .dropdown-item {
+            padding: $spacing-sm;
+            font-size: 0.875rem;
+
+            svg {
+                width: 18px;
+                height: 18px;
             }
         }
     }
