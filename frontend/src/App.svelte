@@ -6,6 +6,8 @@
     import Playlists from "./pages/Playlists.svelte";
     import PlaylistDetail from "./pages/PlaylistDetail.svelte";
     import LikedSongs from "./pages/LikedSongs.svelte";
+    import Profile from "./pages/Profile.svelte";
+    import Settings from "./pages/Settings.svelte";
     import AudioPlayer from "./components/AudioPlayer.svelte";
     import { authService } from "./lib/authService";
     import type { Track } from "./lib/trackService";
@@ -18,6 +20,8 @@
         | "playlists"
         | "playlist-detail"
         | "liked-songs"
+        | "profile"
+        | "settings"
     >("login");
     let isAuthenticated = $state(false);
     let playlistId = $state<string>("");
@@ -81,6 +85,10 @@
                 currentPage = "playlist-detail";
             } else if (path === "/liked") {
                 currentPage = "liked-songs";
+            } else if (path === "/profile") {
+                currentPage = "profile";
+            } else if (path === "/settings") {
+                currentPage = "settings";
             } else if (path === "/register") {
                 currentPage = "register";
             } else if (path === "/login") {
@@ -147,6 +155,10 @@
         />
     {:else if currentPage === "liked-songs"}
         <LikedSongs bind:currentTrack bind:isPlaying bind:allTracks />
+    {:else if currentPage === "profile"}
+        <Profile />
+    {:else if currentPage === "settings"}
+        <Settings />
     {/if}
 
     {#if isAuthenticated && currentTrack}

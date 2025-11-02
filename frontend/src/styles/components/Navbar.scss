@@ -166,7 +166,7 @@
         display: flex;
         align-items: center;
         gap: $spacing-md;
-        padding: $spacing-md;
+        padding: $spacing-sm;
 
         .dropdown-avatar {
             width: 40px;
@@ -201,7 +201,7 @@
         display: flex;
         align-items: center;
         gap: $spacing-md;
-        padding: $spacing-md;
+        padding: 0.75rem;
         background: none;
         border: none;
         color: $text-secondary;

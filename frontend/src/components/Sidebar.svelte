@@ -16,7 +16,6 @@
   let currentPath = $state(window.location.pathname);
   let animationFrameId: number | null = null;
   let playlists = $state<Playlist[]>([]);
-  let loadingPlaylists = $state(false);
 
   function toggleSidebar() {
     collapsed = !collapsed;
@@ -72,12 +71,9 @@
 
   async function loadPlaylists() {
     try {
-      loadingPlaylists = true;
       playlists = await playlistService.getUserPlaylists();
     } catch (err) {
       console.error("Failed to load playlists in sidebar:", err);
-    } finally {
-      loadingPlaylists = false;
     }
   }
 
@@ -192,7 +188,6 @@
             </div>
           </a>
         </div>
-
         {#if playlists.length > 0}
           <div class="playlists-section">
             <div class="section-header">

@@ -1,0 +1,414 @@
+@use "../variables.scss" as *;
+
+.profile-page {
+    min-height: 100vh;
+    background: $background-dark;
+    padding-bottom: 130px;
+}
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    gap: $spacing-lg;
+
+    .spinner {
+        width: 48px;
+        height: 48px;
+        border: 4px solid rgba($primary-color, 0.2);
+        border-top-color: $primary-color;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    p {
+        color: $text-secondary;
+        font-size: 1.1rem;
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.profile-header {
+    position: relative;
+    margin-bottom: $spacing-xxxl;
+}
+
+.profile-banner {
+    height: 5vh;
+    min-height: 150px;
+    max-height: 280px;
+    background: $gradient-primary;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg,
+                transparent 0%,
+                rgba($background-dark, 0.8) 100%);
+    }
+
+    .back-btn {
+        position: absolute;
+        top: $spacing-lg;
+        right: $spacing-lg;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: $text-primary;
+        padding: $spacing-sm $spacing-lg;
+        border-radius: $border-radius-full;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all $transition-normal;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        gap: $spacing-xs;
+
+        &:hover {
+            background: rgba(0, 0, 0, 0.7);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateX(4px);
+        }
+    }
+}
+
+.profile-info {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 $spacing-xl;
+    position: relative;
+    margin-top: -80px;
+    display: flex;
+    gap: $spacing-xl;
+    align-items: center;
+}
+
+.avatar-container {
+    flex-shrink: 0;
+}
+
+.avatar-large {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: $gradient-secondary;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: $text-primary;
+    box-shadow: $shadow-xl;
+    border: 4px solid $background-dark;
+    position: relative;
+    z-index: 10;
+}
+
+.username {
+    font-size: 2.5rem;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: $spacing-md;
+    color: $text-primary;
+    text-shadow: $shadow-lg;
+}
+
+.user-stats {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    font-size: 0.875rem;
+    color: $text-secondary;
+
+    .stat-item {
+        strong {
+            color: $text-primary;
+            font-weight: 600;
+        }
+    }
+
+    .stat-divider {
+        color: $text-muted;
+    }
+}
+
+.profile-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 $spacing-lg $spacing-xl;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+}
+
+.profile-section {
+    background: $background-card;
+    border-radius: $border-radius-lg;
+    padding: $spacing-lg;
+    box-shadow: $shadow-md;
+    transition: all $transition-normal;
+
+    &:hover {
+        box-shadow: $shadow-lg;
+    }
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: $spacing-md;
+    color: $text-primary;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: $spacing-lg;
+}
+
+.info-card {
+    display: flex;
+    gap: $spacing-lg;
+    padding: $spacing-lg;
+    background: $background-light;
+    border-radius: $border-radius-md;
+    border: 1px solid rgba($primary-color, 0.1);
+    transition: all $transition-normal;
+
+    &:hover {
+        border-color: rgba($primary-color, 0.3);
+        background: $background-medium;
+    }
+}
+
+.info-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: $border-radius-md;
+    background: $gradient-primary;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    svg {
+        color: $text-primary;
+        width: 20px;
+        height: 20px;
+    }
+}
+
+.info-content {
+    flex: 1;
+    min-width: 0;
+
+    .info-label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: $text-secondary;
+        margin-bottom: $spacing-xs;
+    }
+
+    p {
+        font-size: 0.9375rem;
+        color: $text-primary;
+        font-weight: 500;
+        word-break: break-word;
+    }
+}
+
+.recent-tracks {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+}
+
+.recent-track-item {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    padding: $spacing-md;
+    background: $background-light;
+    border-radius: $border-radius-md;
+    transition: all $transition-normal;
+    cursor: pointer;
+
+    &:hover {
+        background: $background-medium;
+        transform: translateX(4px);
+    }
+}
+
+.track-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: $border-radius-sm;
+    background: $gradient-secondary;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    svg {
+        color: $text-primary;
+    }
+}
+
+.track-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.track-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: $text-primary;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.track-artist {
+    font-size: 0.75rem;
+    color: $text-secondary;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: $spacing-lg;
+}
+
+.stat-card {
+    background: $gradient-dark;
+    border-radius: $border-radius-lg;
+    padding: $spacing-xl;
+    text-align: center;
+    border: 1px solid rgba($primary-color, 0.1);
+    transition: all $transition-normal;
+
+    &:hover {
+        border-color: rgba($primary-color, 0.3);
+        transform: translateY(-4px);
+        box-shadow: $shadow-glow;
+    }
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto $spacing-sm;
+    border-radius: $border-radius-full;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $gradient-primary;
+
+    &.playlists {
+        background: $gradient-accent;
+    }
+
+    &.liked {
+        background: $gradient-secondary;
+    }
+
+    svg {
+        color: $text-primary;
+        width: 24px;
+        height: 24px;
+    }
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 900;
+    color: $text-primary;
+    margin-bottom: $spacing-xs;
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: $text-secondary;
+}
+
+@media (max-width: $breakpoint-tablet) {
+    .profile-info {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        margin-top: -100px;
+    }
+
+    .avatar-large {
+        width: 150px;
+        height: 150px;
+        font-size: 3rem;
+    }
+
+    .username {
+        font-size: 3rem;
+    }
+
+    .user-stats {
+        justify-content: center;
+    }
+
+    .profile-content {
+        padding: 0 $spacing-md $spacing-xxxl;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: $breakpoint-mobile) {
+    .profile-banner {
+        height: 25vh;
+        min-height: 160px;
+        max-height: 200px;
+    }
+
+    .username {
+        font-size: 2rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+    }
+
+    .profile-section {
+        padding: $spacing-lg;
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+    }
+}
