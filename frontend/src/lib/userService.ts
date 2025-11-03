@@ -8,6 +8,10 @@ export interface UserProfile {
     createdAt: string;
 }
 
+export interface UpdateProfileResponse extends UserProfile {
+    newToken?: string | null;  // New token if username changed
+}
+
 export interface UpdateProfileRequest {
     username?: string;
     email?: string;
@@ -26,7 +30,12 @@ export const userService = {
         return response.data;
     },
 
-    async updateProfile(data: UpdateProfileRequest): Promise<UserProfile> {
+    async getPublicProfile(identifier: string | number): Promise<UserProfile> {
+        const response = await api.get(`/user/profile/${identifier}`);
+        return response.data;
+    },
+
+    async updateProfile(data: UpdateProfileRequest): Promise<UpdateProfileResponse> {
         const response = await api.put("/user/profile", data);
         return response.data;
     },

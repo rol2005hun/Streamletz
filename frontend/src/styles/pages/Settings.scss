@@ -179,6 +179,84 @@
     }
 }
 
+.user-id-display {
+    background: linear-gradient(135deg, rgba($primary-color, 0.1) 0%, rgba($secondary-color, 0.05) 100%);
+    border: 1px solid rgba($primary-color, 0.2);
+    border-radius: $border-radius-md;
+    padding: $spacing-md;
+
+    .id-label {
+        display: flex;
+        align-items: center;
+        gap: $spacing-xs;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: $text-secondary;
+        margin-bottom: $spacing-xs;
+
+        svg {
+            width: 14px;
+            height: 14px;
+            opacity: 0.7;
+        }
+    }
+
+    .id-value {
+        display: flex;
+        align-items: center;
+        gap: $spacing-sm;
+        margin-bottom: $spacing-xs;
+
+        code {
+            font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: $primary-color;
+            background: rgba($background-dark, 0.4);
+            padding: $spacing-xs $spacing-sm;
+            border-radius: $border-radius-sm;
+            letter-spacing: 0.5px;
+        }
+
+        .copy-id-btn {
+            padding: $spacing-xs;
+            background: rgba($primary-color, 0.1);
+            border: 1px solid rgba($primary-color, 0.2);
+            border-radius: $border-radius-sm;
+            color: $primary-color;
+            cursor: pointer;
+            transition: all $transition-normal;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            &:hover {
+                background: rgba($primary-color, 0.2);
+                border-color: $primary-color;
+                transform: translateY(-1px);
+            }
+
+            &:active {
+                transform: translateY(0);
+            }
+
+            svg {
+                width: 16px;
+                height: 16px;
+            }
+        }
+    }
+
+    .id-hint {
+        font-size: 0.75rem;
+        color: $text-secondary;
+        margin: 0;
+        line-height: 1.4;
+    }
+}
+
 .settings-group {
     display: flex;
     flex-direction: column;
@@ -226,11 +304,6 @@
         &:hover {
             background: transparent;
         }
-    }
-
-    &:hover {
-        background: $background-medium;
-        border-color: rgba($primary-color, 0.2);
     }
 }
 
@@ -306,64 +379,6 @@
     }
 }
 
-.settings-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: $spacing-sm;
-    padding-top: $spacing-md;
-}
-
-.btn-primary,
-.btn-secondary {
-    padding: $spacing-sm $spacing-lg;
-    border-radius: $border-radius-md;
-    font-size: 0.875rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all $transition-normal;
-    border: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: $spacing-sm;
-    min-width: 140px;
-
-    &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-}
-
-.btn-primary {
-    background: $gradient-primary;
-    color: $text-primary;
-    box-shadow: $shadow-md;
-
-    &:hover:not(:disabled) {
-        box-shadow: $shadow-glow-hover;
-        transform: translateY(-2px);
-    }
-
-    &:active:not(:disabled) {
-        transform: translateY(0);
-    }
-}
-
-.btn-secondary {
-    background: $background-light;
-    color: $text-primary;
-    border: 1px solid rgba($text-muted, 0.3);
-
-    &:hover:not(:disabled) {
-        background: $background-medium;
-        border-color: rgba($primary-color, 0.3);
-    }
-
-    &:active:not(:disabled) {
-        transform: scale(0.98);
-    }
-}
-
 // Responsive design
 @media (max-width: $breakpoint-tablet) {
     .settings-page {
@@ -416,6 +431,18 @@
     &::placeholder {
         color: $text-muted;
     }
+
+    &.readonly {
+        background: rgba($text-muted, 0.1);
+        color: $text-secondary;
+        cursor: not-allowed;
+        border-color: rgba($text-muted, 0.2);
+
+        &:focus {
+            border-color: rgba($text-muted, 0.3);
+            box-shadow: none;
+        }
+    }
 }
 
 .save-profile-btn {
@@ -467,15 +494,6 @@
 
         .settings-subtitle {
             font-size: 1rem;
-        }
-    }
-
-    .settings-actions {
-        flex-direction: column-reverse;
-
-        .btn-primary,
-        .btn-secondary {
-            width: 100%;
         }
     }
 

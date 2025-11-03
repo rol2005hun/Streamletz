@@ -24,7 +24,27 @@ export interface RegisterData {
   password: string;
 }
 
+let authToken: string | null = null;
+let currentUser: User | null = null;
+
 export const authService = {
+  init(): void {
+    if (typeof window === "undefined") return;
+
+    const token = sessionStorage.getItem("token");
+    const userStr = sessionStorage.getItem("user");
+
+    if (token && userStr) {
+      try {
+        authToken = token;
+        currentUser = JSON.parse(userStr);
+      } catch (error) {
+        console.error("Failed to parse user from sessionStorage:", error);
+        this.logout();
+      }
+    }
+  },
+
   async login(data: LoginData): Promise<AuthResponse> {
     const response = await api.post("/auth/login", data);
     return response.data;
@@ -35,21 +55,35 @@ export const authService = {
     return response.data;
   },
 
+  setAuth(token: string, user: User): void {
+    authToken = token;
+    currentUser = user;
+
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("token", token);
+      sessionStorage.setItem("user", JSON.stringify(user));
+    }
+  },
+
   logout(): void {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    authToken = null;
+    currentUser = null;
+
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("user");
+    }
   },
 
   getToken(): string | null {
-    return localStorage.getItem("token");
+    return authToken;
   },
 
   getUser(): User | null {
-    const userStr = localStorage.getItem("user");
-    return userStr ? JSON.parse(userStr) : null;
+    return currentUser;
   },
 
   isAuthenticated(): boolean {
-    return !!this.getToken();
+    return !!authToken;
   }
 };

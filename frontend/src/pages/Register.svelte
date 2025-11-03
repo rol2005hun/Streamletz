@@ -60,14 +60,11 @@
       const registerData: RegisterData = { username, email, password };
       const response = await authService.register(registerData);
 
-      localStorage.setItem("token", response.token);
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          username: response.username,
-          email: response.email,
-        }),
-      );
+      authService.setAuth(response.token, {
+        username: response.username,
+        email: response.email,
+        profileImage: response.profileImage,
+      });
 
       onRegister();
     } catch (err: any) {

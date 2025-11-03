@@ -11,7 +11,6 @@
     import AudioPlayer from "./components/AudioPlayer.svelte";
     import { authService } from "./lib/authService";
     import type { Track } from "./lib/trackService";
-    import { trackService } from "./lib/trackService";
 
     let currentPage = $state<
         | "login"
@@ -25,39 +24,15 @@
     >("login");
     let isAuthenticated = $state(false);
     let playlistId = $state<string>("");
+    let profileIdentifier = $state<string>("");
 
     let currentTrack = $state<Track | null>(null);
     let isPlaying = $state(false);
     let allTracks = $state<Track[]>([]);
 
     onMount(() => {
+        authService.init();
         isAuthenticated = authService.isAuthenticated();
-
-        if (isAuthenticated) {
-            const savedData = localStorage.getItem("streamletz_last_playback");
-            if (savedData) {
-                try {
-                    const { trackId } = JSON.parse(savedData);
-                    if (trackId) {
-                        trackService
-                            .getTrackById(trackId)
-                            .then((savedTrack) => {
-                                if (savedTrack) {
-                                    currentTrack = savedTrack;
-                                }
-                            })
-                            .catch((err) => {
-                                console.error(
-                                    "[App] Failed to restore track:",
-                                    err,
-                                );
-                            });
-                    }
-                } catch (err) {
-                    console.error("[App] Failed to parse saved data:", err);
-                }
-            }
-        }
 
         const handleRouteChange = () => {
             const path = window.location.pathname;
@@ -85,7 +60,11 @@
                 currentPage = "playlist-detail";
             } else if (path === "/liked") {
                 currentPage = "liked-songs";
+            } else if (path.startsWith("/profile/")) {
+                profileIdentifier = path.split("/")[2];
+                currentPage = "profile";
             } else if (path === "/profile") {
+                profileIdentifier = "";
                 currentPage = "profile";
             } else if (path === "/settings") {
                 currentPage = "settings";
@@ -156,7 +135,12 @@
     {:else if currentPage === "liked-songs"}
         <LikedSongs bind:currentTrack bind:isPlaying bind:allTracks />
     {:else if currentPage === "profile"}
-        <Profile />
+        <Profile 
+            identifier={profileIdentifier || undefined}
+            bind:currentTrack
+            bind:isPlaying
+            bind:allTracks
+        />
     {:else if currentPage === "settings"}
         <Settings />
     {/if}

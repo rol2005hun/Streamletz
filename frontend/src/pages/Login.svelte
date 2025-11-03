@@ -27,14 +27,11 @@
       const loginData: LoginData = { username, password };
       const response = await authService.login(loginData);
 
-      localStorage.setItem("token", response.token);
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          username: response.username,
-          email: response.email,
-        }),
-      );
+      authService.setAuth(response.token, {
+        username: response.username,
+        email: response.email,
+        profileImage: response.profileImage,
+      });
 
       onLogin();
     } catch (err: any) {

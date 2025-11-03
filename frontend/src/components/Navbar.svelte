@@ -22,9 +22,8 @@
   function toggleMobileSearch() {
     mobileSearchOpen = !mobileSearchOpen;
     if (mobileSearchOpen) {
-      // Focus the input after opening
       setTimeout(() => {
-        const input = document.querySelector('.mobile-search-modal input');
+        const input = document.querySelector(".mobile-search-modal input");
         if (input) (input as HTMLInputElement).focus();
       }, 100);
     }
@@ -32,17 +31,15 @@
 
   function handleResize() {
     const isMobile = window.innerWidth <= 480;
-    
+
     if (!isMobile && mobileSearchOpen) {
-      // Screen became larger - close mobile search
       wasMobileSearchOpen = true;
       mobileSearchOpen = false;
     } else if (isMobile && wasMobileSearchOpen && !mobileSearchOpen) {
-      // Screen became smaller again - reopen mobile search
       mobileSearchOpen = true;
       wasMobileSearchOpen = false;
       setTimeout(() => {
-        const input = document.querySelector('.mobile-search-modal input');
+        const input = document.querySelector(".mobile-search-modal input");
         if (input) (input as HTMLInputElement).focus();
       }, 100);
     }
@@ -53,7 +50,10 @@
     if (!target.closest(".profile-dropdown")) {
       dropdownOpen = false;
     }
-    if (!target.closest(".mobile-search-modal") && !target.closest(".mobile-search-btn")) {
+    if (
+      !target.closest(".mobile-search-modal") &&
+      !target.closest(".mobile-search-btn")
+    ) {
       mobileSearchOpen = false;
     }
   }
@@ -104,7 +104,11 @@
       />
     </div>
 
-    <button class="mobile-search-btn" onclick={toggleMobileSearch} aria-label="Search">
+    <button
+      class="mobile-search-btn"
+      onclick={toggleMobileSearch}
+      aria-label="Search"
+    >
       <svg viewBox="0 0 24 24" fill="currentColor">
         <path
           d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
@@ -116,7 +120,11 @@
       <button class="profile-btn" onclick={toggleDropdown}>
         <div class="profile-avatar">
           {#if user?.profileImage}
-            <img src={user.profileImage} alt={user.username} class="avatar-img" />
+            <img
+              src={user.profileImage}
+              alt={user.username}
+              class="avatar-img"
+            />
           {:else}
             {user?.username?.charAt(0).toUpperCase()}
           {/if}
@@ -137,7 +145,11 @@
           <div class="dropdown-header">
             <div class="dropdown-avatar">
               {#if user?.profileImage}
-                <img src={user.profileImage} alt={user.username} class="avatar-img" />
+                <img
+                  src={user.profileImage}
+                  alt={user.username}
+                  class="avatar-img"
+                />
               {:else}
                 {user?.username?.charAt(0).toUpperCase()}
               {/if}
@@ -180,9 +192,15 @@
   {#if mobileSearchOpen}
     <div class="mobile-search-modal">
       <div class="mobile-search-content">
-        <button class="close-search-btn" onclick={toggleMobileSearch} aria-label="Close search">
+        <button
+          class="close-search-btn"
+          onclick={toggleMobileSearch}
+          aria-label="Close search"
+        >
           <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+            <path
+              d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+            />
           </svg>
         </button>
         <div class="mobile-search-input">

@@ -29,6 +29,44 @@
     }
 }
 
+.error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    gap: $spacing-lg;
+    text-align: center;
+
+    .error-icon {
+        font-size: 4rem;
+    }
+
+    .error-message {
+        color: $text-secondary;
+        font-size: 1.1rem;
+        max-width: 500px;
+    }
+
+    .back-btn {
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: $text-primary;
+        padding: $spacing-sm $spacing-lg;
+        border-radius: $border-radius-full;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all $transition-normal;
+
+        &:hover {
+            background: rgba(0, 0, 0, 0.7);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+    }
+}
+
 @keyframes spin {
     to {
         transform: rotate(360deg);
@@ -81,6 +119,23 @@
             border-color: rgba(255, 255, 255, 0.3);
             transform: translateX(4px);
         }
+    }
+
+    .public-badge {
+        position: absolute;
+        top: $spacing-lg;
+        left: $spacing-lg;
+        background: rgba($secondary-color, 0.2);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba($secondary-color, 0.3);
+        color: $secondary-color;
+        padding: $spacing-xs $spacing-md;
+        border-radius: $border-radius-full;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        z-index: 10;
     }
 }
 
@@ -179,66 +234,6 @@
     color: $text-primary;
 }
 
-.recent-tracks {
-    display: flex;
-    flex-direction: column;
-    gap: $spacing-sm;
-}
-
-.recent-track-item {
-    display: flex;
-    align-items: center;
-    gap: $spacing-md;
-    padding: $spacing-md;
-    background: $background-light;
-    border-radius: $border-radius-md;
-    transition: all $transition-normal;
-    cursor: pointer;
-
-    &:hover {
-        background: $background-medium;
-        transform: translateX(4px);
-    }
-}
-
-.track-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: $border-radius-sm;
-    background: $gradient-secondary;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-
-    svg {
-        color: $text-primary;
-    }
-}
-
-.track-info {
-    flex: 1;
-    min-width: 0;
-}
-
-.track-title {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: $text-primary;
-    margin-bottom: 2px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.track-artist {
-    font-size: 0.75rem;
-    color: $text-secondary;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -269,10 +264,6 @@
     align-items: center;
     justify-content: center;
     background: $gradient-primary;
-
-    &.playlists {
-        background: $gradient-accent;
-    }
 
     &.liked {
         background: $gradient-secondary;
@@ -330,6 +321,18 @@
     .stats-grid {
         grid-template-columns: 1fr;
     }
+
+    .profile-page {
+
+        .tracks-header,
+        .track-row {
+            grid-template-columns: 40px 1fr 80px !important;
+
+            .col-album {
+                display: none;
+            }
+        }
+    }
 }
 
 @media (max-width: $breakpoint-mobile) {
@@ -353,5 +356,208 @@
 
     .stat-value {
         font-size: 2.5rem;
+    }
+
+    .profile-page {
+        .tracks-section {
+            padding: 1rem;
+        }
+
+        .tracks-header,
+        .track-row {
+            grid-template-columns: 40px 1fr !important;
+            gap: 0.5rem;
+
+            .col-duration {
+                display: none;
+            }
+        }
+    }
+}
+
+.public-profile-info {
+    text-align: center;
+    padding: $spacing-xxxl;
+
+    .info-text {
+        font-size: 1rem;
+        color: $text-secondary;
+        margin-bottom: $spacing-md;
+    }
+
+    .member-since {
+        font-size: 0.875rem;
+        color: $text-muted;
+        font-style: italic;
+    }
+}
+
+.tracks-section {
+    background: $background-card;
+    border-radius: $border-radius-md;
+    padding: 1.5rem;
+    box-shadow: $shadow-md;
+    margin-top: $spacing-lg;
+}
+
+.tracks-header {
+    display: grid;
+    grid-template-columns: 50px 1fr 1fr 100px;
+    gap: 1rem;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: $text-secondary;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+
+    .col-number {
+        text-align: center;
+    }
+
+    .col-duration {
+        text-align: right;
+    }
+}
+
+.tracks-list {
+    .track-row {
+        display: grid;
+        grid-template-columns: 50px 1fr 1fr 100px;
+        gap: 1rem;
+        padding: 0.75rem 1rem;
+        border-radius: $border-radius-sm;
+        align-items: center;
+        transition: background $transition-fast;
+        cursor: pointer;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        &.playing {
+            background: rgba($primary-color, 0.15);
+
+            .col-number {
+                color: $primary-color;
+            }
+
+            .track-title {
+                color: $primary-color;
+            }
+        }
+
+        .col-number {
+            color: $text-secondary;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+
+            .play-btn {
+                background: none;
+                border: none;
+                cursor: pointer;
+                padding: 0;
+                width: 24px;
+                height: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: transform $transition-fast;
+                color: $text-primary;
+
+                svg {
+                    width: 24px;
+                    height: 24px;
+                }
+
+                &:hover {
+                    transform: scale(1.2);
+                    color: $primary-color;
+                }
+            }
+        }
+
+        .col-title {
+            min-width: 0;
+
+            .track-info-cell {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                min-width: 0;
+
+                .track-cover {
+                    width: 48px;
+                    height: 48px;
+                    border-radius: $border-radius-sm;
+                    object-fit: cover;
+                    flex-shrink: 0;
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+
+                    &.placeholder {
+                        background: linear-gradient(
+                            135deg,
+                            rgba(255, 255, 255, 0.1),
+                            rgba(255, 255, 255, 0.05)
+                        );
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 1.5rem;
+                    }
+                }
+
+                .track-text {
+                    min-width: 0;
+                    flex: 1;
+                }
+
+                .track-title {
+                    color: $text-primary;
+                    font-weight: 600;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    margin-bottom: 0.25rem;
+                    font-size: 0.95rem;
+                }
+
+                .track-artist {
+                    color: $text-secondary;
+                    font-size: 0.875rem;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+
+                    &:hover {
+                        color: $text-primary;
+                        text-decoration: underline;
+                    }
+                }
+            }
+        }
+
+        .col-album {
+            color: $text-secondary;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 0.9rem;
+
+            &:hover {
+                color: $text-primary;
+                text-decoration: underline;
+            }
+        }
+
+        .col-duration {
+            color: $text-secondary;
+            font-size: 0.9rem;
+            text-align: right;
+        }
     }
 }

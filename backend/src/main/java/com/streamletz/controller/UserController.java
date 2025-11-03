@@ -3,6 +3,7 @@ package com.streamletz.controller;
 import com.streamletz.service.UserService;
 import com.streamletz.util.dto.UpdatePasswordRequest;
 import com.streamletz.util.dto.UpdateProfileRequest;
+import com.streamletz.util.dto.UpdateProfileResponse;
 import com.streamletz.util.dto.UserProfileResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -30,13 +31,20 @@ public class UserController {
         return ResponseEntity.ok(profile);
     }
 
+    @GetMapping("/profile/{identifier}")
+    @Operation(summary = "Get public profile", description = "Get any user's public profile by ID or username")
+    public ResponseEntity<UserProfileResponse> getPublicProfile(@PathVariable String identifier) {
+        UserProfileResponse profile = userService.getPublicProfile(identifier);
+        return ResponseEntity.ok(profile);
+    }
+
     @PutMapping("/profile")
     @Operation(summary = "Update user profile", description = "Update user's profile information")
-    public ResponseEntity<UserProfileResponse> updateProfile(
+    public ResponseEntity<UpdateProfileResponse> updateProfile(
             @Valid @RequestBody UpdateProfileRequest request,
             Authentication authentication) {
         String username = authentication.getName();
-        UserProfileResponse profile = userService.updateProfile(username, request);
+        UpdateProfileResponse profile = userService.updateProfile(username, request);
         return ResponseEntity.ok(profile);
     }
 

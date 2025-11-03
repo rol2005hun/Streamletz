@@ -49,7 +49,7 @@ public class AuthService {
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
         String token = jwtTokenProvider.generateToken(userDetails);
 
-        return new AuthResponse(token, user.getUsername(), user.getEmail());
+        return new AuthResponse(token, user.getUsername(), user.getEmail(), user.getProfileImage());
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -62,6 +62,6 @@ public class AuthService {
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
         String token = jwtTokenProvider.generateToken(userDetails);
 
-        return new AuthResponse(token, user.getUsername(), user.getEmail());
+        return new AuthResponse(token, user.getUsername(), user.getEmail(), user.getProfileImage());
     }
 }

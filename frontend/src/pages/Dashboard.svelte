@@ -19,7 +19,7 @@
     allTracks: Track[];
   } = $props();
 
-  let user = authService.getUser();
+  let user = $state(authService.getUser());
   let tracks = $state<Track[]>([]);
   let searchQuery = $state("");
   let loading = $state(true);
@@ -35,6 +35,7 @@
   let likedTracks = $state<Set<number>>(new Set());
 
   onMount(async () => {
+    user = authService.getUser();
     await loadTracks();
     await loadLikedTracks();
     isFirstLoad = false;

@@ -95,18 +95,23 @@
             });
             userProfile = updatedProfile;
 
-            // Update localStorage user with new profile image
-            const currentUser = authService.getUser();
-            if (currentUser) {
-                localStorage.setItem(
-                    "user",
-                    JSON.stringify({
-                        ...currentUser,
+            // If server returned a new token (username changed), update auth
+            if (updatedProfile.newToken) {
+                authService.setAuth(updatedProfile.newToken, {
+                    username: updatedProfile.username,
+                    email: updatedProfile.email,
+                    profileImage: updatedProfile.profileImage,
+                });
+            } else {
+                // Just update user data in authService (email/profileImage change)
+                const token = authService.getToken();
+                if (token) {
+                    authService.setAuth(token, {
                         username: updatedProfile.username,
                         email: updatedProfile.email,
                         profileImage: updatedProfile.profileImage,
-                    }),
-                );
+                    });
+                }
             }
 
             messageType = "success";
@@ -190,38 +195,6 @@
         }
     }
 
-    function resetSettings() {
-        if (
-            confirm("Are you sure you want to reset all settings to default?")
-        ) {
-            settings = {
-                notifications: {
-                    emailNotifications: true,
-                    pushNotifications: false,
-                    newReleases: true,
-                    playlistUpdates: true,
-                },
-                playback: {
-                    autoplay: true,
-                    crossfade: false,
-                    gaplessPlayback: true,
-                    normalizeVolume: false,
-                },
-                appearance: {
-                    theme: "dark",
-                    compactMode: false,
-                    showAlbumArt: true,
-                },
-                privacy: {
-                    showProfile: true,
-                    showActivity: true,
-                    allowExplicit: true,
-                },
-            };
-            saveSettings();
-        }
-    }
-
     function goBack() {
         window.history.pushState({}, "", "/dashboard");
         window.dispatchEvent(new PopStateEvent("popstate"));
@@ -253,7 +226,6 @@
         {/if}
 
         <div class="settings-content">
-            <!-- Account Settings Section -->
             <div class="settings-section">
                 <div class="section-header">
                     <div class="section-icon">
@@ -279,6 +251,74 @@
                 </div>
 
                 <div class="settings-group">
+                    <div class="user-id-display">
+                        <div class="id-label">
+                            <svg
+                                width="18"
+                                height="18"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <path
+                                    d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
+                                ></path>
+                                <path
+                                    d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
+                                ></path>
+                            </svg>
+                            <span>User ID</span>
+                        </div>
+                        <div class="id-value">
+                            <code>#{userProfile?.id || "..."}</code>
+                            <button
+                                type="button"
+                                class="copy-id-btn"
+                                onclick={() => {
+                                    if (userProfile?.id) {
+                                        navigator.clipboard.writeText(
+                                            userProfile.id.toString(),
+                                        );
+                                        messageType = "success";
+                                        message =
+                                            "User ID copied to clipboard!";
+                                        setTimeout(() => {
+                                            message = "";
+                                            messageType = "";
+                                        }, 2000);
+                                    }
+                                }}
+                                title="Copy ID"
+                            >
+                                <svg
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                >
+                                    <rect
+                                        x="9"
+                                        y="9"
+                                        width="13"
+                                        height="13"
+                                        rx="2"
+                                        ry="2"
+                                    ></rect>
+                                    <path
+                                        d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                                    ></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <p class="id-hint">
+                            Your unique identifier - share this to let others
+                            view your profile
+                        </p>
+                    </div>
+
                     <form
                         onsubmit={(e) => {
                             e.preventDefault();
@@ -355,7 +395,6 @@
 
                 <div class="section-divider"></div>
 
-                <!-- Password Change -->
                 <div class="settings-group">
                     <h3 class="subsection-title">Change Password</h3>
 
@@ -365,7 +404,6 @@
                             changePassword();
                         }}
                     >
-                        <!-- Hidden username field for accessibility -->
                         <input
                             type="text"
                             name="username"
@@ -437,7 +475,6 @@
                 </div>
             </div>
 
-            <!-- Notifications Section -->
             <div class="settings-section">
                 <div class="section-header">
                     <div class="section-icon">
@@ -791,19 +828,6 @@
                         </label>
                     </div>
                 </div>
-            </div>
-
-            <div class="settings-actions">
-                <button class="btn-secondary" onclick={resetSettings}>
-                    Reset to Default
-                </button>
-                <button
-                    class="btn-primary"
-                    onclick={saveSettings}
-                    disabled={saving}
-                >
-                    {saving ? "Saving..." : "Save Changes"}
-                </button>
             </div>
         </div>
     {/if}
