@@ -67,3 +67,15 @@ Streamletz is a music streaming application with:
 - Validate user inputs
 - Follow security best practices
 - Keep dependencies up to date
+
+## Git Commit Conventions
+- Use conventional commit format: `type: short description`
+- Keep commit messages concise and clear
+- Common types:
+  - `feat:` - New feature
+  - `fix:` - Bug fix
+  - `style:` - UI/styling changes
+  - `refactor:` - Code refactoring
+  - `docs:` - Documentation changes
+  - `chore:` - Maintenance tasks
+- Example: `style: improve liked track button visibility with enhanced drop-shadow`

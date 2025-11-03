@@ -9,14 +9,14 @@
 
   let {
     onLogout,
-    currentTrack = $bindable(),
-    isPlaying = $bindable(),
-    allTracks = $bindable(),
+    currentTrack = $bindable(null),
+    isPlaying = $bindable(false),
+    allTracks = $bindable([]),
   }: {
     onLogout: () => void;
-    currentTrack: Track | null;
-    isPlaying: boolean;
-    allTracks: Track[];
+    currentTrack?: Track | null;
+    isPlaying?: boolean;
+    allTracks?: Track[];
   } = $props();
 
   let user = $state(authService.getUser());
