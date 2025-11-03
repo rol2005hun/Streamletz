@@ -106,13 +106,7 @@ buildNumber.properties
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
-# GitHub Copilot
-.github/copilot-instructions.md
-
 # Backend specific
 backend/.github/
 backend/music/*
 !backend/music/README.md
-
-# Other
-PROJECT_SETUP.md
