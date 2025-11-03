@@ -65,7 +65,6 @@
   });
 
   let previousTrackId = $state<number | null>(null);
-  let shouldRestoreState = $state(true);
 
   $effect(() => {
     const currentTrack = track;
@@ -118,10 +117,9 @@
       try {
         const { trackId, position, wasPlaying } = JSON.parse(savedData);
 
-        if (trackId === track.id && shouldRestoreState) {
+        if (trackId === track.id) {
           savedPosition = position;
           shouldAutoPlay = wasPlaying === true;
-          shouldRestoreState = false;
         }
       } catch (e) {
         console.error("[AudioPlayer] Failed to restore playback position:", e);
@@ -187,9 +185,9 @@
       if (progressPercent >= 90) {
         playCountIncremented = true;
         trackService.incrementPlayCount(track.id).catch((err) => {
-          console.error("Failed to increment play count:", err);
-          console.error("Error details:", err.response?.data);
-          console.error("Status:", err.response?.status);
+          console.error("Failed to increment play count: ", err);
+          console.error("Error details: ", err.response?.data);
+          console.error("Status: ", err.response?.status);
         });
       }
     }

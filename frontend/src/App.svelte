@@ -34,6 +34,30 @@
         authService.init();
         isAuthenticated = authService.isAuthenticated();
 
+        const savedData = localStorage.getItem("streamletz_last_playback");
+        if (savedData && isAuthenticated) {
+            try {
+                const { trackId, wasPlaying } = JSON.parse(savedData);
+                if (trackId) {
+                    import("./lib/trackService").then(({ trackService }) => {
+                        trackService
+                            .getTrackById(trackId)
+                            .then((track) => {
+                                if (track) {
+                                    currentTrack = track;
+                                    isPlaying = wasPlaying === true;
+                                }
+                            })
+                            .catch((err) => {
+                                console.error("Failed to restore track:", err);
+                            });
+                    });
+                }
+            } catch (e) {
+                console.error("Failed to restore playback state:", e);
+            }
+        }
+
         const handleRouteChange = () => {
             const path = window.location.pathname;
 
@@ -135,7 +159,7 @@
     {:else if currentPage === "liked-songs"}
         <LikedSongs bind:currentTrack bind:isPlaying bind:allTracks />
     {:else if currentPage === "profile"}
-        <Profile 
+        <Profile
             identifier={profileIdentifier || undefined}
             bind:currentTrack
             bind:isPlaying
