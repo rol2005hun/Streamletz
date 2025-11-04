@@ -87,9 +87,15 @@ jobs:
         password: ${{ secrets.VPS_PASSWORD }} # Set this in your repo secrets
         script: |
           # Ensure Docker and Docker Compose are installed on the VPS
+          if [ ! -d /var/www/streamletz/.git ]; then
+            rm -rf /var/www/streamletz/*
+            git clone https://github.com/rol2005hun/Streamletz.git /var/www/streamletz/
+          else
+            cd /var/www/streamletz/
+            git fetch --all
+            git reset --hard origin/main
+          fi
           cd /var/www/streamletz/
-          git fetch --all
-          git reset --hard origin/main
           # Build and start containers (Java backend, Node frontend)
           docker compose build
           docker compose up -d
