@@ -72,32 +72,6 @@ jobs:
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:latest .
 
-  # Deploy to Railway (Optional)
-  deploy-railway:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [backend-build, frontend-build]
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Install Railway CLI
-      run: npm install -g @railway/cli
-
-    - name: Deploy to Railway
-      run: railway up
-      env:
-        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-
-  # Deploy to Render (Optional)
-  deploy-render:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [backend-build, frontend-build]
-    runs-on: ubuntu-latest
-    steps:
-    - name: Trigger Render Deploy
-      run: |
-        curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
 
   # Deploy to VPS
   deploy-vps:
@@ -108,11 +82,19 @@ jobs:
     - name: SSH into VPS and deploy
       uses: appleboy/ssh-action@v0.1.6
       with:
-        host: ${{ secrets.VPS_HOST }}
-        username: ${{ secrets.VPS_USER }}
-        password: ${{ secrets.VPS_PASSWORD }}
+        host: ${{ secrets.VPS_HOST }} # Set this in your repo secrets
+        username: ${{ secrets.VPS_USER }} # Set this in your repo secrets
+        password: ${{ secrets.VPS_PASSWORD }} # Set this in your repo secrets
         script: |
+          # Ensure Docker and Docker Compose are installed on the VPS
           cd /var/www/streamletz/
           git pull origin main
+          # Build and start containers (Java backend, Node frontend)
           docker compose build
           docker compose up -d
+
+# Required secrets for VPS deploy:
+# - VPS_HOST: your VPS IP or hostname
+# - VPS_USER: your SSH username
+# - VPS_PASSWORD: your SSH password
+# Make sure these are set in GitHub repository > Settings > Secrets and variables > Actions > New repository secret
