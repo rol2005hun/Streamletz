@@ -8,7 +8,6 @@
     } from "../lib/userService";
 
     let loading = $state(true);
-    let saving = $state(false);
     let message = $state("");
     let messageType = $state<"success" | "error" | "">("");
     let profileLoading = $state(false);
@@ -175,7 +174,6 @@
     }
 
     function saveSettings() {
-        saving = true;
         try {
             localStorage.setItem(
                 "streamletz_settings",
@@ -187,7 +185,6 @@
             messageType = "error";
             message = "Failed to save settings";
         } finally {
-            saving = false;
             setTimeout(() => {
                 message = "";
                 messageType = "";
