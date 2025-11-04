@@ -121,8 +121,8 @@ docker-compose up -d
 
 5. **Access the application:**
    - 🎵 Frontend: http://localhost:5173
-   - 🔧 Backend API: http://localhost:8080
-   - 📚 API Docs: http://localhost:8080/swagger-ui.html
+   - 🔧 Backend API: http://localhost:1124
+   - 📚 API Docs: http://localhost:1124/swagger-ui.html
    - 🗄️ Database: localhost:5432
 
 ### Manual Setup (Development)
@@ -147,7 +147,7 @@ mvn clean install
 # Run the application
 mvn spring-boot:run
 
-# Backend will be available at http://localhost:8080
+# Backend will be available at http://localhost:1124
 ```
 
 #### 3. Frontend
@@ -217,7 +217,7 @@ JWT_SECRET=your-super-secret-jwt-key-change-in-production
 MUSIC_STORAGE_PATH=./music
 
 # Frontend
-VITE_API_BASE_URL=http://localhost:8080/api
+VITE_API_BASE_URL=http://localhost:1124/api
 ```
 
 ### Backend Configuration (`application.properties`)
@@ -227,7 +227,7 @@ Key settings:
 - `jwt.secret` - JWT signing key
 - `jwt.expiration` - Token validity (default: 86400000ms = 24h)
 - `music.storage.path` - Music files location
-- `server.port` - Backend port (default: 8080)
+- `server.port` - Backend port (default: 1124)
 
 ## 🚢 Deployment
 
@@ -279,7 +279,7 @@ docker-compose up -d
 
 Once the backend is running, visit the Swagger UI for interactive API documentation:
 
-**http://localhost:8080/swagger-ui.html**
+**http://localhost:1124/swagger-ui.html**
 
 ### Main Endpoints
 

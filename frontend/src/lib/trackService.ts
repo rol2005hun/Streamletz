@@ -29,7 +29,7 @@ export const trackService = {
   },
 
   getStreamUrl(trackId: number): string {
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:1124/api";
     return `${baseUrl}/tracks/stream/${trackId}`;
   },
 

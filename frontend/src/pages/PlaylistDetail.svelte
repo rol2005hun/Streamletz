@@ -197,7 +197,7 @@
                     <img
                       src={track.coverArtUrl.startsWith("http")
                         ? track.coverArtUrl
-                        : `http://localhost:8080${track.coverArtUrl}`}
+                        : `http://localhost:1124${track.coverArtUrl}`}
                       alt={track.album || track.title}
                     />
                   {:else}

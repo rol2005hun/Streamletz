@@ -38,19 +38,19 @@ mvn clean install
 mvn spring-boot:run
 ```
 
-The API will be available at `http://localhost:8080`
+The API will be available at `http://localhost:1124`
 
 ### API Documentation
 
-Swagger UI: `http://localhost:8080/swagger-ui.html`
-OpenAPI JSON: `http://localhost:8080/api-docs`
+Swagger UI: `http://localhost:1124/swagger-ui.html`
+OpenAPI JSON: `http://localhost:1124/api-docs`
 
 ## Docker
 
 Build and run with Docker:
 ```bash
 docker build -t streamletz-backend .
-docker run -p 8080:8080 streamletz-backend
+docker run -p 1124:1124 streamletz-backend
 ```
 
 ## Project Structure

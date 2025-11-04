@@ -258,7 +258,7 @@
                                                             "http",
                                                         )
                                                             ? track.coverArtUrl
-                                                            : `http://localhost:8080${track.coverArtUrl}`}
+                                                            : `http://localhost:1124${track.coverArtUrl}`}
                                                         alt={track.album ||
                                                             track.title}
                                                         class="track-cover"

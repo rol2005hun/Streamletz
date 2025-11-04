@@ -16,6 +16,6 @@ COPY --from=build /app/target/*.jar app.jar
 
 RUN mkdir -p /app/music
 
-EXPOSE 8080
+EXPOSE 1124
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
