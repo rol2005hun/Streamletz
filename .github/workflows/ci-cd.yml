@@ -75,7 +75,7 @@ jobs:
 
   # Deploy to VPS
   deploy-vps:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push'
     needs: [backend-build, frontend-build]
     runs-on: ubuntu-latest
     steps:
