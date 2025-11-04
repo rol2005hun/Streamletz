@@ -36,7 +36,7 @@ jobs:
       run: mvn test
 
     - name: Build Docker image
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
       run: docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:latest .
 
   # Frontend Build and Test
@@ -69,13 +69,13 @@ jobs:
         VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL || 'http://localhost:8080/api' }}
 
     - name: Build Docker image
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
       run: docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:latest .
 
 
   # Deploy to VPS
   deploy-vps:
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     needs: [backend-build, frontend-build]
     runs-on: ubuntu-latest
     steps:
@@ -93,7 +93,7 @@ jobs:
           else
             cd /var/www/streamletz/
             git fetch --all
-            git reset --hard origin/main
+            git reset --hard origin/master
           fi
           cd /var/www/streamletz/
           # Build and start containers (Java backend, Node frontend)

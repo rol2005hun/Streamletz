@@ -208,7 +208,7 @@ style(dashboard): improve hover effects on track cards
 1. **Update your branch** with latest upstream changes:
    ```bash
    git fetch upstream
-   git rebase upstream/main
+   git rebase upstream/master
    ```
 
 2. **Run tests** and ensure everything works:
