@@ -98,3 +98,21 @@ jobs:
     - name: Trigger Render Deploy
       run: |
         curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+
+  # Deploy to VPS
+  deploy-vps:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [backend-build, frontend-build]
+    runs-on: ubuntu-latest
+    steps:
+    - name: SSH into VPS and deploy
+      uses: appleboy/ssh-action@v0.1.6
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        password: ${{ secrets.VPS_PASSWORD }}
+        script: |
+          cd /var/www/streamletz/
+          git pull origin main
+          docker compose build
+          docker compose up -d

@@ -37,60 +37,50 @@ export interface UpdatePlaylistRequest {
 }
 
 export const playlistService = {
-  // Create a new playlist
   createPlaylist: async (request: CreatePlaylistRequest): Promise<Playlist> => {
     const response = await api.post("/playlists", request);
     return response.data;
   },
 
-  // Get current user's playlists
   getUserPlaylists: async (): Promise<Playlist[]> => {
     const response = await api.get("/playlists");
     return response.data;
   },
 
-  // Get all public playlists
   getPublicPlaylists: async (): Promise<Playlist[]> => {
     const response = await api.get("/playlists/public");
     return response.data;
   },
 
-  // Get playlist by ID
   getPlaylistById: async (id: number): Promise<Playlist> => {
     const response = await api.get(`/playlists/${id}`);
     return response.data;
   },
 
-  // Update playlist
   updatePlaylist: async (id: number, request: UpdatePlaylistRequest): Promise<Playlist> => {
     const response = await api.put(`/playlists/${id}`, request);
     return response.data;
   },
 
-  // Delete playlist
   deletePlaylist: async (id: number): Promise<void> => {
     await api.delete(`/playlists/${id}`);
   },
 
-  // Add track to playlist
   addTrackToPlaylist: async (playlistId: number, trackId: number): Promise<Playlist> => {
     const response = await api.post(`/playlists/${playlistId}/tracks/${trackId}`);
     return response.data;
   },
 
-  // Remove track from playlist
   removeTrackFromPlaylist: async (playlistId: number, trackId: number): Promise<Playlist> => {
     const response = await api.delete(`/playlists/${playlistId}/tracks/${trackId}`);
     return response.data;
   },
 
-  // Reorder tracks in playlist
   reorderTracks: async (playlistId: number, trackIds: number[]): Promise<Playlist> => {
     const response = await api.put(`/playlists/${playlistId}/reorder`, { trackIds });
     return response.data;
   },
 
-  // Search playlists
   searchPlaylists: async (query: string): Promise<Playlist[]> => {
     const response = await api.get(`/playlists/search`, { params: { query } });
     return response.data;

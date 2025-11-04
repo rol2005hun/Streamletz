@@ -9,7 +9,7 @@ export interface UserProfile {
 }
 
 export interface UpdateProfileResponse extends UserProfile {
-    newToken?: string | null;  // New token if username changed
+    newToken?: string | null;
 }
 
 export interface UpdateProfileRequest {
