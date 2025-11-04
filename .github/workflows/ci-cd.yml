@@ -25,7 +25,7 @@ jobs:
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
-        java-version: '17'
+        java-version: '21'
         distribution: 'temurin'
         cache: maven
 
@@ -53,7 +53,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: '22'
         cache: 'npm'
         cache-dependency-path: frontend/package-lock.json
 
@@ -88,7 +88,8 @@ jobs:
         script: |
           # Ensure Docker and Docker Compose are installed on the VPS
           cd /var/www/streamletz/
-          git pull origin main
+          git fetch --all
+          git reset --hard origin/main
           # Build and start containers (Java backend, Node frontend)
           docker compose build
           docker compose up -d
