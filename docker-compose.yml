@@ -24,20 +24,23 @@ services:
       dockerfile: Dockerfile
     container_name: streamletz-backend
     restart: unless-stopped
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-streamletz}
-      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME:-streamletz_user}
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-changeme123}
-      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-this}
-      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
     ports:
       - "${BACKEND_PORT:-1124}:1124"
     depends_on:
       - postgres
     networks:
       - streamletz-network
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-streamletz}
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME:-streamletz_user}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-changeme123}
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-this}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+      MUSIC_STORAGE_PATH: /musics
+      MUSIC_COVERS_PATH: /covers
     volumes:
-      - ./backend/music:/app/music
+      - ${MUSIC_PATH}:/musics
+      - ${COVER_PATH}:/covers
 
   # Svelte + Vite Frontend (Dev mode)
   frontend:
