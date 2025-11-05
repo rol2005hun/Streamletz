@@ -52,7 +52,13 @@ public class MusicScannerService implements CommandLineRunner {
             } catch (IOException e) {
                 log.error("Failed to create covers directory: {}", e.getMessage());
             }
-            scanMusicLibrary();
+            java.util.List<Track> scannedTracks = scanMusicLibrary();
+            if (!scannedTracks.isEmpty()) {
+                trackRepository.saveAll(scannedTracks);
+                log.info("Saved {} new tracks to database.", scannedTracks.size());
+            } else {
+                log.info("No new tracks found to save.");
+            }
         }
     }
 
@@ -67,11 +73,11 @@ public class MusicScannerService implements CommandLineRunner {
             }
             for (File file : scanMusicFilesRecursive(musicDir.toFile(), 0, 3)) {
                 try {
-                    String fileName = file.getName();
-                    if (trackRepository.findByFilePath(fileName).isPresent()) {
+                    String relativePath = musicDir.toFile().toPath().relativize(file.toPath()).toString().replace('\\', '/');
+                    if (trackRepository.findByFilePath(relativePath).isPresent()) {
                         continue;
                     }
-                    Track track = extractTrackMetadata(file);
+                    Track track = extractTrackMetadata(file, relativePath);
                     if (track != null) {
                         scannedTracks.add(track);
                     }
@@ -110,9 +116,9 @@ public class MusicScannerService implements CommandLineRunner {
                 || name.endsWith(".ogg");
     }
 
-    private Track extractTrackMetadata(File file) throws IOException, TikaException, SAXException {
+    private Track extractTrackMetadata(File file, String relativePath) throws IOException, TikaException, SAXException {
         Track track = new Track();
-        track.setFilePath(file.getName());
+        track.setFilePath(relativePath);
         track.setFileSize(file.length());
         track.setPlayCount(0);
 

@@ -76,32 +76,55 @@ public class CoverStartupService {
 
             for (Track track : allTracks) {
                 try {
-                    String coverFileName = System.currentTimeMillis() + "_"
-                            + track.getFilePath().replaceAll("[^a-zA-Z0-9.-]", "_") + ".jpg";
-                    Path coverFilePath = Paths.get(coversPath, coverFileName);
-                    String expectedUrl = "/api/covers/" + coverFileName;
-                    if (Files.exists(coverFilePath)) {
+                    String sanitizedName = track.getFilePath().replaceAll("[^a-zA-Z0-9.-]", "_");
+                    Path coversDir = Paths.get(coversPath);
+                    boolean foundExisting = false;
+                    String foundCoverFile = null;
+                    try {
+                        if (Files.exists(coversDir) && Files.isDirectory(coversDir)) {
+                            try (java.util.stream.Stream<Path> files = Files.list(coversDir)) {
+                                java.util.Optional<Path> match = files
+                                        .filter(p -> p.getFileName().toString().contains(sanitizedName)).findFirst();
+                                if (match.isPresent()) {
+                                    foundExisting = true;
+                                    foundCoverFile = match.get().getFileName().toString();
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        log.warn("Error searching for existing cover for track {}: {}", track.getFilePath(),
+                                e.getMessage());
+                    }
+                    if (foundExisting) {
                         existingCovers++;
+                        String expectedUrl = "/api/covers/" + foundCoverFile;
                         if (track.getCoverArtUrl() == null || !track.getCoverArtUrl().equals(expectedUrl)) {
                             track.setCoverArtUrl(expectedUrl);
                             trackRepository.save(track);
-                            log.debug("Updated cover URL for track {}", track.getFilePath());
+                            log.debug("Updated cover URL for track {} (existing cover)", track.getFilePath());
                         }
                         continue;
                     }
+
+                    String coverFileName = System.currentTimeMillis() + "_" + sanitizedName + ".jpg";
+                    Path coverFilePath = Paths.get(coversPath, coverFileName);
+                    String expectedUrl = "/api/covers/" + coverFileName;
                     boolean coverSet = false;
+
                     coverSet = trySetCoverFromMetadata(track, coverFilePath, expectedUrl);
                     if (coverSet) {
                         extractedFromFile++;
                         log.info("Extracted embedded artwork for track: {}", track.getFilePath());
                         continue;
                     }
+
                     coverSet = trySetCoverFromItunes(track, coverFilePath, expectedUrl);
                     if (coverSet) {
                         downloadedFromItunes++;
                         log.info("Downloaded iTunes artwork for track: {} - {}", track.getArtist(), track.getTitle());
                         continue;
                     }
+
                     coverSet = trySetCoverWithGradient(track, coverFilePath, expectedUrl);
                     if (coverSet) {
                         generatedCovers++;
@@ -121,7 +144,6 @@ public class CoverStartupService {
             log.info("  - Downloaded from iTunes: {}", downloadedFromItunes);
             log.info("  - Generated gradients: {}", generatedCovers);
             log.info("  - Errors: {}", errorCount);
-
         } catch (Exception e) {
             log.error("Error during cover verification process: {}", e.getMessage(), e);
         }
@@ -138,6 +160,9 @@ public class CoverStartupService {
             } catch (Exception e) {
                 log.error("Error saving cover from metadata for track {}: {}", track.getFilePath(), e.getMessage());
             }
+        } else {
+            log.info("No embedded artwork found for track: {} (metaadatból nem sikerült borítót kinyerni)",
+                    track.getFilePath());
         }
         return false;
     }
@@ -173,18 +198,24 @@ public class CoverStartupService {
         try {
             Path musicFilePath = Paths.get(musicStoragePath, track.getFilePath());
             if (!Files.exists(musicFilePath)) {
+                log.info("Music file not found for embedded artwork extraction: {}", musicFilePath);
                 return null;
             }
             AudioFile audioFile = AudioFileIO.read(musicFilePath.toFile());
             Tag tag = audioFile.getTag();
             if (tag == null) {
+                log.info("No tag found in file for embedded artwork: {}", musicFilePath);
                 return null;
             }
             Artwork artwork = tag.getFirstArtwork();
             if (artwork != null && artwork.getBinaryData() != null) {
+                log.info("Embedded artwork found for file: {}", musicFilePath);
                 return artwork.getBinaryData();
+            } else {
+                log.info("No embedded artwork present in tag for file: {}", musicFilePath);
             }
         } catch (Exception e) {
+            log.warn("Exception during embedded artwork extraction for {}: {}", track.getFilePath(), e.getMessage());
         }
         return null;
     }
