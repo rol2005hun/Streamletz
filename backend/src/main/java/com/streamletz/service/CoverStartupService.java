@@ -30,7 +30,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class CoverStartupService {
-
     private final TrackRepository trackRepository;
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -43,16 +42,16 @@ public class CoverStartupService {
 
     private static final int TARGET_SIZE = 400;
     private static final Color[][] GRADIENT_COLORS = {
-            { new Color(138, 43, 226), new Color(75, 0, 130) }, // Blue Violet -> Indigo
-            { new Color(255, 20, 147), new Color(220, 20, 60) }, // Deep Pink -> Crimson
-            { new Color(30, 144, 255), new Color(0, 191, 255) }, // Dodger Blue -> Deep Sky Blue
-            { new Color(255, 69, 0), new Color(255, 140, 0) }, // Orange Red -> Dark Orange
-            { new Color(148, 0, 211), new Color(72, 61, 139) }, // Dark Violet -> Dark Slate Blue
-            { new Color(0, 128, 128), new Color(0, 191, 191) }, // Teal -> Medium Turquoise
-            { new Color(255, 0, 127), new Color(127, 0, 255) }, // Hot Pink -> Purple
-            { new Color(220, 20, 60), new Color(255, 105, 180) }, // Crimson -> Hot Pink
-            { new Color(0, 100, 200), new Color(100, 150, 255) }, // Blue -> Light Blue
-            { new Color(255, 127, 0), new Color(255, 69, 0) } // Orange -> Orange Red
+            { new Color(138, 43, 226), new Color(75, 0, 130) },
+            { new Color(255, 20, 147), new Color(220, 20, 60) },
+            { new Color(30, 144, 255), new Color(0, 191, 255) },
+            { new Color(255, 69, 0), new Color(255, 140, 0) },
+            { new Color(148, 0, 211), new Color(72, 61, 139) },
+            { new Color(0, 128, 128), new Color(0, 191, 191) },
+            { new Color(255, 0, 127), new Color(127, 0, 255) },
+            { new Color(220, 20, 60), new Color(255, 105, 180) },
+            { new Color(0, 100, 200), new Color(100, 150, 255) },
+            { new Color(255, 127, 0), new Color(255, 69, 0) }
     };
 
     @EventListener(ApplicationReadyEvent.class)
@@ -77,50 +76,40 @@ public class CoverStartupService {
 
             for (Track track : allTracks) {
                 try {
-                    String filename = "track_" + track.getId() + ".jpg";
-                    Path coverFilePath = Paths.get(coversPath, filename);
-                    String expectedUrl = "/api/covers/" + filename;
-
+                    String coverFileName = System.currentTimeMillis() + "_"
+                            + track.getFilePath().replaceAll("[^a-zA-Z0-9.-]", "_") + ".jpg";
+                    Path coverFilePath = Paths.get(coversPath, coverFileName);
+                    String expectedUrl = "/api/covers/" + coverFileName;
                     if (Files.exists(coverFilePath)) {
                         existingCovers++;
-
                         if (track.getCoverArtUrl() == null || !track.getCoverArtUrl().equals(expectedUrl)) {
                             track.setCoverArtUrl(expectedUrl);
                             trackRepository.save(track);
-                            log.debug("Updated cover URL for track ID {}", track.getId());
+                            log.debug("Updated cover URL for track {}", track.getFilePath());
                         }
                         continue;
                     }
-
-                    byte[] embeddedArt = extractEmbeddedArtwork(track);
-                    if (embeddedArt != null) {
-                        saveAndResizeCover(embeddedArt, coverFilePath);
-                        track.setCoverArtUrl(expectedUrl);
-                        trackRepository.save(track);
+                    boolean coverSet = false;
+                    coverSet = trySetCoverFromMetadata(track, coverFilePath, expectedUrl);
+                    if (coverSet) {
                         extractedFromFile++;
-                        log.info("Extracted embedded artwork for track ID {}: {}", track.getId(), track.getTitle());
+                        log.info("Extracted embedded artwork for track: {}", track.getFilePath());
                         continue;
                     }
-
-                    byte[] itunesArt = downloadFromItunes(track.getArtist(), track.getTitle());
-                    if (itunesArt != null) {
-                        saveAndResizeCover(itunesArt, coverFilePath);
-                        track.setCoverArtUrl(expectedUrl);
-                        trackRepository.save(track);
+                    coverSet = trySetCoverFromItunes(track, coverFilePath, expectedUrl);
+                    if (coverSet) {
                         downloadedFromItunes++;
-                        log.info("Downloaded iTunes artwork for track ID {}: {} - {}",
-                                track.getId(), track.getArtist(), track.getTitle());
+                        log.info("Downloaded iTunes artwork for track: {} - {}", track.getArtist(), track.getTitle());
                         continue;
                     }
-
-                    generateGradientCover(track, coverFilePath);
-                    track.setCoverArtUrl(expectedUrl);
-                    trackRepository.save(track);
-                    generatedCovers++;
-                    log.info("Generated gradient cover for track ID {}: {}", track.getId(), track.getTitle());
-
+                    coverSet = trySetCoverWithGradient(track, coverFilePath, expectedUrl);
+                    if (coverSet) {
+                        generatedCovers++;
+                        log.info("Generated gradient cover for track: {}", track.getFilePath());
+                        continue;
+                    }
                 } catch (Exception e) {
-                    log.error("Error processing cover for track ID {}: {}", track.getId(), e.getMessage());
+                    log.error("Error processing cover for track {}: {}", track.getFilePath(), e.getMessage());
                     errorCount++;
                 }
             }
@@ -138,32 +127,65 @@ public class CoverStartupService {
         }
     }
 
-    private byte[] extractEmbeddedArtwork(Track track) {
+    private boolean trySetCoverFromMetadata(Track track, Path coverFilePath, String expectedUrl) {
+        byte[] embeddedArt = extractEmbeddedArtwork(track, musicStoragePath);
+        if (embeddedArt != null) {
+            try {
+                saveAndResizeCover(embeddedArt, coverFilePath);
+                track.setCoverArtUrl(expectedUrl);
+                trackRepository.save(track);
+                return true;
+            } catch (Exception e) {
+                log.error("Error saving cover from metadata for track {}: {}", track.getFilePath(), e.getMessage());
+            }
+        }
+        return false;
+    }
+
+    private boolean trySetCoverFromItunes(Track track, Path coverFilePath, String expectedUrl) {
+        byte[] itunesArt = downloadFromItunes(track.getArtist(), track.getTitle());
+        if (itunesArt != null) {
+            try {
+                saveAndResizeCover(itunesArt, coverFilePath);
+                track.setCoverArtUrl(expectedUrl);
+                trackRepository.save(track);
+                return true;
+            } catch (Exception e) {
+                log.error("Error saving cover from iTunes for track {}: {}", track.getFilePath(), e.getMessage());
+            }
+        }
+        return false;
+    }
+
+    private boolean trySetCoverWithGradient(Track track, Path coverFilePath, String expectedUrl) {
+        try {
+            generateGradientCover(track, coverFilePath);
+            track.setCoverArtUrl(expectedUrl);
+            trackRepository.save(track);
+            return true;
+        } catch (Exception e) {
+            log.error("Error saving gradient cover for track {}: {}", track.getFilePath(), e.getMessage());
+        }
+        return false;
+    }
+
+    private byte[] extractEmbeddedArtwork(Track track, String musicStoragePath) {
         try {
             Path musicFilePath = Paths.get(musicStoragePath, track.getFilePath());
-
             if (!Files.exists(musicFilePath)) {
-                log.debug("Music file not found for track ID {}: {}", track.getId(), musicFilePath);
                 return null;
             }
-
             AudioFile audioFile = AudioFileIO.read(musicFilePath.toFile());
             Tag tag = audioFile.getTag();
-
             if (tag == null) {
                 return null;
             }
-
             Artwork artwork = tag.getFirstArtwork();
             if (artwork != null && artwork.getBinaryData() != null) {
                 return artwork.getBinaryData();
             }
-
         } catch (Exception e) {
-            log.debug("Could not extract embedded artwork for track ID {}: {}",
-                    track.getId(), e.getMessage());
         }
-
         return null;
     }
 
@@ -224,14 +246,12 @@ public class CoverStartupService {
             newWidth = (int) (TARGET_SIZE * ratio);
         }
 
-        // Create resized image
         BufferedImage resized = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = resized.createGraphics();
         g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         g2d.drawImage(original, 0, 0, newWidth, newHeight, null);
         g2d.dispose();
 
-        // Create final image with padding
         BufferedImage finalImage = new BufferedImage(TARGET_SIZE, TARGET_SIZE, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = finalImage.createGraphics();
         g.setColor(Color.BLACK);

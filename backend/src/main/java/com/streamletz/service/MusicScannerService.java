@@ -5,7 +5,6 @@ import com.streamletz.repository.TrackRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.exception.TikaException;
-import org.apache.tika.metadata.Metadata;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.tag.Tag;
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.xml.sax.SAXException;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -58,37 +56,33 @@ public class MusicScannerService implements CommandLineRunner {
         }
     }
 
-    public void scanMusicLibrary() {
+    public java.util.List<Track> scanMusicLibrary() {
+        java.util.List<Track> scannedTracks = new java.util.ArrayList<>();
         try {
             Path musicDir = Paths.get(musicStoragePath);
             if (!Files.exists(musicDir)) {
                 log.info("Creating music directory: {}", musicDir.toAbsolutePath());
                 Files.createDirectories(musicDir);
-                return;
+                return scannedTracks;
             }
-            int added = 0;
-            int skipped = 0;
             for (File file : scanMusicFilesRecursive(musicDir.toFile(), 0, 3)) {
                 try {
                     String fileName = file.getName();
                     if (trackRepository.findByFilePath(fileName).isPresent()) {
-                        skipped++;
                         continue;
                     }
                     Track track = extractTrackMetadata(file);
                     if (track != null) {
-                        trackRepository.save(track);
-                        added++;
-                        log.info("Added track: {} - {}", track.getArtist(), track.getTitle());
+                        scannedTracks.add(track);
                     }
                 } catch (Exception e) {
                     log.error("Error processing file {}: {}", file.getName(), e.getMessage());
                 }
             }
-            log.info("Music scan complete. Added: {}, Skipped: {}", added, skipped);
         } catch (Exception e) {
             log.error("Error scanning music library: {}", e.getMessage(), e);
         }
+        return scannedTracks;
     }
 
     private java.util.List<File> scanMusicFilesRecursive(File dir, int currentDepth, int maxDepth) {
@@ -151,9 +145,6 @@ public class MusicScannerService implements CommandLineRunner {
             int durationInSeconds = audioFile.getAudioHeader().getTrackLength();
             track.setDuration(durationInSeconds);
             log.debug("Duration for {}: {} seconds", fileName, durationInSeconds);
-
-            extractAndSaveCoverArt(file, null, track);
-
         } catch (Exception e) {
             log.warn("Could not read metadata for {}: {}, using filename", fileName, e.getMessage());
             track.setTitle(getFileNameWithoutExtension(fileName));
@@ -166,55 +157,5 @@ public class MusicScannerService implements CommandLineRunner {
     private String getFileNameWithoutExtension(String fileName) {
         int lastDot = fileName.lastIndexOf('.');
         return lastDot > 0 ? fileName.substring(0, lastDot) : fileName;
-    }
-
-    private void extractAndSaveCoverArt(File file, Metadata metadata, Track track) {
-        try {
-            log.debug("Attempting to extract cover art from {}", file.getName());
-
-            AudioFile audioFile = AudioFileIO.read(file);
-            Tag tag = audioFile.getTag();
-
-            if (tag != null) {
-                log.debug("Tag found for {}", file.getName());
-                var artwork = tag.getFirstArtwork();
-                if (artwork != null) {
-                    log.debug("Artwork found for {}", file.getName());
-                    byte[] imageData = artwork.getBinaryData();
-                    if (imageData != null && imageData.length > 0) {
-                        log.info("Extracting cover art ({} bytes) from {}", imageData.length, file.getName());
-                        saveCoverImage(imageData, track);
-                        return;
-                    } else {
-                        log.debug("Artwork binary data is null or empty for {}", file.getName());
-                    }
-                } else {
-                    log.debug("No artwork found in tag for {}", file.getName());
-                }
-            } else {
-                log.debug("No tag found for {}", file.getName());
-            }
-
-            log.debug("No cover art found in {}", file.getName());
-        } catch (Exception e) {
-            log.warn("Failed to extract cover art from {}: {}", file.getName(), e.getMessage());
-        }
-    }
-
-    private void saveCoverImage(byte[] imageData, Track track) {
-        try {
-            String coverFileName = System.currentTimeMillis() + "_" +
-                    track.getFilePath().replaceAll("[^a-zA-Z0-9.-]", "_") + ".jpg";
-            Path coverPath = Paths.get(coversPath, coverFileName);
-
-            try (FileOutputStream fos = new FileOutputStream(coverPath.toFile())) {
-                fos.write(imageData);
-            }
-
-            track.setCoverArtUrl("/api/covers/" + coverFileName);
-            log.info("Saved cover art: {}", coverFileName);
-        } catch (IOException e) {
-            log.error("Failed to save cover image: {}", e.getMessage());
-        }
     }
 }
