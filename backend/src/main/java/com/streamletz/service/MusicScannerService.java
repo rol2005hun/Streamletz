@@ -34,7 +34,7 @@ public class MusicScannerService implements CommandLineRunner {
     @Value("${music.auto-scan:true}")
     private boolean autoScan;
 
-    @Value("${music.covers.path:./covers}")
+    @Value("${music.covers.path:/covers}")
     private String coversPath;
 
     @Override
@@ -61,38 +61,20 @@ public class MusicScannerService implements CommandLineRunner {
     public void scanMusicLibrary() {
         try {
             Path musicDir = Paths.get(musicStoragePath);
-
             if (!Files.exists(musicDir)) {
                 log.info("Creating music directory: {}", musicDir.toAbsolutePath());
                 Files.createDirectories(musicDir);
                 return;
             }
-
-            File[] musicFiles = musicDir.toFile().listFiles((dir, name) -> name.toLowerCase().endsWith(".mp3") ||
-                    name.toLowerCase().endsWith(".flac") ||
-                    name.toLowerCase().endsWith(".m4a") ||
-                    name.toLowerCase().endsWith(".wav") ||
-                    name.toLowerCase().endsWith(".ogg"));
-
-            if (musicFiles == null || musicFiles.length == 0) {
-                log.info("No music files found in {}", musicDir.toAbsolutePath());
-                return;
-            }
-
-            log.info("Found {} music files", musicFiles.length);
-
             int added = 0;
             int skipped = 0;
-
-            for (File file : musicFiles) {
+            for (File file : scanMusicFilesRecursive(musicDir.toFile(), 0, 3)) {
                 try {
                     String fileName = file.getName();
-
                     if (trackRepository.findByFilePath(fileName).isPresent()) {
                         skipped++;
                         continue;
                     }
-
                     Track track = extractTrackMetadata(file);
                     if (track != null) {
                         trackRepository.save(track);
@@ -103,12 +85,35 @@ public class MusicScannerService implements CommandLineRunner {
                     log.error("Error processing file {}: {}", file.getName(), e.getMessage());
                 }
             }
-
             log.info("Music scan complete. Added: {}, Skipped: {}", added, skipped);
-
         } catch (Exception e) {
             log.error("Error scanning music library: {}", e.getMessage(), e);
         }
+    }
+
+    private java.util.List<File> scanMusicFilesRecursive(File dir, int currentDepth, int maxDepth) {
+        java.util.List<File> musicFiles = new java.util.ArrayList<>();
+        if (currentDepth > maxDepth || !dir.isDirectory())
+            return musicFiles;
+        File[] files = dir.listFiles();
+        if (files == null)
+            return musicFiles;
+        for (File file : files) {
+            if (file.isDirectory()) {
+                if (currentDepth + 1 <= maxDepth) {
+                    musicFiles.addAll(scanMusicFilesRecursive(file, currentDepth + 1, maxDepth));
+                }
+            } else if (isMusicFile(file)) {
+                musicFiles.add(file);
+            }
+        }
+        return musicFiles;
+    }
+
+    private boolean isMusicFile(File file) {
+        String name = file.getName().toLowerCase();
+        return name.endsWith(".mp3") || name.endsWith(".flac") || name.endsWith(".m4a") || name.endsWith(".wav")
+                || name.endsWith(".ogg");
     }
 
     private Track extractTrackMetadata(File file) throws IOException, TikaException, SAXException {

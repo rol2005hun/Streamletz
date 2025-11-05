@@ -20,7 +20,7 @@ import java.nio.file.Paths;
 @Slf4j
 public class CoverController {
 
-    @Value("${music.covers.path:./covers}")
+    @Value("${music.covers.path:/covers}")
     private String coversPath;
 
     @GetMapping("/{filename}")

@@ -35,7 +35,7 @@ public class CoverStartupService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Value("${music.covers.path:./covers}")
+    @Value("${music.covers.path:/covers}")
     private String coversPath;
 
     @Value("${music.storage.path}")
