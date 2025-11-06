@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
+  import { goto } from "$app/navigation";
 
   let {
     user,
@@ -21,7 +22,7 @@
 
   function toggleMobileSearch() {
     mobileSearchOpen = !mobileSearchOpen;
-    if (mobileSearchOpen) {
+    if (mobileSearchOpen && typeof window !== "undefined") {
       setTimeout(() => {
         const input = document.querySelector(".mobile-search-modal input");
         if (input) (input as HTMLInputElement).focus();
@@ -30,6 +31,7 @@
   }
 
   function handleResize() {
+    if (typeof window === "undefined") return;
     const isMobile = window.innerWidth <= 480;
 
     if (!isMobile && mobileSearchOpen) {
@@ -65,18 +67,21 @@
 
   function navigate(path: string) {
     dropdownOpen = false;
-    window.history.pushState({}, "", path);
-    window.dispatchEvent(new PopStateEvent("popstate"));
+    goto(path);
   }
 
   onMount(() => {
-    document.addEventListener("click", handleClickOutside);
-    window.addEventListener("resize", handleResize);
+    if (typeof window !== "undefined" && typeof document !== "undefined") {
+      document.addEventListener("click", handleClickOutside);
+      window.addEventListener("resize", handleResize);
+    }
   });
 
   onDestroy(() => {
-    document.removeEventListener("click", handleClickOutside);
-    window.removeEventListener("resize", handleResize);
+    if (typeof window !== "undefined" && typeof document !== "undefined") {
+      document.removeEventListener("click", handleClickOutside);
+      window.removeEventListener("resize", handleResize);
+    }
   });
 </script>
 
@@ -221,5 +226,5 @@
 </header>
 
 <style scoped lang="scss">
-  @use "../styles/components/Navbar.scss";
+  @use "$styles/components/Navbar.scss";
 </style>

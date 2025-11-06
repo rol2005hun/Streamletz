@@ -13,7 +13,7 @@ export interface Track {
 }
 
 export const trackService = {
-  async getAllTracks(): Promise<Track[]> {
+  getAllTracks: async (): Promise<Track[]> => {
     const response = await api.get("/tracks");
     return response.data;
   },

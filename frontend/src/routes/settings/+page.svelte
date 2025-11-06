@@ -1,23 +1,36 @@
 <script lang="ts">
-    import { onMount } from "svelte";
-    import { authService } from "../lib/authService";
+    import { goto } from "$app/navigation";
+    import { authService } from "$lib/authService";
     import {
         userService,
         type UserProfile,
         type UpdatePasswordRequest,
-    } from "../lib/userService";
+    } from "$lib/userService";
 
-    let loading = $state(true);
+    const { data } = $props();
     let message = $state("");
-    let messageType = $state<"success" | "error" | "">("");
+    let messageType = $state("");
     let profileLoading = $state(false);
     let passwordLoading = $state(false);
+    let loading = false;
 
-    let userProfile = $state<UserProfile | null>(null);
-    let profileForm = $state({
-        username: "",
-        email: "",
-        profileImage: "",
+    let userProfile = $state<UserProfile | null>(data.userProfile);
+
+    function getProfileForm() {
+        return {
+            username: userProfile?.username || "",
+            email: userProfile?.email || "",
+            profileImage: userProfile?.profileImage || "",
+        };
+    }
+    let profileForm = getProfileForm();
+
+    $effect(() => {
+        if (userProfile) {
+            profileForm.username = userProfile.username || "";
+            profileForm.email = userProfile.email || "";
+            profileForm.profileImage = userProfile.profileImage || "";
+        }
     });
 
     let passwordForm = $state<UpdatePasswordRequest>({
@@ -26,7 +39,7 @@
         confirmPassword: "",
     });
 
-    let settings = $state({
+    let settings = {
         notifications: {
             emailNotifications: true,
             pushNotifications: false,
@@ -49,32 +62,7 @@
             showActivity: true,
             allowExplicit: true,
         },
-    });
-
-    onMount(() => {
-        authService.getUser();
-        loadSettings();
-        loadUserProfile();
-        loading = false;
-    });
-
-    async function loadUserProfile() {
-        try {
-            userProfile = await userService.getUserProfile();
-            profileForm.username = userProfile.username;
-            profileForm.email = userProfile.email;
-            profileForm.profileImage = userProfile.profileImage || "";
-        } catch (error) {
-            console.error("Failed to load user profile:", error);
-            messageType = "error";
-            message = "Failed to load profile information";
-            setTimeout(() => {
-                message = "";
-                messageType = "";
-            }, 3000);
-        }
-    }
-
+    };
     async function updateProfile() {
         profileLoading = true;
         try {
@@ -93,8 +81,6 @@
                         : undefined,
             });
             userProfile = updatedProfile;
-
-            // If server returned a new token (username changed), update auth
             if (updatedProfile.newToken) {
                 authService.setAuth(updatedProfile.newToken, {
                     username: updatedProfile.username,
@@ -102,7 +88,6 @@
                     profileImage: updatedProfile.profileImage,
                 });
             } else {
-                // Just update user data in authService (email/profileImage change)
                 const token = authService.getToken();
                 if (token) {
                     authService.setAuth(token, {
@@ -112,13 +97,11 @@
                     });
                 }
             }
-
             messageType = "success";
             message = "Profile updated successfully!";
-        } catch (error: any) {
+        } catch (error) {
             messageType = "error";
-            message =
-                error.response?.data?.message || "Failed to update profile";
+            message = "Failed to update profile.";
         } finally {
             profileLoading = false;
             setTimeout(() => {
@@ -162,26 +145,12 @@
         }
     }
 
-    function loadSettings() {
-        const savedSettings = localStorage.getItem("streamletz_settings");
-        if (savedSettings) {
-            try {
-                settings = JSON.parse(savedSettings);
-            } catch (error) {
-                console.error("Failed to load settings:", error);
-            }
-        }
-    }
-
     function saveSettings() {
         try {
-            localStorage.setItem(
-                "streamletz_settings",
-                JSON.stringify(settings),
-            );
+            document.cookie = `streamletz_settings=${encodeURIComponent(JSON.stringify(settings))}; path=/; max-age=31536000`;
             messageType = "success";
             message = "Settings saved successfully!";
-        } catch (error) {
+        } catch {
             messageType = "error";
             message = "Failed to save settings";
         } finally {
@@ -193,8 +162,7 @@
     }
 
     function goBack() {
-        window.history.pushState({}, "", "/dashboard");
-        window.dispatchEvent(new PopStateEvent("popstate"));
+        goto("/dashboard");
     }
 </script>
 
@@ -830,6 +798,6 @@
     {/if}
 </div>
 
-<style lang="scss">
-    @use "../styles/pages/Settings.scss";
+<style scoped lang="scss">
+    @use "$styles/pages/Settings.scss";
 </style>

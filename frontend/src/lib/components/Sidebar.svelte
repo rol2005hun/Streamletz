@@ -1,39 +1,62 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
-  import { playlistService, type Playlist } from "../lib/playlistService";
+  import { playlistService, type Playlist } from "$lib/playlistService";
+  import { goto } from "$app/navigation";
+  import { page } from "$app/state";
 
   let {
     collapsed = $bindable(false),
     width = $bindable(280),
+    playlists = [],
   }: {
     collapsed: boolean;
     width: number;
+    playlists?: Playlist[];
   } = $props();
+
+  onMount(async () => {
+    if (
+      (!playlists || playlists.length === 0) &&
+      typeof window !== "undefined"
+    ) {
+      try {
+        playlists = await playlistService.getUserPlaylists();
+      } catch (e) {
+        console.error("Failed to load playlists:", e);
+      }
+    }
+  });
 
   let isResizing = $state(false);
   let startX = 0;
   let startWidth = 0;
-  let currentPath = $state(window.location.pathname);
   let animationFrameId: number | null = null;
-  let playlists = $state<Playlist[]>([]);
+
+  let currentPath = $state(page.url.pathname);
+  $effect(() => {
+    currentPath = page.url.pathname;
+  });
 
   function toggleSidebar() {
     collapsed = !collapsed;
-    localStorage.setItem("streamletz_sidebar_collapsed", collapsed.toString());
+    if (typeof document !== "undefined") {
+      document.cookie = `streamletz_sidebar_collapsed=${collapsed}; path=/; max-age=31536000`;
+    }
   }
 
   function navigate(path: string, e: MouseEvent) {
     e.preventDefault();
-    window.history.pushState({}, "", path);
-    window.dispatchEvent(new PopStateEvent("popstate"));
+    goto(path);
   }
 
   function startResize(e: MouseEvent) {
     isResizing = true;
     startX = e.clientX;
     startWidth = width;
-    document.body.style.cursor = "col-resize";
-    document.body.style.userSelect = "none";
+    if (typeof window !== "undefined" && typeof document !== "undefined") {
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
+    }
   }
 
   function handleResize(e: MouseEvent) {
@@ -54,9 +77,13 @@
   function stopResize() {
     if (isResizing) {
       isResizing = false;
-      document.body.style.cursor = "";
-      document.body.style.userSelect = "";
-      localStorage.setItem("streamletz_sidebar_width", width.toString());
+      if (typeof window !== "undefined" && typeof document !== "undefined") {
+        document.body.style.cursor = "";
+        document.body.style.userSelect = "";
+      }
+      if (typeof document !== "undefined") {
+        document.cookie = `streamletz_sidebar_width=${width}; path=/; max-age=31536000`;
+      }
 
       if (animationFrameId !== null) {
         cancelAnimationFrame(animationFrameId);
@@ -65,41 +92,18 @@
     }
   }
 
-  function handlePathChange() {
-    currentPath = window.location.pathname;
-  }
-
-  async function loadPlaylists() {
-    try {
-      playlists = await playlistService.getUserPlaylists();
-    } catch (err) {
-      console.error("Failed to load playlists in sidebar:", err);
-    }
-  }
-
   onMount(() => {
-    document.addEventListener("mousemove", handleResize);
-    document.addEventListener("mouseup", stopResize);
-    window.addEventListener("popstate", handlePathChange);
-
-    const savedWidth = localStorage.getItem("streamletz_sidebar_width");
-    const savedCollapsed = localStorage.getItem("streamletz_sidebar_collapsed");
-
-    if (savedWidth) {
-      width = parseInt(savedWidth);
+    if (typeof window !== "undefined" && typeof document !== "undefined") {
+      document.addEventListener("mousemove", handleResize);
+      document.addEventListener("mouseup", stopResize);
     }
-    if (savedCollapsed === "true") {
-      collapsed = true;
-    }
-
-    // Load playlists
-    loadPlaylists();
   });
 
   onDestroy(() => {
-    document.removeEventListener("mousemove", handleResize);
-    document.removeEventListener("mouseup", stopResize);
-    window.removeEventListener("popstate", handlePathChange);
+    if (typeof window !== "undefined" && typeof document !== "undefined") {
+      document.removeEventListener("mousemove", handleResize);
+      document.removeEventListener("mouseup", stopResize);
+    }
 
     // Clean up any pending animation frame
     if (animationFrameId !== null) {
@@ -239,5 +243,5 @@
 {/if}
 
 <style scoped lang="scss">
-  @use "../styles/components/Sidebar.scss";
+  @use "$styles/components/Sidebar.scss";
 </style>

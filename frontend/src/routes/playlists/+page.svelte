@@ -1,40 +1,15 @@
 <script lang="ts">
-    import { onMount } from "svelte";
-    import { playlistService, type Playlist } from "../lib/playlistService";
-    import type { Track } from "../lib/trackService";
+    import { goto } from "$app/navigation";
+    import { playlistService, type Playlist } from "$lib/playlistService";
+    export let data;
 
-    let {
-        currentTrack = $bindable(null),
-        isPlaying = $bindable(false),
-        allTracks = $bindable([]),
-    }: {
-        currentTrack: Track | null;
-        isPlaying: boolean;
-        allTracks: Track[];
-    } = $props();
-
-    let playlists = $state<Playlist[]>([]);
-    let showCreateModal = $state(false);
-    let newPlaylistName = $state("");
-    let newPlaylistDescription = $state("");
-    let newPlaylistIsPublic = $state(false);
-    let loading = $state(true);
-    let error = $state("");
-
-    onMount(async () => {
-        await loadPlaylists();
-    });
-
-    async function loadPlaylists() {
-        try {
-            loading = true;
-            playlists = await playlistService.getUserPlaylists();
-        } catch (err: any) {
-            error = err.response?.data?.message || "Failed to load playlists";
-        } finally {
-            loading = false;
-        }
-    }
+    let playlists: Playlist[] = data.playlists ?? [];
+    let showCreateModal = false;
+    let newPlaylistName = "";
+    let newPlaylistDescription = "";
+    let newPlaylistIsPublic = false;
+    let loading = false;
+    let error = "";
 
     async function createPlaylist() {
         if (!newPlaylistName.trim()) {
@@ -49,25 +24,23 @@
                 isPublic: newPlaylistIsPublic,
             });
 
+            playlists = await playlistService.getUserPlaylists();
+
             newPlaylistName = "";
             newPlaylistDescription = "";
             newPlaylistIsPublic = false;
             showCreateModal = false;
-
-            await loadPlaylists();
         } catch (err: any) {
             error = err.response?.data?.message || "Failed to create playlist";
         }
     }
 
     async function deletePlaylist(id: number) {
-        if (!confirm("Are you sure you want to delete this playlist?")) {
-            return;
-        }
+        if (!confirm("Are you sure you want to delete this playlist?")) return;
 
         try {
             await playlistService.deletePlaylist(id);
-            await loadPlaylists();
+            goto("/playlists");
         } catch (err: any) {
             error = err.response?.data?.message || "Failed to delete playlist";
         }
@@ -76,35 +49,29 @@
     function formatDuration(seconds: number): string {
         const hours = Math.floor(seconds / 3600);
         const minutes = Math.floor((seconds % 3600) / 60);
-
-        if (hours > 0) {
-            return `${hours} hr ${minutes} min`;
-        }
-        return `${minutes} min`;
+        return hours > 0 ? `${hours} hr ${minutes} min` : `${minutes} min`;
     }
 
     function goBack() {
-        window.history.pushState({}, "", "/dashboard");
-        window.dispatchEvent(new PopStateEvent("popstate"));
+        goto("/dashboard");
     }
 
     function navigateToPlaylist(id: number, e: MouseEvent) {
         e.preventDefault();
-        window.history.pushState({}, "", `/playlist/${id}`);
-        window.dispatchEvent(new PopStateEvent("popstate"));
+        goto(`/playlist/${id}`);
     }
 </script>
 
 <div class="playlists-container">
-    <button class="back-btn" onclick={goBack} title="Back to Dashboard">
-        ← Back
-    </button>
+    <button class="back-btn" on:click={goBack} title="Back to Dashboard"
+        >← Back</button
+    >
 
     <div class="header">
         <h1>Your Playlists</h1>
-        <button class="create-btn" onclick={() => (showCreateModal = true)}>
-            + Create Playlist
-        </button>
+        <button class="create-btn" on:click={() => (showCreateModal = true)}
+            >+ Create Playlist</button
+        >
     </div>
 
     {#if loading}
@@ -117,7 +84,7 @@
     {:else if playlists.length === 0}
         <div class="empty">
             <p>You don't have any playlists yet.</p>
-            <button onclick={() => (showCreateModal = true)}
+            <button on:click={() => (showCreateModal = true)}
                 >Create Your First Playlist</button
             >
         </div>
@@ -128,7 +95,7 @@
                     <a
                         href={`/playlist/${playlist.id}`}
                         class="playlist-link"
-                        onclick={(e) => navigateToPlaylist(playlist.id, e)}
+                        on:click={(e) => navigateToPlaylist(playlist.id, e)}
                     >
                         <div class="playlist-cover">
                             {#if playlist.coverImageUrl}
@@ -137,9 +104,7 @@
                                     alt={playlist.name}
                                 />
                             {:else}
-                                <div class="default-cover">
-                                    <span>🎵</span>
-                                </div>
+                                <div class="default-cover"><span>🎵</span></div>
                             {/if}
                         </div>
                         <div class="playlist-info">
@@ -166,13 +131,11 @@
                     </a>
                     <button
                         class="delete-btn"
-                        onclick={(e) => {
+                        on:click={(e) => {
                             e.preventDefault();
                             deletePlaylist(playlist.id);
-                        }}
+                        }}>🗑️</button
                     >
-                        🗑️
-                    </button>
                 </div>
             {/each}
         </div>
@@ -182,16 +145,16 @@
 {#if showCreateModal}
     <div
         class="modal-overlay"
-        onclick={() => (showCreateModal = false)}
-        onkeydown={(e) => e.key === "Escape" && (showCreateModal = false)}
+        on:click={() => (showCreateModal = false)}
+        on:keydown={(e) => e.key === "Escape" && (showCreateModal = false)}
         role="button"
         tabindex="-1"
         aria-label="Close modal"
     >
         <div
             class="modal"
-            onclick={(e) => e.stopPropagation()}
-            onkeydown={(e) => e.stopPropagation()}
+            on:click|stopPropagation
+            on:keydown|stopPropagation
             role="dialog"
             aria-modal="true"
             aria-labelledby="modal-title"
@@ -206,16 +169,15 @@
             </div>
 
             <form
-                onsubmit={(e) => {
+                on:submit={(e) => {
                     e.preventDefault();
                     createPlaylist();
                 }}
             >
                 <div class="form-group">
-                    <label for="name">
-                        <span class="label-icon">📝</span>
-                        Playlist Name *
-                    </label>
+                    <label for="name"
+                        ><span class="label-icon">📝</span> Playlist Name *</label
+                    >
                     <input
                         id="name"
                         type="text"
@@ -226,10 +188,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="description">
-                        <span class="label-icon">💬</span>
-                        Description
-                    </label>
+                    <label for="description"
+                        ><span class="label-icon">💬</span> Description</label
+                    >
                     <textarea
                         id="description"
                         bind:value={newPlaylistDescription}
@@ -259,13 +220,12 @@
                     <button
                         type="button"
                         class="cancel-btn"
-                        onclick={() => (showCreateModal = false)}
+                        on:click={() => (showCreateModal = false)}
+                        >Cancel</button
                     >
-                        Cancel
-                    </button>
-                    <button type="submit" class="submit-btn">
-                        ✨ Create Playlist
-                    </button>
+                    <button type="submit" class="submit-btn"
+                        >✨ Create Playlist</button
+                    >
                 </div>
             </form>
         </div>
@@ -273,5 +233,5 @@
 {/if}
 
 <style scoped lang="scss">
-    @use "../styles/pages/Playlists.scss";
+    @use "$styles/pages/Playlists.scss";
 </style>

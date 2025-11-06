@@ -461,6 +461,140 @@
     }
 }
 
+
+.skeleton-player-horizontal {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 90px;
+    box-sizing: border-box;
+    gap: $spacing-lg;
+
+    .skeleton-left {
+        display: flex;
+        align-items: center;
+        gap: $spacing-md;
+        width: 180px;
+
+        .skeleton-album-art {
+            width: 56px;
+            height: 56px;
+            border-radius: $border-radius-sm;
+        }
+
+        .skeleton-track-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: $spacing-md;
+            width: 120px;
+
+            .skeleton-title {
+                width: 80px;
+                height: 9px;
+            }
+
+            .skeleton-artist {
+                width: 100px;
+                height: 8px;
+            }
+        }
+    }
+
+    .skeleton-center {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: $spacing-xs;
+        flex: 1;
+        min-width: 320px;
+
+        .skeleton-controls {
+            display: flex;
+            gap: $spacing-md;
+            align-items: center;
+
+            .skeleton-btn {
+                width: 25px;
+                height: 25px;
+                border-radius: 50%;
+
+                &.play {
+                    width: 32px;
+                    height: 32px;
+                }
+            }
+        }
+
+        .skeleton-progress {
+            display: flex;
+            align-items: center;
+            gap: $spacing-sm;
+            min-width: 220px;
+            width: 400px;
+            max-width: 420px;
+
+            .skeleton-time {
+                width: 40px;
+                height: 9px;
+            }
+
+            .skeleton-bar {
+                flex: 1;
+                height: 4px;
+                border-radius: 2px;
+            }
+        }
+    }
+
+    .skeleton-right {
+        display: flex;
+        align-items: center;
+        width: 180px;
+        justify-content: flex-end;
+
+        .skeleton-volume {
+            display: flex;
+            align-items: center;
+            gap: $spacing-sm;
+            min-width: 100px;
+            width: 120px;
+
+            .skeleton-volicon {
+                width: 25px;
+                height: 25px;
+                border-radius: 50%;
+            }
+
+            .skeleton-volbar {
+                flex: 1;
+                height: 4px;
+                border-radius: 2px;
+            }
+        }
+    }
+
+    .skeleton {
+        background: linear-gradient(90deg, #222 25%, #333 50%, #222 75%);
+        background-size: 200% 100%;
+        animation: skeleton-shimmer 1.2s infinite linear;
+        border-radius: $border-radius-sm;
+        opacity: 0.7;
+    }
+}
+
+@keyframes skeleton-shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
 @media (max-width: $breakpoint-tablet) {
     .audio-player {
         grid-template-columns: 1fr auto;

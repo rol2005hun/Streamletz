@@ -1,4 +1,4 @@
-import api from "./api";
+import api from './api';
 
 export interface User {
   username: string;
@@ -24,66 +24,57 @@ export interface RegisterData {
   password: string;
 }
 
-let authToken: string | null = null;
-let currentUser: User | null = null;
-
 export const authService = {
-  init(): void {
-    if (typeof window === "undefined") return;
-
-    const token = sessionStorage.getItem("token");
-    const userStr = sessionStorage.getItem("user");
-
-    if (token && userStr) {
-      try {
-        authToken = token;
-        currentUser = JSON.parse(userStr);
-      } catch (error) {
-        console.error("Failed to parse user from sessionStorage:", error);
-        this.logout();
-      }
-    }
-  },
-
   async login(data: LoginData): Promise<AuthResponse> {
-    const response = await api.post("/auth/login", data);
+    const response = await api.post('/auth/login', data);
     return response.data;
   },
 
   async register(data: RegisterData): Promise<AuthResponse> {
-    const response = await api.post("/auth/register", data);
+    const response = await api.post('/auth/register', data);
     return response.data;
   },
 
   setAuth(token: string, user: User): void {
-    authToken = token;
-    currentUser = user;
-
-    if (typeof window !== "undefined") {
-      sessionStorage.setItem("token", token);
-      sessionStorage.setItem("user", JSON.stringify(user));
-    }
-  },
-
-  logout(): void {
-    authToken = null;
-    currentUser = null;
-
-    if (typeof window !== "undefined") {
-      sessionStorage.removeItem("token");
-      sessionStorage.removeItem("user");
+    if (typeof document !== 'undefined') {
+      document.cookie = `token=${token}; path=/; max-age=86400; secure; samesite=strict`;
+      document.cookie = `user=${encodeURIComponent(JSON.stringify(user))}; path=/; max-age=86400; secure; samesite=strict`;
     }
   },
 
   getToken(): string | null {
-    return authToken;
+    if (typeof document === 'undefined') return null;
+
+    const cookie = document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('token='));
+
+    if (!cookie) return null;
+
+    return cookie.split('=')[1];
   },
 
   getUser(): User | null {
-    return currentUser;
+    if (typeof document === 'undefined') return null;
+
+    const cookie = document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('user='));
+
+    if (!cookie) return null;
+
+    try {
+      const encoded = cookie.split('=')[1];
+      return JSON.parse(decodeURIComponent(encoded)) as User;
+    } catch {
+      return null;
+    }
   },
 
-  isAuthenticated(): boolean {
-    return !!authToken;
+  logout(): void {
+    if (typeof document !== 'undefined') {
+      document.cookie = 'token=; path=/; max-age=0';
+      document.cookie = 'user=; path=/; max-age=0';
+    }
   }
 };

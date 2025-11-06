@@ -1,74 +1,58 @@
-# Streamletz Frontend
+# Svelte library
 
-Frontend application for Streamletz music streaming platform.
+Everything you need to build a Svelte library, powered by [`sv`](https://npmjs.com/package/sv).
 
-## Tech Stack
+Read more about creating a library [in the docs](https://svelte.dev/docs/kit/packaging).
 
-- Svelte 4
-- TypeScript
-- SCSS Modules
-- Vite
-- Axios
+## Creating a project
 
-## Getting Started
+If you're seeing this, you've probably already done this step. Congrats!
 
-### Prerequisites
+```sh
+# create a new project in the current directory
+npx sv create
 
-- Node.js 18+
-- npm
-
-### Setup
-
-1. Install dependencies:
-```bash
-npm install
+# create a new project in my-app
+npx sv create my-app
 ```
 
-2. Configure environment (create `.env` file):
-```
-VITE_API_BASE_URL=http://localhost:1124/api
-```
+## Developing
 
-3. Run development server:
-```bash
+Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+
+```sh
 npm run dev
+
+# or start the server and open the app in a new browser tab
+npm run dev -- --open
 ```
 
-The app will be available at `http://localhost:5173`
+Everything inside `src/lib` is part of your library, everything inside `src/routes` can be used as a showcase or preview app.
 
-### Build for Production
+## Building
 
-```bash
+To build your library:
+
+```sh
+npm pack
+```
+
+To create a production version of your showcase app:
+
+```sh
 npm run build
 ```
 
-## Docker
+You can preview the production build with `npm run preview`.
 
-Build and run with Docker:
-```bash
-docker build -t streamletz-frontend .
-docker run -p 80:80 streamletz-frontend
+> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+
+## Publishing
+
+Go into the `package.json` and give your package the desired name through the `"name"` option. Also consider adding a `"license"` field and point it to a `LICENSE` file which you can create from a template (one popular option is the [MIT license](https://opensource.org/license/mit/)).
+
+To publish your library to [npm](https://www.npmjs.com):
+
+```sh
+npm publish
 ```
-
-## Project Structure
-
-```
-src/
-├── components/     # Reusable Svelte components
-├── pages/          # Page components
-├── lib/            # Services and utilities
-├── styles/         # Global styles and variables
-└── main.ts         # Application entry point
-```
-
-## Features
-
-- 🔐 User authentication
-- 🎵 Music streaming with audio player
-- 🔍 Track search
-- 📱 Responsive design
-- 🎨 Modern, Spotify-inspired UI
-
-## Motto
-
-**Your sound. Your stream. Your rules.**

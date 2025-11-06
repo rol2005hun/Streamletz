@@ -1,100 +1,47 @@
 <script lang="ts">
-    import { onMount } from "svelte";
-    import { authService, type User } from "../lib/authService";
-    import { userService, type UserProfile } from "../lib/userService";
-    import type { Track } from "../lib/trackService";
-    import { likedTrackService } from "../lib/likedTrackService";
-    import { playlistService } from "../lib/playlistService";
+    import { goto } from "$app/navigation";
+    import { authService, type User } from "$lib/authService";
+    import type { Track } from "$lib/trackService";
+    import { currentTrack, isPlaying, allTracks } from "$lib/stores";
+    import type { UserProfile } from "$lib/userService";
 
-    interface Props {
-        identifier?: string;
-        currentTrack?: Track | null;
-        isPlaying?: boolean;
-        allTracks?: Track[];
-    }
+    export let profileData: UserProfile | null = null;
+    export let likedTracks: Track[] = [];
+    export let playlists: import("$lib/playlistService").Playlist[] = [];
+    export let isOwnProfile: boolean = false;
 
-    let {
-        identifier,
-        currentTrack = $bindable(null),
-        isPlaying = $bindable(false),
-        allTracks = $bindable([]),
-    }: Props = $props();
+    let currentUser: User | null = null;
+    let error = "";
+    let hoveredTrack: number | null = null;
 
-    let profileData = $state<UserProfile | null>(null);
-    let currentUser = $state<User | null>(null);
-    let isOwnProfile = $state(false);
-    let stats = $state({
-        totalLikedTracks: 0,
-        totalPlaylists: 0,
-        recentlyPlayed: [] as Track[],
-    });
-    let loading = $state(true);
-    let error = $state("");
-    let hoveredTrack = $state<number | null>(null);
+    $: stats = {
+        totalLikedTracks: likedTracks.length,
+        totalPlaylists: playlists.length,
+        recentlyPlayed: likedTracks.slice(0, 5),
+    };
 
-    onMount(async () => {
+    $: if (profileData) {
         currentUser = authService.getUser();
-        await loadProfile();
-        loading = false;
-    });
-
-    async function loadProfile() {
-        try {
-            if (identifier) {
-                profileData = await userService.getPublicProfile(identifier);
-                isOwnProfile = currentUser?.username === profileData.username;
-            } else {
-                if (!currentUser) {
-                    error = "Please log in to view your profile";
-                    return;
-                }
-                profileData = await userService.getUserProfile();
-                isOwnProfile = true;
-            }
-
-            if (isOwnProfile) {
-                await loadUserStats();
-            }
-        } catch (err: any) {
-            console.error("Failed to load profile:", err);
-            error = err.response?.data?.message || "Failed to load profile";
-        }
     }
 
-    async function loadUserStats() {
-        try {
-            const [likedTracks, playlists] = await Promise.all([
-                likedTrackService.getLikedTracks(),
-                playlistService.getUserPlaylists(),
-            ]);
-
-            stats = {
-                totalLikedTracks: likedTracks.length,
-                totalPlaylists: playlists.length,
-                recentlyPlayed: likedTracks.slice(0, 5),
-            };
-
-            // Set all tracks for the audio player
-            if (likedTracks.length > 0) {
-                allTracks = likedTracks.map((track) => ({
-                    ...track,
-                    album: track.album || "",
-                    coverArtUrl: track.coverArtUrl || "",
-                    filePath: "",
-                    fileFormat: "",
-                }));
-            }
-        } catch (error) {
-            console.error("Failed to load user stats:", error);
-        }
+    if (isOwnProfile && likedTracks.length > 0) {
+        allTracks.set(
+            likedTracks.map((track) => ({
+                ...track,
+                album: track.album || "",
+                coverArtUrl: track.coverArtUrl || "",
+                filePath: "",
+                fileFormat: "",
+            })),
+        );
     }
 
     function playTrack(track: Track) {
-        if (currentTrack?.id === track.id) {
-            isPlaying = !isPlaying;
+        if ($currentTrack?.id === track.id) {
+            isPlaying.set(!$isPlaying);
         } else {
-            currentTrack = track;
-            isPlaying = true;
+            currentTrack.set(track);
+            isPlaying.set(true);
         }
     }
 
@@ -114,33 +61,25 @@
     }
 
     function goBack() {
-        window.history.pushState({}, "", "/dashboard");
-        window.dispatchEvent(new PopStateEvent("popstate"));
+        goto("/dashboard");
     }
 </script>
 
 <div class="profile-page">
-    {#if loading}
-        <div class="loading-container">
-            <div class="spinner"></div>
-            <p>Loading profile...</p>
-        </div>
-    {:else if error}
+    {#if error}
         <div class="error-container">
             <div class="error-icon">⚠️</div>
             <p class="error-message">{error}</p>
-            <button class="back-btn" onclick={goBack}>← Go Back</button>
+            <button class="back-btn" on:click={goBack}>← Go Back</button>
         </div>
     {:else if profileData}
         <div class="profile-header">
             <div class="profile-banner">
                 <button
                     class="back-btn"
-                    onclick={goBack}
-                    title="Back to Dashboard"
+                    on:click={goBack}
+                    title="Back to Dashboard">← Back</button
                 >
-                    ← Back
-                </button>
                 {#if !isOwnProfile}
                     <span class="public-badge">Public Profile</span>
                 {/if}
@@ -163,13 +102,14 @@
                     <h1 class="username">{profileData.username}</h1>
                     {#if isOwnProfile}
                         <div class="user-stats">
-                            <span class="stat-item">
-                                <strong>{stats.totalPlaylists}</strong> Playlists
-                            </span>
+                            <span class="stat-item"
+                                ><strong>{stats.totalPlaylists}</strong> Playlists</span
+                            >
                             <span class="stat-divider">•</span>
-                            <span class="stat-item">
-                                <strong>{stats.totalLikedTracks}</strong> Liked Songs
-                            </span>
+                            <span class="stat-item"
+                                ><strong>{stats.totalLikedTracks}</strong> Liked
+                                Songs</span
+                            >
                         </div>
                     {/if}
                 </div>
@@ -193,16 +133,16 @@
                                 {#each stats.recentlyPlayed as track, index}
                                     <div
                                         class="track-row"
-                                        class:playing={currentTrack?.id ===
+                                        class:playing={$currentTrack?.id ===
                                             track.id}
                                         role="button"
                                         tabindex="0"
-                                        onmouseenter={() =>
+                                        on:mouseenter={() =>
                                             (hoveredTrack = track.id)}
-                                        onmouseleave={() =>
+                                        on:mouseleave={() =>
                                             (hoveredTrack = null)}
-                                        onclick={() => playTrack(track)}
-                                        onkeydown={(e) => {
+                                        on:click={() => playTrack(track)}
+                                        on:keydown={(e) => {
                                             if (
                                                 e.key === "Enter" ||
                                                 e.key === " "
@@ -213,16 +153,14 @@
                                         }}
                                     >
                                         <div class="col-number">
-                                            {#if hoveredTrack === track.id || currentTrack?.id === track.id}
+                                            {#if hoveredTrack === track.id || $currentTrack?.id === track.id}
                                                 <button
                                                     class="play-btn"
-                                                    onclick={(e) => {
-                                                        e.stopPropagation();
-                                                        playTrack(track);
-                                                    }}
+                                                    on:click|stopPropagation={() =>
+                                                        playTrack(track)}
                                                     title="Play"
                                                 >
-                                                    {#if currentTrack?.id === track.id && isPlaying}
+                                                    {#if $currentTrack?.id === track.id && $isPlaying}
                                                         <svg
                                                             width="16"
                                                             height="16"
@@ -231,7 +169,7 @@
                                                         >
                                                             <path
                                                                 d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"
-                                                            ></path>
+                                                            />
                                                         </svg>
                                                     {:else}
                                                         <svg
@@ -242,7 +180,7 @@
                                                         >
                                                             <path
                                                                 d="M8 5v14l11-7z"
-                                                            ></path>
+                                                            />
                                                         </svg>
                                                     {/if}
                                                 </button>
@@ -280,7 +218,9 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-album">{track.album || "Unknown"}</div>
+                                        <div class="col-album">
+                                            {track.album || "Unknown"}
+                                        </div>
                                         <div class="col-duration">
                                             {formatDuration(track.duration)}
                                         </div>
@@ -306,7 +246,7 @@
                                 >
                                     <path
                                         d="M21 15V6M18.5 18a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"
-                                    ></path>
+                                    />
                                     <path
                                         d="M12 18V3l9 3M12 18a2.5 2.5 0 1 0-2.5-2.5A2.5 2.5 0 0 0 12 18Z"
                                     ></path>
@@ -326,7 +266,7 @@
                                 >
                                     <path
                                         d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-                                    ></path>
+                                    />
                                 </svg>
                             </div>
                             <div class="stat-value">
@@ -355,6 +295,6 @@
     {/if}
 </div>
 
-<style lang="scss">
-    @use "../styles/pages/Profile.scss";
+<style scoped lang="scss">
+    @use "$styles/pages/Profile.scss";
 </style>
