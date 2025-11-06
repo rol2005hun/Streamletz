@@ -1,6 +1,5 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
-    import { authService, type User } from "$lib/authService";
     import type { Track } from "$lib/trackService";
     import { currentTrack, isPlaying, allTracks } from "$lib/stores";
     import type { UserProfile } from "$lib/userService";
@@ -10,7 +9,6 @@
     export let playlists: import("$lib/playlistService").Playlist[] = [];
     export let isOwnProfile: boolean = false;
 
-    let currentUser: User | null = null;
     let error = "";
     let hoveredTrack: number | null = null;
 
@@ -19,10 +17,6 @@
         totalPlaylists: playlists.length,
         recentlyPlayed: likedTracks.slice(0, 5),
     };
-
-    $: if (profileData) {
-        currentUser = authService.getUser();
-    }
 
     if (isOwnProfile && likedTracks.length > 0) {
         allTracks.set(
