@@ -163,8 +163,18 @@ npm run dev
 # Frontend will be available at http://localhost:5173
 ```
 
-#### 4. Add Music Files
-Place your music files (.mp3, .flac, .wav, etc.) in `backend/music/` directory. The application will automatically scan and index them on startup.
+
+#### 4. Music and Covers Folders Configuration
+Specify the location of your music and covers folders in the `.env` file using the following variables:
+
+```env
+MUSIC_STORAGE_PATH=C:/musics
+MUSIC_COVERS_PATH=C:/covers
+```
+
+You can use any folder path (absolute or relative). The application will automatically scan all music files (recursively, up to 3 levels deep) in the folder you specify. You do **not** need to copy files manually to a fixed directory—just set the correct path in your `.env`.
+
+Album covers will be generated and stored in the covers folder you specify. Existing covers are detected automatically; no manual intervention is needed.
 
 ## 📁 Project Structure
 
