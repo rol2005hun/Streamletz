@@ -50,7 +50,7 @@ services:
     container_name: streamletz-frontend
     restart: unless-stopped
     ports:
-      - "${FRONTEND_PORT:-5173}:80"
+      - "${FRONTEND_PORT:-5173}:3000"
     depends_on:
       - backend
     networks:
