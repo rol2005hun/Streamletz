@@ -16,9 +16,8 @@ declare global {
 	}
 }
 
-// Ezt a két interfészt adtuk hozzá a API_BASE_URL típusának definíálásához
 interface ImportMetaEnv {
-	readonly API_BASE_URL: string;
+	readonly VITE_API_BASE_URL: string;
 }
 
 interface ImportMeta {

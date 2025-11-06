@@ -227,7 +227,7 @@ JWT_SECRET=your-super-secret-jwt-key-change-in-production
 MUSIC_STORAGE_PATH=./music
 
 # Frontend
-API_BASE_URL=http://localhost:1124/api
+VITE_API_BASE_URL=http://localhost:1124/api
 ```
 
 ### Backend Configuration (`application.properties`)

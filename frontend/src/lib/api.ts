@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:1124/api';
+const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:1124/api';
 
 let serverToken: string | null = null;
 
@@ -13,7 +13,7 @@ export function clearServerToken() {
 }
 
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: VITE_API_BASE_URL,
   headers: {
     'Content-Type': 'application/json'
   },
