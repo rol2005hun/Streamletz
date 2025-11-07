@@ -97,7 +97,7 @@ public class CoverStartupService {
                     }
                     if (foundExisting) {
                         existingCovers++;
-                        String expectedUrl = "/api/covers/" + foundCoverFile;
+                        String expectedUrl = "/covers/" + foundCoverFile;
                         if (track.getCoverArtUrl() == null || !track.getCoverArtUrl().equals(expectedUrl)) {
                             track.setCoverArtUrl(expectedUrl);
                             trackRepository.save(track);
@@ -108,7 +108,7 @@ public class CoverStartupService {
 
                     String coverFileName = System.currentTimeMillis() + "_" + sanitizedName + ".jpg";
                     Path coverFilePath = Paths.get(coversPath, coverFileName);
-                    String expectedUrl = "/api/covers/" + coverFileName;
+                    String expectedUrl = "/covers/" + coverFileName;
                     boolean coverSet = false;
 
                     coverSet = trySetCoverFromMetadata(track, coverFilePath, expectedUrl);
