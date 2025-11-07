@@ -37,8 +37,8 @@ export const authService = {
 
   setAuth(token: string, user: User): void {
     if (typeof document !== 'undefined') {
-      document.cookie = `token=${token}; path=/; max-age=86400; secure; samesite=strict`;
-      document.cookie = `user=${encodeURIComponent(JSON.stringify(user))}; path=/; max-age=86400; secure; samesite=strict`;
+      document.cookie = `token=${token}; path=/; max-age=86400; samesite=lax`;
+      document.cookie = `user=${encodeURIComponent(JSON.stringify(user))}; path=/; max-age=86400; samesite=lax`;
     }
   },
 
