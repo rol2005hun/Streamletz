@@ -29,8 +29,7 @@ export const trackService = {
   },
 
   getStreamUrl(trackId: number): string {
-    const baseUrl = "http://localhost:1124/api";
-    return `${baseUrl}/tracks/stream/${trackId}`;
+    return `${import.meta.env.VITE_API_BASE_URL}/tracks/stream/${trackId}`;
   },
 
   async incrementPlayCount(trackId: number): Promise<void> {

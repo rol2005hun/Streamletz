@@ -183,7 +183,7 @@
                                             "http",
                                         )
                                             ? track.coverArtUrl
-                                            : `http://localhost:1124${track.coverArtUrl}`}
+                                            : import.meta.env.VITE_API_BASE_URL + track.coverArtUrl}
                                         alt={track.album || track.title}
                                     />
                                 {:else}

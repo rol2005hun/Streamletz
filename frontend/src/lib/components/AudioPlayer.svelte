@@ -488,7 +488,7 @@
                   <img
                     src={t.coverArtUrl.startsWith("http")
                       ? t.coverArtUrl
-                      : `http://localhost:1124${t.coverArtUrl}`}
+                      : import.meta.env.VITE_API_BASE_URL + t.coverArtUrl}
                     alt={t.album}
                   />
                 {/if}
