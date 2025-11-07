@@ -88,7 +88,7 @@ Streamletz is a **self-hosted** music streaming platform that gives you complete
 ## 📋 Prerequisites
 
 - **Node.js** 18+ and npm
-- **Java** 17+
+- **Java** 17+ (or 21+ recommended)
 - **Maven** 3.8+
 - **Docker** and Docker Compose
 - **PostgreSQL** 14+
@@ -106,13 +106,21 @@ cd Streamletz
 2. **Create environment file:**
 ```bash
 cp .env.example .env
-# Edit .env with your configuration (database credentials, JWT secret, etc.)
+# Edit .env with your configuration (database credentials, JWT secret, music/cover paths, etc.)
 ```
 
-3. **Create music directory:**
+**Mandatory:** The `.env` file in the root is required for both backend and frontend to work. See `.env.example` for all required variables. You must set at least:
+
+- `DATABASE_URL`, `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME` (PostgreSQL connection)
+- `JWT_SECRET` (backend auth)
+- `MUSIC_PATH`, `COVER_PATH` (absolute or relative paths to your music and cover folders)
+- `VITE_API_BASE_URL` (frontend API URL, usually `http://localhost:1124/api`)
+
+3. **Create music directory (if not using external path):**
 ```bash
 mkdir -p backend/music
 ```
+Or set `MUSIC_PATH` in `.env` to any folder you want to use. The backend will scan this folder recursively (up to 3 levels deep) for audio files.
 
 4. **Start all services:**
 ```bash
@@ -165,48 +173,48 @@ npm run dev
 
 
 #### 4. Music and Covers Folders Configuration
-Specify the location of your music and covers folders in the `.env` file using the following variables:
+
+Set the following in your `.env` (see `.env.example`):
 
 ```env
-MUSIC_STORAGE_PATH=C:/musics
-MUSIC_COVERS_PATH=C:/covers
+MUSIC_PATH=./backend/music         # or any absolute path
+COVER_PATH=./backend/covers        # or any absolute path
 ```
 
-You can use any folder path (absolute or relative). The application will automatically scan all music files (recursively, up to 3 levels deep) in the folder you specify. You do **not** need to copy files manually to a fixed directory—just set the correct path in your `.env`.
+You can use any folder path (absolute or relative). The backend will scan all music files (recursively, up to 3 levels deep) in the folder you specify. You do **not** need to copy files manually to a fixed directory—just set the correct path in your `.env`.
 
 Album covers will be generated and stored in the covers folder you specify. Existing covers are detected automatically; no manual intervention is needed.
 
-## 📁 Project Structure
+## 📁 Folder Structure
 
 ```
 Streamletz/
-├── backend/               # Spring Boot backend
-│   ├── src/
-│   │   └── main/
-│   │       ├── java/
-│   │       │   └── com/streamletz/
-│   │       │       ├── controller/
-│   │       │       ├── service/
-│   │       │       ├── repository/
-│   │       │       ├── model/
-│   │       │       ├── config/
-│   │       │       └── util/
-│   │       └── resources/
+├── backend/               # Java Spring Boot backend
+│   ├── src/main/java/com/streamletz/
+│   │   ├── controller/    # REST API endpoints
+│   │   ├── service/       # Business logic
+│   │   ├── repository/    # Data access
+│   │   ├── model/         # Entity classes
+│   │   ├── config/        # Config (JWT, Security, etc.)
+│   │   └── util/          # DTOs, helpers
+│   ├── src/main/resources/
+│   │   └── application.properties
+│   ├── music/             # (Optional) Local music files
 │   ├── Dockerfile
 │   └── pom.xml
-├── frontend/              # Svelte frontend
+├── frontend/              # Svelte + TypeScript frontend
 │   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── styles/
-│   │   └── lib/
+│   │   ├── lib/           # API clients, stores, services
+│   │   ├── components/    # Svelte components
+│   │   ├── styles/        # SCSS modules
+│   │   └── routes/        # SvelteKit routes
 │   ├── Dockerfile
 │   └── package.json
 ├── .github/
 │   └── workflows/
 │       └── ci-cd.yml
 ├── docker-compose.yml
-├── .env.example
+├── .env.example           # Example env file (copy to .env)
 └── README.md
 ```
 
@@ -214,34 +222,40 @@ Streamletz/
 
 ### Environment Variables
 
-Create a `.env` file in the root directory (see `.env.example` for reference):
+Create a `.env` file in the root directory (see `.env.example` for all required and optional variables):
 
 ```env
 # Database
-DATABASE_URL=jdbc:postgresql://localhost:5432/streamletz
-DATABASE_USERNAME=streamletz_user
-DATABASE_PASSWORD=your_password
+DATABASE_URL=postgresql://localhost:5432/streamletz
+DB_USERNAME=streamletz_user
+DB_PASSWORD=changeme123
+DB_NAME=streamletz
 
 # Backend
-JWT_SECRET=your-super-secret-jwt-key-change-in-production
-MUSIC_STORAGE_PATH=./music
+BACKEND_PORT=1124
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+JWT_EXPIRATION=86400000
+MUSIC_PATH=./backend/music
+COVER_PATH=./backend/covers
 
 # Frontend
 VITE_API_BASE_URL=http://localhost:1124/api
+FRONTEND_PORT=5173
 ```
 
 ### Backend Configuration (`application.properties`)
 
-Key settings:
-- `spring.datasource.*` - Database connection
-- `jwt.secret` - JWT signing key
-- `jwt.expiration` - Token validity (default: 86400000ms = 24h)
-- `music.storage.path` - Music files location
-- `server.port` - Backend port (default: 1124)
+Key settings (can be set via `.env`):
+- `spring.datasource.*` - Database connection (from `DATABASE_URL`, `DB_USERNAME`, `DB_PASSWORD`)
+- `jwt.secret` - JWT signing key (`JWT_SECRET`)
+- `jwt.expiration` - Token validity (`JWT_EXPIRATION`, default: 86400000ms = 24h)
+- `music.storage.path` - Music files location (`MUSIC_PATH`)
+- `music.covers.path` - Album covers location (`COVER_PATH`)
+- `server.port` - Backend port (`BACKEND_PORT`, default: 1124)
 
 ## 🚢 Deployment
 
-The project is containerized and ready for **self-hosted deployment** on your own server or local network.
+The project is containerized and ready for **self-hosted deployment** on your own server or local network. All configuration is handled via the `.env` file in the root.
 
 ### 🏠 Self-Hosting Options
 
@@ -308,9 +322,11 @@ Once the backend is running, visit the Swagger UI for interactive API documentat
 
 Contributions are welcome! Please check out our [Contributing Guidelines](CONTRIBUTING.md) for details.
 
+**Commit convention:** Use [Conventional Commits](https://www.conventionalcommits.org/) (e.g. `feat: add playlist sharing`, `fix: correct play count logic`).
+
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+3. Commit your changes (`git commit -m 'feat: add some AmazingFeature'`)
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
