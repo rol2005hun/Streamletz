@@ -191,5 +191,5 @@
 </div>
 
 <style scoped lang="scss">
-    @use "$styles/pages/LikedSongs.scss";
+    @use "$styles/pages/LikedSongs";
 </style>

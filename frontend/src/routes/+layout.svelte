@@ -1,5 +1,6 @@
 <script lang="ts">
     import AudioPlayer from "$lib/components/AudioPlayer.svelte";
+    import Toast from "$lib/components/Toast.svelte";
     import { currentTrack, allTracks, isPlaying, isPaused } from "$lib/stores";
     import { onMount } from "svelte";
     import { trackService } from "$lib/trackService";
@@ -28,6 +29,8 @@
 </script>
 
 <slot />
+
+<Toast />
 
 {#if data?.isAuthenticated}
     <AudioPlayer

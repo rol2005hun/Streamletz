@@ -350,5 +350,5 @@
 </div>
 
 <style scoped lang="scss">
-    @use "$styles/pages/Dashboard.scss";
+    @use "$styles/pages/Dashboard";
 </style>

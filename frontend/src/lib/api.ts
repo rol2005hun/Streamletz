@@ -1,5 +1,6 @@
 
 import axios from 'axios';
+import { showToast } from './toast';
 
 const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -50,15 +51,34 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (typeof window !== 'undefined' && error.response?.status === 401) {
-      const isAuthRoute =
-        error.config?.url?.includes('/auth/login') ||
-        error.config?.url?.includes('/auth/register');
-      if (!isAuthRoute) {
-        document.cookie = 'token=; path=/; max-age=0';
-        document.cookie = 'user=; path=/; max-age=0';
-        window.location.href = '/login';
+    if (typeof window !== 'undefined') {
+      if (error.response?.status === 401) {
+        const isAuthRoute =
+          error.config?.url?.includes('/auth/login') ||
+          error.config?.url?.includes('/auth/register');
+        if (!isAuthRoute) {
+          document.cookie = 'token=; path=/; max-age=0';
+          document.cookie = 'user=; path=/; max-age=0';
+          window.location.href = '/login';
+        }
       }
+
+      let message = '';
+      if (error.response?.data?.message) {
+        message = error.response.data.message;
+      } else if (error.response?.data) {
+        if (typeof error.response.data === 'string') {
+          message = error.response.data;
+        } else {
+          message = JSON.stringify(error.response.data);
+        }
+      } else if (error.message) {
+        message = error.message;
+      } else {
+        message = JSON.stringify(error);
+      }
+
+      showToast(message, 'error');
     }
     return Promise.reject(error);
   }

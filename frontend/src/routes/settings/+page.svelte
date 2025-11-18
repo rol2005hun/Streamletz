@@ -799,5 +799,5 @@
 </div>
 
 <style scoped lang="scss">
-    @use "$styles/pages/Settings.scss";
+    @use "$styles/pages/Settings";
 </style>

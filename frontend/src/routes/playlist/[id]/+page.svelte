@@ -232,5 +232,5 @@
 {/if}
 
 <style scoped lang="scss">
-    @use "$styles/pages/PlaylistDetail.scss";
+    @use "$styles/pages/PlaylistDetail";
 </style>

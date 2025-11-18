@@ -1,5 +1,5 @@
 @use "sass:color";
-@use "../variables.scss" as *;
+@use "../variables" as *;
 
 .register-container {
     min-height: 100vh;

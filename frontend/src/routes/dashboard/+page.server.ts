@@ -12,6 +12,7 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
     if (locals.isAuthenticated) {
         const userCookie = cookies.get('user');
         const tokenCookie = cookies.get('token');
+
         if (userCookie) {
             try {
                 user = JSON.parse(decodeURIComponent(userCookie));

@@ -226,5 +226,5 @@
 </header>
 
 <style scoped lang="scss">
-  @use "$styles/components/Navbar.scss";
+  @use "$styles/components/Navbar";
 </style>
