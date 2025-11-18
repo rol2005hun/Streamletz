@@ -1,6 +1,16 @@
+
 import axios from 'axios';
 
 const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+function isValidApiUrl(url: any): url is string {
+  return typeof url === 'string' && url.startsWith('http');
+}
+
+if (!isValidApiUrl(VITE_API_BASE_URL)) {
+  console.error('[API] VITE_API_BASE_URL is invalid: ', VITE_API_BASE_URL);
+  throw new Error('VITE_API_BASE_URL is not set or invalid. Please check your .env file.');
+}
 
 let serverToken: string | null = null;
 
@@ -13,7 +23,7 @@ export function clearServerToken() {
 }
 
 const api = axios.create({
-  baseURL: VITE_API_BASE_URL,
+  baseURL: isValidApiUrl(VITE_API_BASE_URL) ? VITE_API_BASE_URL : undefined,
   headers: {
     'Content-Type': 'application/json'
   },
