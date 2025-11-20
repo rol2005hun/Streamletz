@@ -291,7 +291,7 @@
       isPlaying.set(true);
       isPaused.set(false);
     }
-    // Save isPaused to cookie
+
     document.cookie = `streamletz_isPaused=${encodeURIComponent(JSON.stringify(get(isPaused)))}; path=/; max-age=31536000`;
   }
 
@@ -356,7 +356,7 @@
       isMuted = false;
       unmutedVolume = volume;
     }
-    // Save volume and unmutedVolume to cookies
+
     document.cookie = `streamletz_volume=${encodeURIComponent(volume.toString())}; path=/; max-age=31536000`;
     document.cookie = `streamletz_unmutedVolume=${encodeURIComponent(unmutedVolume.toString())}; path=/; max-age=31536000`;
   }
@@ -375,7 +375,7 @@
       audio.volume = 0;
       isMuted = true;
     }
-    // Save volume and unmutedVolume to cookies
+
     document.cookie = `streamletz_volume=${encodeURIComponent(volume.toString())}; path=/; max-age=31536000`;
     document.cookie = `streamletz_unmutedVolume=${encodeURIComponent(unmutedVolume.toString())}; path=/; max-age=31536000`;
   }

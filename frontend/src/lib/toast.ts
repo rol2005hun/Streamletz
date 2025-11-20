@@ -13,7 +13,7 @@ export const toasts = writable<Toast[]>([]);
 
 let toastId = 0;
 
-export function showToast(message: string, type: ToastType = 'info', timeout = 400000) {
+export function showToast(message: string, type: ToastType = 'info', timeout = 4000) {
     toastId += 1;
     const toast: Toast = { id: toastId, message, type, timeout };
     toasts.update((all) => [...all, toast]);
