@@ -4,6 +4,18 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Data Transfer Object for authentication responses.
+ * 
+ * <p>
+ * Contains the JWT token and user information returned after
+ * successful registration or login.
+ * </p>
+ * 
+ * @author Streamletz Team
+ * @version 1.0
+ * @since 1.0
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

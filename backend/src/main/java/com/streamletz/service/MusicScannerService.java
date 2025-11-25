@@ -19,6 +19,30 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+/**
+ * Service for automatically scanning and indexing music files from the file
+ * system.
+ * 
+ * <p>
+ * This service implements {@link CommandLineRunner} to execute on application
+ * startup
+ * when auto-scan is enabled. It performs the following operations:
+ * </p>
+ * <ul>
+ * <li>Recursively scans the configured music directory for audio files</li>
+ * <li>Extracts metadata (title, artist, album, duration) from audio files</li>
+ * <li>Creates Track entities for new files not already in the database</li>
+ * <li>Supports MP3, FLAC, M4A, WAV, and OGG formats</li>
+ * </ul>
+ * 
+ * <p>
+ * Scanning depth is limited to 3 levels to prevent excessive recursion.
+ * </p>
+ * 
+ * @author Streamletz Team
+ * @version 1.0
+ * @since 1.0
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -35,6 +59,18 @@ public class MusicScannerService implements CommandLineRunner {
     @Value("${music.covers.path:/covers}")
     private String coversPath;
 
+    /**
+     * Executes on application startup to scan music library if auto-scan is
+     * enabled.
+     * 
+     * <p>
+     * Creates the covers directory if it doesn't exist, then scans the music
+     * library
+     * and saves any new tracks to the database.
+     * </p>
+     * 
+     * @param args command-line arguments (not used)
+     */
     @Override
     public void run(String... args) {
         if (autoScan) {
@@ -62,6 +98,17 @@ public class MusicScannerService implements CommandLineRunner {
         }
     }
 
+    /**
+     * Scans the music library directory for audio files and extracts metadata.
+     * 
+     * <p>
+     * Recursively scans up to 3 directory levels deep. Skips files already
+     * in the database based on file path. Returns only new tracks that need to
+     * be saved.
+     * </p>
+     * 
+     * @return list of new Track entities with extracted metadata
+     */
     public java.util.List<Track> scanMusicLibrary() {
         java.util.List<Track> scannedTracks = new java.util.ArrayList<>();
         try {
@@ -73,7 +120,8 @@ public class MusicScannerService implements CommandLineRunner {
             }
             for (File file : scanMusicFilesRecursive(musicDir.toFile(), 0, 3)) {
                 try {
-                    String relativePath = musicDir.toFile().toPath().relativize(file.toPath()).toString().replace('\\', '/');
+                    String relativePath = musicDir.toFile().toPath().relativize(file.toPath()).toString().replace('\\',
+                            '/');
                     if (trackRepository.findByFilePath(relativePath).isPresent()) {
                         continue;
                     }
@@ -91,6 +139,14 @@ public class MusicScannerService implements CommandLineRunner {
         return scannedTracks;
     }
 
+    /**
+     * Recursively scans a directory for music files up to a maximum depth.
+     * 
+     * @param dir          the directory to scan
+     * @param currentDepth the current recursion depth
+     * @param maxDepth     the maximum recursion depth (3 levels)
+     * @return list of music files found
+     */
     private java.util.List<File> scanMusicFilesRecursive(File dir, int currentDepth, int maxDepth) {
         java.util.List<File> musicFiles = new java.util.ArrayList<>();
         if (currentDepth > maxDepth || !dir.isDirectory())
@@ -110,12 +166,38 @@ public class MusicScannerService implements CommandLineRunner {
         return musicFiles;
     }
 
+    /**
+     * Checks if a file is a supported music file based on extension.
+     * 
+     * <p>
+     * Supported formats: MP3, FLAC, M4A, WAV, OGG
+     * </p>
+     * 
+     * @param file the file to check
+     * @return true if the file has a supported music file extension
+     */
     private boolean isMusicFile(File file) {
         String name = file.getName().toLowerCase();
         return name.endsWith(".mp3") || name.endsWith(".flac") || name.endsWith(".m4a") || name.endsWith(".wav")
                 || name.endsWith(".ogg");
     }
 
+    /**
+     * Extracts metadata from an audio file and creates a Track entity.
+     * 
+     * <p>
+     * Uses JAudioTagger library to read ID3 tags and audio properties.
+     * Falls back to filename if metadata cannot be read. Sets default values
+     * for missing fields ("Unknown Artist", "Unknown Album").
+     * </p>
+     * 
+     * @param file         the audio file to process
+     * @param relativePath the relative path from music storage directory
+     * @return Track entity with extracted metadata
+     * @throws IOException   if file cannot be read
+     * @throws TikaException if content type detection fails
+     * @throws SAXException  if XML parsing fails
+     */
     private Track extractTrackMetadata(File file, String relativePath) throws IOException, TikaException, SAXException {
         Track track = new Track();
         track.setFilePath(relativePath);
@@ -160,6 +242,12 @@ public class MusicScannerService implements CommandLineRunner {
         return track;
     }
 
+    /**
+     * Removes the file extension from a filename.
+     * 
+     * @param fileName the filename to process
+     * @return the filename without extension
+     */
     private String getFileNameWithoutExtension(String fileName) {
         int lastDot = fileName.lastIndexOf('.');
         return lastDot > 0 ? fileName.substring(0, lastDot) : fileName;

@@ -26,6 +26,30 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+/**
+ * Service for automatically generating and managing album/track cover art.
+ * 
+ * <p>
+ * This service runs on application startup and performs the following
+ * operations:
+ * </p>
+ * <ul>
+ * <li>Verifies existing cover art files for all tracks</li>
+ * <li>Extracts embedded artwork from audio file metadata</li>
+ * <li>Downloads cover art from iTunes API as fallback</li>
+ * <li>Generates gradient-based placeholder covers if no artwork found</li>
+ * <li>Resizes all covers to 400x400px for consistency</li>
+ * </ul>
+ * 
+ * <p>
+ * Cover art sources are tried in order: embedded metadata → iTunes API →
+ * generated gradient.
+ * </p>
+ * 
+ * @author Streamletz Team
+ * @version 1.0
+ * @since 1.0
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -54,6 +78,21 @@ public class CoverStartupService {
             { new Color(255, 127, 0), new Color(255, 69, 0) }
     };
 
+    /**
+     * Main cover verification and generation process, executed on application
+     * startup.
+     * 
+     * <p>
+     * Processes all tracks in the database and ensures each has cover art.
+     * Logs detailed statistics about existing, extracted, downloaded, and generated
+     * covers.
+     * </p>
+     * 
+     * <p>
+     * Listens for {@link ApplicationReadyEvent} to run after application is fully
+     * initialized.
+     * </p>
+     */
     @EventListener(ApplicationReadyEvent.class)
     public void checkAndGenerateMissingCovers() {
         log.info("Starting cover verification and generation process...");
@@ -149,6 +188,14 @@ public class CoverStartupService {
         }
     }
 
+    /**
+     * Attempts to extract and save cover art from audio file metadata.
+     * 
+     * @param track         the track to process
+     * @param coverFilePath the path where cover should be saved
+     * @param expectedUrl   the URL to set in track entity
+     * @return true if cover was successfully extracted and saved
+     */
     private boolean trySetCoverFromMetadata(Track track, Path coverFilePath, String expectedUrl) {
         byte[] embeddedArt = extractEmbeddedArtwork(track, musicStoragePath);
         if (embeddedArt != null) {
@@ -167,6 +214,14 @@ public class CoverStartupService {
         return false;
     }
 
+    /**
+     * Attempts to download cover art from iTunes API.
+     * 
+     * @param track         the track to process
+     * @param coverFilePath the path where cover should be saved
+     * @param expectedUrl   the URL to set in track entity
+     * @return true if cover was successfully downloaded and saved
+     */
     private boolean trySetCoverFromItunes(Track track, Path coverFilePath, String expectedUrl) {
         byte[] itunesArt = downloadFromItunes(track.getArtist(), track.getTitle());
         if (itunesArt != null) {
@@ -182,6 +237,14 @@ public class CoverStartupService {
         return false;
     }
 
+    /**
+     * Generates a gradient-based placeholder cover art.
+     * 
+     * @param track         the track to process
+     * @param coverFilePath the path where cover should be saved
+     * @param expectedUrl   the URL to set in track entity
+     * @return true if cover was successfully generated and saved
+     */
     private boolean trySetCoverWithGradient(Track track, Path coverFilePath, String expectedUrl) {
         try {
             generateGradientCover(track, coverFilePath);
@@ -194,6 +257,17 @@ public class CoverStartupService {
         return false;
     }
 
+    /**
+     * Extracts embedded artwork from an audio file's metadata.
+     * 
+     * <p>
+     * Uses JAudioTagger library to read ID3 tags and extract cover art.
+     * </p>
+     * 
+     * @param track            the track whose audio file to read
+     * @param musicStoragePath the base path for music files
+     * @return byte array of image data, or null if no artwork found
+     */
     private byte[] extractEmbeddedArtwork(Track track, String musicStoragePath) {
         try {
             Path musicFilePath = Paths.get(musicStoragePath, track.getFilePath());
@@ -220,6 +294,18 @@ public class CoverStartupService {
         return null;
     }
 
+    /**
+     * Downloads cover art from iTunes API.
+     * 
+     * <p>
+     * Searches iTunes API for the track and downloads high-resolution (600x600)
+     * artwork.
+     * </p>
+     * 
+     * @param artist the artist name
+     * @param title  the track title
+     * @return byte array of image data, or null if not found
+     */
     private byte[] downloadFromItunes(String artist, String title) {
         try {
             String searchTerm = (artist + " " + title).replaceAll(" ", "+");
@@ -257,6 +343,17 @@ public class CoverStartupService {
         return null;
     }
 
+    /**
+     * Resizes and saves cover art to 400x400px with aspect ratio preservation.
+     * 
+     * <p>
+     * Centers the image on a black background if aspect ratio doesn't match.
+     * </p>
+     * 
+     * @param imageBytes the source image data
+     * @param outputPath the path where resized image should be saved
+     * @throws IOException if image cannot be read or written
+     */
     private void saveAndResizeCover(byte[] imageBytes, Path outputPath) throws IOException {
         BufferedImage original = ImageIO.read(new ByteArrayInputStream(imageBytes));
 
@@ -296,6 +393,22 @@ public class CoverStartupService {
         ImageIO.write(finalImage, "jpg", outputPath.toFile());
     }
 
+    /**
+     * Generates a gradient-based placeholder cover with track information.
+     * 
+     * <p>
+     * Creates a 400x400px image with:
+     * </p>
+     * <ul>
+     * <li>Random gradient background from predefined color schemes</li>
+     * <li>Music note icon in the center</li>
+     * <li>Track title and artist text overlay</li>
+     * </ul>
+     * 
+     * @param track      the track for which to generate cover
+     * @param outputPath the path where generated image should be saved
+     * @throws IOException if image cannot be written
+     */
     private void generateGradientCover(Track track, Path outputPath) throws IOException {
         int width = TARGET_SIZE;
         int height = TARGET_SIZE;

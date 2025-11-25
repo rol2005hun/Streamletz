@@ -7,6 +7,18 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Data Transfer Object for user registration requests.
+ * 
+ * <p>
+ * Contains all required information for creating a new user account.
+ * All fields are validated using Jakarta Bean Validation annotations.
+ * </p>
+ * 
+ * @author Streamletz Team
+ * @version 1.0
+ * @since 1.0
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

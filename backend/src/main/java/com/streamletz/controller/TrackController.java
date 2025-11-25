@@ -16,6 +16,28 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * REST controller for managing music tracks and audio streaming.
+ * 
+ * <p>
+ * This controller provides endpoints for:
+ * </p>
+ * <ul>
+ * <li>Track metadata retrieval and search</li>
+ * <li>Audio streaming with HTTP Range support for seeking</li>
+ * <li>Play count tracking</li>
+ * <li>External track download (placeholder for future implementation)</li>
+ * </ul>
+ * 
+ * <p>
+ * The streaming endpoint supports partial content requests (HTTP 206) for
+ * efficient audio playback and seeking.
+ * </p>
+ * 
+ * @author Streamletz Team
+ * @version 1.0
+ * @since 1.0
+ */
 @RestController
 @RequestMapping("/api/tracks")
 @RequiredArgsConstructor
@@ -24,6 +46,16 @@ public class TrackController {
 
     private final TrackService trackService;
 
+    /**
+     * Retrieves all available tracks.
+     * 
+     * <p>
+     * Returns a list of all tracks in the system with their metadata.
+     * Requires authentication.
+     * </p>
+     * 
+     * @return ResponseEntity containing a list of all tracks
+     */
     @GetMapping
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Get all tracks", description = "Retrieve list of all available tracks")
@@ -31,6 +63,13 @@ public class TrackController {
         return ResponseEntity.ok(trackService.getAllTracks());
     }
 
+    /**
+     * Retrieves a specific track by its ID.
+     * 
+     * @param id the track ID
+     * @return ResponseEntity containing the track metadata
+     * @throws RuntimeException if the track is not found
+     */
     @GetMapping("/{id}")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Get track by ID", description = "Retrieve track metadata by ID")
@@ -38,6 +77,17 @@ public class TrackController {
         return ResponseEntity.ok(trackService.getTrackById(id));
     }
 
+    /**
+     * Searches for tracks by title, artist, or album.
+     * 
+     * <p>
+     * Performs a case-insensitive search across track titles, artist names,
+     * and album names. Returns all matching tracks without duplicates.
+     * </p>
+     * 
+     * @param query the search query string
+     * @return ResponseEntity containing a list of matching tracks
+     */
     @GetMapping("/search")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Search tracks", description = "Search tracks by title, artist, or album")
@@ -45,6 +95,25 @@ public class TrackController {
         return ResponseEntity.ok(trackService.searchTracks(query));
     }
 
+    /**
+     * Streams audio content with support for HTTP Range requests.
+     * 
+     * <p>
+     * This endpoint supports partial content delivery (HTTP 206) for efficient
+     * audio streaming and seeking. If a Range header is provided, only the
+     * requested
+     * byte range is returned. Otherwise, the entire file is streamed.
+     * </p>
+     * 
+     * <p>
+     * The endpoint is publicly accessible to allow audio playback without
+     * authentication.
+     * </p>
+     * 
+     * @param id          the track ID to stream
+     * @param rangeHeader optional HTTP Range header for partial content requests
+     * @return ResponseEntity containing the audio resource with appropriate headers
+     */
     @GetMapping("/stream/{id}")
     @Operation(summary = "Stream track", description = "Stream audio with HTTP Range support")
     public ResponseEntity<Resource> streamTrack(
@@ -89,6 +158,17 @@ public class TrackController {
         }
     }
 
+    /**
+     * Increments the play count for a track.
+     * 
+     * <p>
+     * Should be called when a track has been played to approximately 90%
+     * completion to count as a valid play for statistics.
+     * </p>
+     * 
+     * @param id the track ID
+     * @return ResponseEntity with no content
+     */
     @PostMapping("/{id}/play")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Increment play count", description = "Increment play count when track is played to 90%")
@@ -98,6 +178,20 @@ public class TrackController {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * Initiates download of a track from an external source.
+     * 
+     * <p>
+     * <b>Note:</b> This is a placeholder endpoint for future implementation.
+     * Currently returns HTTP 501 (Not Implemented).
+     * </p>
+     * 
+     * @param source the external source (e.g., "youtube", "spotify")
+     * @param url    the URL of the track to download
+     * @return ResponseEntity with status message
+     * @throws UnsupportedOperationException always, as feature is not yet
+     *                                       implemented
+     */
     @PostMapping("/download")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Download track from external source", description = "Trigger download from YouTube or Spotify (placeholder)")

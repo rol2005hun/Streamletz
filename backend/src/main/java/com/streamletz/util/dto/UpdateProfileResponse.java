@@ -7,6 +7,18 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+/**
+ * Data Transfer Object for profile update responses.
+ * 
+ * <p>
+ * Contains updated user profile information and optionally a new JWT token
+ * if the username was changed.
+ * </p>
+ * 
+ * @author Streamletz Team
+ * @version 1.0
+ * @since 1.0
+ */
 @Data
 @Builder
 @NoArgsConstructor
