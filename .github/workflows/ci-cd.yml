@@ -74,8 +74,7 @@ jobs:
       if: github.event_name == 'push' && github.ref == 'refs/heads/master'
       run: |
         IMAGE_NAME_LC=$(echo ${{ env.IMAGE_NAME }} | tr '[:upper:]' '[:lower:]')
-        docker build -t ${{ env.REGISTRY }}/$IMAGE_NAME_LC-frontend:latest .
-
+        docker build --build-arg VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }} -t ${{ env.REGISTRY }}/$IMAGE_NAME_LC-frontend:latest .
 
   # Deploy to VPS
   deploy-vps:
