@@ -39,7 +39,7 @@ api.interceptors.request.use((config) => {
       (config.headers as any)['Authorization'] = `Bearer ${serverToken}`;
     }
   } else {
-    const tokenMatch = document.cookie.match(/(?:^|;\s*)token=([^;]+)/);
+    const tokenMatch = document.cookie.match(/(?:^|;\s*)streamletz-token=([^;]+)/);
     const token = tokenMatch?.[1];
     if (token) {
       (config.headers as any)['Authorization'] = `Bearer ${token}`;
@@ -57,7 +57,7 @@ api.interceptors.response.use(
           error.config?.url?.includes('/auth/login') ||
           error.config?.url?.includes('/auth/register');
         if (!isAuthRoute) {
-          document.cookie = 'token=; path=/; max-age=0';
+          document.cookie = 'streamletz-token=; path=/; max-age=0';
           document.cookie = 'user=; path=/; max-age=0';
           window.location.href = '/login';
         }

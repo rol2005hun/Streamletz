@@ -37,7 +37,7 @@ export const authService = {
 
   setAuth(token: string, user: User): void {
     if (typeof document !== 'undefined') {
-      document.cookie = `token=${token}; path=/; max-age=86400; samesite=lax`;
+      document.cookie = `streamletz-token=${token}; path=/; max-age=86400; samesite=lax`;
       document.cookie = `user=${encodeURIComponent(JSON.stringify(user))}; path=/; max-age=86400; samesite=lax`;
     }
   },
@@ -47,7 +47,7 @@ export const authService = {
 
     const cookie = document.cookie
       .split('; ')
-      .find((row) => row.startsWith('token='));
+      .find((row) => row.startsWith('streamletz-token='));
 
     if (!cookie) return null;
 
@@ -73,7 +73,7 @@ export const authService = {
 
   logout(): void {
     if (typeof document !== 'undefined') {
-      document.cookie = 'token=; path=/; max-age=0';
+      document.cookie = 'streamletz-token=; path=/; max-age=0';
       document.cookie = 'user=; path=/; max-age=0';
     }
   }
