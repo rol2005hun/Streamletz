@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { goto } from "$app/navigation";
+    import { goto, invalidateAll } from "$app/navigation";
     import { authService, type LoginData } from "$lib/authService";
 
     let username = "";
@@ -25,6 +25,7 @@
                 profileImage: response.profileImage,
             });
 
+            await invalidateAll();
             goto("/dashboard");
         } catch (err: any) {
             error =

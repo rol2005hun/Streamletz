@@ -11,10 +11,6 @@
     const { data } = $props();
     let initialTrackId = data.lastPlayback?.trackId;
 
-    $effect(() => {
-        allTracks.set(tracks);
-    });
-
     let user = data.user;
     let playlists: Playlist[] = data.playlists ?? [];
     let tracks: Track[] = $state(data.tracks ?? []);
@@ -32,6 +28,10 @@
     let userPlaylists: Playlist[] = $state([]);
     let playlistsLoading = $state(false);
     let likedTracks = $state(new Set<number>(data.likedTrackIds ?? []));
+
+    $effect(() => {
+        allTracks.set(tracks);
+    });
 
     $effect(() => {
         if (!$currentTrack && tracks.length > 0) {
