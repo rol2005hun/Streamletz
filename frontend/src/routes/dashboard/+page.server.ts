@@ -11,7 +11,7 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
 
     if (locals.isAuthenticated) {
         const userCookie = cookies.get('user');
-        const tokenCookie = cookies.get('token');
+        const tokenCookie = cookies.get('streamletz-token');
 
         if (userCookie) {
             try {

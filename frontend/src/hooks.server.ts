@@ -3,7 +3,7 @@ import { redirect } from '@sveltejs/kit';
 import { setServerToken } from '$lib/api';
 
 export const handle: Handle = async ({ event, resolve }) => {
-    const token = event.cookies.get('token');
+    const token = event.cookies.get('streamletz-token');
     const isAuthenticated = !!token;
 
     event.locals.isAuthenticated = isAuthenticated;
