@@ -99,30 +99,6 @@
   });
 
   $effect(() => {
-    if (!track() && allTracks && allTracks.length > 0) {
-      let lastTrackId: number | null = null;
-      if (typeof document !== "undefined") {
-        const cookieMatch = document.cookie.match(
-          /streamletz_last_playback=([^;]*)/,
-        );
-        if (cookieMatch) {
-          try {
-            const playback = JSON.parse(decodeURIComponent(cookieMatch[1]));
-            if (playback && playback.trackId) {
-              lastTrackId = playback.trackId;
-            }
-          } catch {}
-        }
-      }
-      let found = null;
-      if (lastTrackId != null) {
-        found = allTracks.find((t) => t.id === lastTrackId);
-      }
-      currentTrack.set(found || allTracks[0]);
-    }
-  });
-
-  $effect(() => {
     if (typeof document !== "undefined") {
       document.cookie = `streamletz_volume=${encodeURIComponent(volume.toString())}; path=/; max-age=31536000`;
       document.cookie = `streamletz_unmutedVolume=${encodeURIComponent(unmutedVolume.toString())}; path=/; max-age=31536000`;

@@ -39,9 +39,6 @@
                 const found = tracks.find((t) => t.id === initialTrackId);
                 if (found) {
                     currentTrack.set(found);
-                    if (data.lastPlayback?.wasPlaying) {
-                        isPlaying.set(true);
-                    }
                 } else {
                     currentTrack.set(tracks[0]);
                 }

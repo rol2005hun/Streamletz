@@ -11,7 +11,7 @@
         try {
             if (!data?.isAuthenticated) return;
             const lb = data?.lastPlayback;
-            if (lb && lb.trackId && !$currentTrack) {
+            if (lb && lb.trackId) {
                 const t = await trackService.getTrackById(lb.trackId);
                 if (t) {
                     allTracks.set([t]);
