@@ -14,7 +14,6 @@
             if (lb && lb.trackId) {
                 const t = await trackService.getTrackById(lb.trackId);
                 if (t) {
-                    allTracks.set([t]);
                     currentTrack.set(t);
                     if (typeof lb.wasPlaying === "boolean") {
                         isPlaying.set(!!lb.wasPlaying);
