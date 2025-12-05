@@ -176,15 +176,15 @@
         padding: $spacing-sm;
 
         .dropdown-avatar {
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             background: $gradient-primary;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 1rem;
+            font-size: 0.9rem;
             overflow: hidden;
 
             .avatar-img {

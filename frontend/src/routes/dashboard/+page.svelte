@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { goto } from "$app/navigation";
+    import { goto, invalidateAll } from "$app/navigation";
     import { authService } from "$lib/authService";
     import { trackService, type Track } from "$lib/trackService";
     import { playlistService, type Playlist } from "$lib/playlistService";
@@ -16,9 +16,6 @@
     let tracks: Track[] = $state(data.tracks ?? []);
     let searchQuery = $state("");
     let loading = $state(false);
-    let computedLoading = $derived(
-        () => loading || !(tracks && tracks.length > 0),
-    );
     let error = $state("");
     let searchTimeout: ReturnType<typeof setTimeout> | null = null;
     let sidebarCollapsed = $state(data.sidebarCollapsed ?? false);
@@ -129,8 +126,11 @@
         }
     }
 
-    function handleLogout() {
+    async function handleLogout() {
         authService.logout();
+
+        await invalidateAll();
+
         goto("/login");
     }
 </script>
@@ -153,7 +153,7 @@
                 <div class="error-message">{error}</div>
             {/if}
 
-            {#if computedLoading()}
+            {#if loading}
                 <div class="loading-container">
                     <div class="loading"></div>
                     <p>Loading tracks...</p>
