@@ -362,10 +362,4 @@ This project is licensed under the GNU General Public License v3.0 - see the [LI
   <strong>Your sound. Your stream. Your rules.</strong> 🎵
 </p>
 
-## 💬 Motto
-
-**Your sound. Your stream. Your rules.**
-
----
-
 Made with ❤️ using Svelte and Spring Boot
