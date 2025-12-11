@@ -1,5 +1,5 @@
 @use "sass:color";
-@use "../variables" as *;
+@use "$styles/variables" as *;
 
 .login-container {
     min-height: 100vh;

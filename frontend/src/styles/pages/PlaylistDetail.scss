@@ -1,5 +1,5 @@
 @use "sass:color";
-@use "../variables" as *;
+@use "$styles/variables" as *;
 
 .loading-state {
     display: flex;

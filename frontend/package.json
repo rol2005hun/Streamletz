@@ -33,7 +33,6 @@
         "svelte": "^5.0.0"
     },
     "dependencies": {
-        "@tanstack/svelte-virtual": "^3.13.13",
         "axios": "^1.13.2",
         "jsonwebtoken": "^9.0.3"
     },

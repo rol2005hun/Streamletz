@@ -13,7 +13,7 @@
 
     let user = data.user;
     let playlists: Playlist[] = data.playlists ?? [];
-    let tracks: Track[] = $state(data.tracks ?? []);
+    let tracks: Track[] = $state((data as any).tracks ?? []);
     let searchQuery = $state("");
     let loading = $state(false);
     let error = $state("");
