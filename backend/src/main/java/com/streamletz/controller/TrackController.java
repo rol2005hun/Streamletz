@@ -104,6 +104,38 @@ public class TrackController {
         return ResponseEntity.ok(new TrackBrowseResponse(items, nextCursor, hasMore));
     }
 
+    /**
+     * Jump-to-page browse endpoint.
+     *
+     * <p>
+     * This is intended for scrollbar seeking: it returns the requested page in the
+     * same sort order as {@link #browseTracks(int, String)}.
+     * </p>
+     */
+    @GetMapping("/browse/page")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Browse tracks at page", description = "Browse tracks by page number (for scrollbar seeking)")
+    public ResponseEntity<TrackBrowseResponse> browseTracksPage(
+            @RequestParam(name = "limit", defaultValue = "50") int limit,
+            @RequestParam(name = "page", defaultValue = "0") int page) {
+
+        int safeLimit = Math.max(1, Math.min(limit, 100));
+        int safePage = Math.max(0, page);
+
+        List<TrackListItemResponse> items = trackService.browseTracksPage(safeLimit, safePage);
+
+        boolean hasMore = items.size() >= safeLimit;
+        String nextCursor = null;
+        if (!items.isEmpty() && hasMore) {
+            TrackListItemResponse last = items.get(items.size() - 1);
+            if (last.getCreatedAt() != null && last.getId() != null) {
+                nextCursor = encodeCursor(last.getCreatedAt(), last.getId());
+            }
+        }
+
+        return ResponseEntity.ok(new TrackBrowseResponse(items, nextCursor, hasMore));
+    }
+
     private static final DateTimeFormatter CURSOR_TIME_FORMAT = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     private record CursorParts(LocalDateTime createdAt, Long id) {

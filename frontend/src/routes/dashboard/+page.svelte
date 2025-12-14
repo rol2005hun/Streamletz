@@ -47,7 +47,10 @@
     let didInitFromServerData = $state(false);
 
     // Keeps the scroll height stable when we drop old items from memory.
+    // Pixel spacer used to keep the viewport stable when trimming.
     let browseTopSpacerPx = $state(0);
+    // Pixel spacer used to represent items before the current loaded window (seek/jump).
+    let browseSeekTopSpacerPx = $state(0);
     // Virtualization: keeps scrollbar size stable while paging.
     let browseBottomSpacerPx = $state(0);
     let browseVirtualStartIndex = $state(0);
@@ -57,6 +60,9 @@
     let scrollRaf = 0;
 
     const MAX_SPACER_OVERSHOOT_PX = 320;
+    let isScrollbarDragging = $state(false);
+    let seekTimer: ReturnType<typeof setTimeout> | null = null;
+    let browseSeeking = $state(false);
 
     let scrollEl: HTMLElement | null = $state(null);
     let bottomSentinel: HTMLElement | null = $state(null);
@@ -76,6 +82,7 @@
         error = (data as any).trackLoadError ?? "";
 
         browseTopSpacerPx = 0;
+        browseSeekTopSpacerPx = 0;
         browseBottomSpacerPx = 0;
         browseVirtualStartIndex = 0;
         totalTrackCount = (data as any).trackCount ?? null;
@@ -89,6 +96,14 @@
 
     function canUseVirtualScroll(): boolean {
         return !searchQuery.trim() && !!user && (totalTrackCount ?? 0) > 0;
+    }
+
+    function isInVerticalScrollbarArea(e: MouseEvent): boolean {
+        if (!scrollEl) return false;
+        const scrollbarWidth = scrollEl.offsetWidth - scrollEl.clientWidth;
+        if (scrollbarWidth <= 0) return false;
+        const rect = scrollEl.getBoundingClientRect();
+        return e.clientX >= rect.right - scrollbarWidth;
     }
 
     async function updateBrowseBottomSpacer() {
@@ -144,28 +159,6 @@
         return dist <= thresholdPx && dist >= -MAX_SPACER_OVERSHOOT_PX;
     }
 
-    function clampDeepIntoSpacer(): boolean {
-        if (!scrollEl || !bottomSentinel) return false;
-        const dist = loadedEndDistancePx();
-        if (dist === null) return false;
-
-        // If the user drags the scrollbar far into the virtual spacer, clamp them
-        // to the end of loaded content. This avoids empty gaps and prevents
-        // runaway catch-up behavior.
-        if (dist < -MAX_SPACER_OVERSHOOT_PX) {
-            const maxScrollTop = Math.max(
-                0,
-                bottomSentinel.offsetTop - scrollEl.clientHeight + MAX_SPACER_OVERSHOOT_PX,
-            );
-            if (scrollEl.scrollTop > maxScrollTop) {
-                scrollEl.scrollTop = maxScrollTop;
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     function updateInBottomSpacer() {
         if (!scrollEl || !bottomSentinel) {
             inBottomSpacer = false;
@@ -206,6 +199,80 @@
         return Math.max(1, Math.min(pages, 4));
     }
 
+    function getScrollProgress(): number | null {
+        if (!scrollEl) return null;
+        const max = scrollEl.scrollHeight - scrollEl.clientHeight;
+        if (max <= 0) return 0;
+        return Math.max(0, Math.min(1, scrollEl.scrollTop / max));
+    }
+
+    async function seekToScrollPosition() {
+        if (browseSeeking) return;
+        if (!scrollEl) return;
+        if (!canUseVirtualScroll()) return;
+        if (!browseHasMore) return;
+
+        const progress = getScrollProgress();
+        if (progress === null) return;
+
+        const total = totalTrackCount ?? 0;
+        if (total <= 0) return;
+
+        const targetIndex = Math.floor(progress * Math.max(0, total - 1));
+        const targetPage = Math.max(0, Math.floor(targetIndex / PAGE_SIZE));
+        const pageStartIndex = targetPage * PAGE_SIZE;
+
+        browseSeeking = true;
+        try {
+            const response = await trackService.browseTracksPage(
+                PAGE_SIZE,
+                targetPage,
+            );
+
+            const newItems = response.items ?? [];
+            browseTracks = newItems;
+            browseNextCursor = response.nextCursor ?? null;
+            browseHasMore = !!response.hasMore && !!response.nextCursor;
+
+            browseVirtualStartIndex = pageStartIndex;
+            browseTopSpacerPx = 0;
+
+            // Estimate top spacer based on grid metrics so the scroll position matches the page.
+            await tick();
+            const metrics = getGridMetrics();
+            if (metrics) {
+                const rowsBefore = Math.floor(pageStartIndex / Math.max(1, metrics.columns));
+                browseSeekTopSpacerPx = Math.round(rowsBefore * metrics.rowStride);
+
+                // Position within the page (approx) so jumping to middle feels correct.
+                const withinPage = targetIndex - pageStartIndex;
+                const withinRows = Math.floor(withinPage / Math.max(1, metrics.columns));
+                const desired = browseSeekTopSpacerPx + withinRows * metrics.rowStride;
+                scrollEl.scrollTop = Math.max(0, desired - Math.round(scrollEl.clientHeight * 0.25));
+            } else {
+                browseSeekTopSpacerPx = 0;
+            }
+
+            await updateBrowseBottomSpacer();
+
+            // Best-effort liked sync for the new window.
+            try {
+                const likedIds = await likedTrackService.getLikedStatus(
+                    newItems.map((t) => t.id),
+                );
+                const merged = new Set(likedTracks);
+                for (const id of likedIds) merged.add(id);
+                likedTracks = merged;
+            } catch {
+                // ignore
+            }
+        } catch {
+            error = "Failed to jump to position.";
+        } finally {
+            browseSeeking = false;
+        }
+    }
+
     $effect(() => {
         // If SSR didn't provide tracks (or failed), try a client-side first page.
         if (didTryInitialBrowseLoad) return;
@@ -226,6 +293,7 @@
                 browseNextCursor = response.nextCursor ?? null;
                 browseHasMore = !!response.hasMore && !!response.nextCursor;
                 browseTopSpacerPx = 0;
+                browseSeekTopSpacerPx = 0;
                 browseBottomSpacerPx = 0;
                 browseVirtualStartIndex = 0;
 
@@ -306,6 +374,34 @@
             bottomObserver?.disconnect();
             bottomObserver = null;
         };
+    });
+
+    $effect(() => {
+        // Reset scrollbar drag state even if mouseup happens outside.
+        const onUp = () => {
+            isScrollbarDragging = false;
+            if (seekTimer) {
+                clearTimeout(seekTimer);
+                seekTimer = null;
+            }
+        };
+        window.addEventListener("mouseup", onUp);
+        return () => window.removeEventListener("mouseup", onUp);
+    });
+
+    $effect(() => {
+        // Detect scrollbar dragging without attaching mouse handlers to <main>.
+        const onDown = (e: MouseEvent) => {
+            if (searchQuery.trim()) return;
+            if (!canUseVirtualScroll()) return;
+            if (!scrollEl) return;
+            if (e.target !== scrollEl) return;
+            if (isInVerticalScrollbarArea(e)) {
+                isScrollbarDragging = true;
+            }
+        };
+        window.addEventListener("mousedown", onDown);
+        return () => window.removeEventListener("mousedown", onDown);
     });
 
     $effect(() => {
@@ -538,10 +634,15 @@
 
                     updateInBottomSpacer();
 
-                    // If user drags the scrollbar deep into the virtual spacer,
-                    // clamp them back to the loaded end. This prevents blank gaps
-                    // and stops the app from "racing" to the end.
-                    const didClamp = clampDeepIntoSpacer();
+                    // While the user is actively dragging the scrollbar, don't fight the browser.
+                    // If they drag into the spacer, debounce a seek to load the chunk around that position.
+                    if (isScrollbarDragging && inBottomSpacer) {
+                        if (seekTimer) clearTimeout(seekTimer);
+                        seekTimer = setTimeout(() => {
+                            void seekToScrollPosition();
+                        }, 120);
+                        return;
+                    }
 
                     if (!browseHasMore || !browseNextCursor) {
                         inBottomSpacer = false;
@@ -550,9 +651,8 @@
                     if (browseLoading) return;
 
                     // Load in small chunks near the loaded end (including slight overshoot).
-                    // If we clamped, only fetch a small amount; don't recursively sprint.
                     if (isNearLoadedEnd(1200)) {
-                        const pages = didClamp ? 2 : computeCatchUpPages();
+                        const pages = computeCatchUpPages();
                         void loadNextBrowsePage({
                             keepLoadingWhileNearBottom: true,
                             remaining: pages,
@@ -605,10 +705,10 @@
                     </p>
                 </div>
             {:else}
-                {#if !searchQuery.trim() && browseTopSpacerPx > 0}
+                {#if !searchQuery.trim() && (browseSeekTopSpacerPx + browseTopSpacerPx) > 0}
                     <div
                         aria-hidden="true"
-                        style="height: {browseTopSpacerPx}px"
+                        style="height: {browseSeekTopSpacerPx + browseTopSpacerPx}px"
                     ></div>
                 {/if}
                 <div class="tracks-grid" bind:this={gridEl}>

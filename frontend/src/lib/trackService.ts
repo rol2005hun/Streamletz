@@ -30,6 +30,13 @@ export const trackService = {
     return response.data;
   },
 
+  async browseTracksPage(limit: number = 50, page: number = 0): Promise<TrackBrowseResponse> {
+    const response = await api.get("/tracks/browse/page", {
+      params: { limit, page }
+    });
+    return response.data;
+  },
+
   async getTrackCount(): Promise<number> {
     const response = await api.get<TrackCountResponse>("/tracks/count");
     return response.data.count;

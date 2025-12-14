@@ -88,6 +88,31 @@ public class TrackService {
                 .toList();
     }
 
+            public List<TrackListItemResponse> browseTracksPage(int limit, int page) {
+            int safeLimit = Math.max(1, Math.min(limit, 100));
+            int safePage = Math.max(0, page);
+
+            // Note: sorting is defined in the JPQL query (COALESCE(createdAt, epoch), id).
+            // Pageable is used only for offset/limit.
+            var pageable = PageRequest.of(safePage, safeLimit);
+            List<Track> tracks = trackRepository.browseFirstPage(BROWSE_EPOCH, pageable);
+
+            return tracks.stream()
+                .map(t -> new TrackListItemResponse(
+                    t.getId(),
+                    t.getTitle(),
+                    t.getArtist(),
+                    t.getAlbum(),
+                    t.getDuration(),
+                    t.getCoverArtUrl(),
+                    t.getFilePath(),
+                    t.getFileFormat(),
+                    t.getPlayCount(),
+                    (t.getCreatedAt() != null ? t.getCreatedAt() : BROWSE_EPOCH)
+                ))
+                .toList();
+            }
+
     /**
      * Retrieves a specific track by its ID.
      * 
