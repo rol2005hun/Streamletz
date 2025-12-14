@@ -12,7 +12,20 @@ export interface Track {
   playCount: number;
 }
 
+export interface TrackBrowseResponse {
+  items: Track[];
+  nextCursor: string | null;
+  hasMore: boolean;
+}
+
 export const trackService = {
+  async browseTracks(limit: number = 50, cursor?: string | null): Promise<TrackBrowseResponse> {
+    const response = await api.get("/tracks/browse", {
+      params: { limit, cursor: cursor || undefined }
+    });
+    return response.data;
+  },
+
   getAllTracks: async (): Promise<Track[]> => {
     const response = await api.get("/tracks");
     return response.data;

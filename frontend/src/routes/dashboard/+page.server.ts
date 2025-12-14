@@ -1,12 +1,15 @@
 import type { PageServerLoad } from './$types';
 import { playlistService, type Playlist } from '$lib/playlistService';
-import { trackService, type Track } from '$lib/trackService';
+import { trackService, type Track, type TrackBrowseResponse } from '$lib/trackService';
 import { likedTrackService } from '$lib/likedTrackService';
 
 export const load: PageServerLoad = async ({ locals, cookies }) => {
     let user = null;
     let playlists: Playlist[] = [];
+    let trackBrowse: TrackBrowseResponse | null = null;
     let tracks: Track[] = [];
+    let nextCursor: string | null = null;
+    let hasMore = false;
     let likedTrackIds: number[] = [];
 
     if (locals.isAuthenticated) {
@@ -22,9 +25,14 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
         }
         if (tokenCookie) {
             try {
-                tracks = await trackService.getAllTracks();
+                trackBrowse = await trackService.browseTracks(60, null);
+                tracks = trackBrowse.items ?? [];
+                nextCursor = trackBrowse.nextCursor ?? null;
+                hasMore = !!trackBrowse.hasMore;
             } catch {
                 tracks = [];
+                nextCursor = null;
+                hasMore = false;
             }
 
             try {
@@ -34,8 +42,7 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
             }
 
             try {
-                const likedTracks = await likedTrackService.getLikedTracks();
-                likedTrackIds = likedTracks.map((t) => t.id);
+                likedTrackIds = await likedTrackService.getLikedStatus(tracks.map((t) => t.id));
             } catch {
                 likedTrackIds = [];
             }
@@ -46,6 +53,8 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
         user,
         playlists,
         tracks,
+        nextCursor,
+        hasMore,
         likedTrackIds
     };
 };

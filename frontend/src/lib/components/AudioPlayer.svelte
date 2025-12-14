@@ -649,5 +649,5 @@
 </div>
 
 <style scoped lang="scss">
-  @use "$styles/components/AudioPlayer";
+  @use "styles/components/AudioPlayer";
 </style>

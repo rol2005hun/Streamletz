@@ -290,5 +290,5 @@
 </div>
 
 <style scoped lang="scss">
-    @use "$styles/pages/Profile";
+    @use "styles/pages/Profile";
 </style>

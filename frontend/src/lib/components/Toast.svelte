@@ -30,5 +30,5 @@
 </div>
 
 <style scoped lang="scss">
-    @use "$styles/components/Toast";
+    @use "styles/components/Toast";
 </style>

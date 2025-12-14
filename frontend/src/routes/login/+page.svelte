@@ -180,5 +180,5 @@
 </div>
 
 <style scoped lang="scss">
-    @use "$styles/pages/Login";
+    @use "styles/pages/Login";
 </style>

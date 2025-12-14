@@ -25,6 +25,12 @@ export const likedTrackService = {
     return response.data.count;
   },
 
+  getLikedStatus: async (trackIds: number[]): Promise<number[]> => {
+    if (!trackIds.length) return [];
+    const response = await api.post("/liked/tracks/status", { trackIds });
+    return response.data.likedTrackIds ?? [];
+  },
+
   toggleLike: async (trackId: number, isLiked: boolean): Promise<void> => {
     if (isLiked) {
       await likedTrackService.unlikeTrack(trackId);

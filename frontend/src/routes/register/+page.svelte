@@ -305,5 +305,5 @@
 </div>
 
 <style scoped lang="scss">
-    @use "$styles/pages/Register";
+    @use "styles/pages/Register";
 </style>

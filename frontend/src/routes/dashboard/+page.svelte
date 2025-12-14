@@ -1,5 +1,6 @@
 <script lang="ts">
     import { goto, invalidateAll } from "$app/navigation";
+    import { tick } from "svelte";
     import { authService } from "$lib/authService";
     import { trackService, type Track } from "$lib/trackService";
     import { playlistService, type Playlist } from "$lib/playlistService";
@@ -13,9 +14,20 @@
 
     let user = data.user;
     let playlists: Playlist[] = data.playlists ?? [];
-    let tracks: Track[] = $state((data as any).tracks ?? []);
+    const PAGE_SIZE = 60;
+    const MAX_TRACKS_IN_MEMORY = 240;
+
+    let browseTracks: Track[] = $state((data as any).tracks ?? []);
+    let browseNextCursor: string | null = $state((data as any).nextCursor ?? null);
+    let browseHasMore: boolean = $state((data as any).hasMore ?? false);
+    let browseLoading = $state(false);
+
+    let searchResults: Track[] = $state([]);
+    let searchLoading = $state(false);
     let searchQuery = $state("");
-    let loading = $state(false);
+
+    let tracks: Track[] = $derived(searchQuery.trim() ? searchResults : browseTracks);
+
     let error = $state("");
     let searchTimeout: ReturnType<typeof setTimeout> | null = null;
     let sidebarCollapsed = $state(data.sidebarCollapsed ?? false);
@@ -26,8 +38,39 @@
     let playlistsLoading = $state(false);
     let likedTracks = $state(new Set<number>(data.likedTrackIds ?? []));
 
+    let scrollEl: HTMLElement | null = $state(null);
+    let bottomSentinel: HTMLElement | null = $state(null);
+    let bottomObserver: IntersectionObserver | null = null;
+
     $effect(() => {
         allTracks.set(tracks);
+    });
+
+    $effect(() => {
+        if (!scrollEl || !bottomSentinel) return;
+        if (bottomObserver) bottomObserver.disconnect();
+
+        bottomObserver = new IntersectionObserver(
+            (entries) => {
+                if (searchQuery.trim()) return;
+                const entry = entries[0];
+                if (entry?.isIntersecting) {
+                    void loadNextBrowsePage();
+                }
+            },
+            {
+                root: scrollEl,
+                rootMargin: "600px 0px",
+                threshold: 0,
+            },
+        );
+
+        bottomObserver.observe(bottomSentinel);
+
+        return () => {
+            bottomObserver?.disconnect();
+            bottomObserver = null;
+        };
     });
 
     $effect(() => {
@@ -50,18 +93,82 @@
             if (searchTimeout) clearTimeout(searchTimeout);
             searchTimeout = setTimeout(async () => {
                 try {
-                    loading = true;
-                    tracks = await trackService.searchTracks(searchQuery);
+                    searchLoading = true;
+                    const results = await trackService.searchTracks(searchQuery);
+                    searchResults = results;
+
+                    const likedIds = await likedTrackService.getLikedStatus(
+                        results.map((t) => t.id),
+                    );
+                    likedTracks = new Set<number>(likedIds);
                 } catch {
                     error = "Search failed. Please try again.";
                 } finally {
-                    loading = false;
+                    searchLoading = false;
                 }
             }, 300);
         } else {
-            loading = false;
+            searchLoading = false;
         }
     });
+
+    async function loadNextBrowsePage() {
+        if (browseLoading) return;
+        if (!browseHasMore) return;
+        if (!browseNextCursor) return;
+        if (!scrollEl) return;
+
+        browseLoading = true;
+        try {
+            const response = await trackService.browseTracks(PAGE_SIZE, browseNextCursor);
+            const newItems = response.items ?? [];
+
+            if (newItems.length === 0) {
+                browseHasMore = false;
+                browseNextCursor = null;
+                return;
+            }
+
+            // append
+            browseTracks = [...browseTracks, ...newItems];
+            browseNextCursor = response.nextCursor ?? null;
+            browseHasMore = !!response.hasMore;
+
+            // update liked set for appended items
+            try {
+                const likedIds = await likedTrackService.getLikedStatus(
+                    newItems.map((t) => t.id),
+                );
+                if (likedIds.length) {
+                    const merged = new Set(likedTracks);
+                    for (const id of likedIds) merged.add(id);
+                    likedTracks = merged;
+                }
+            } catch {
+                // ignore liked status failures for background paging
+            }
+
+            await tick();
+
+            // memory cap: drop oldest items and compensate scroll
+            if (browseTracks.length > MAX_TRACKS_IN_MEMORY) {
+                const dropCount = browseTracks.length - MAX_TRACKS_IN_MEMORY;
+                const beforeHeight = scrollEl.scrollHeight;
+                const beforeTop = scrollEl.scrollTop;
+
+                browseTracks = browseTracks.slice(dropCount);
+                await tick();
+
+                const afterHeight = scrollEl.scrollHeight;
+                const heightDelta = beforeHeight - afterHeight;
+                scrollEl.scrollTop = Math.max(0, beforeTop - heightDelta);
+            }
+        } catch {
+            error = "Failed to load more tracks.";
+        } finally {
+            browseLoading = false;
+        }
+    }
 
     function playTrack(track: Track) {
         if ($currentTrack?.id === track.id) {
@@ -148,12 +255,13 @@
         <main
             class="dashboard-content"
             style="margin-left: {sidebarCollapsed ? 0 : sidebarWidth}px"
+            bind:this={scrollEl}
         >
             {#if error}
                 <div class="error-message">{error}</div>
             {/if}
 
-            {#if loading}
+            {#if searchLoading && searchQuery.trim()}
                 <div class="loading-container">
                     <div class="loading"></div>
                     <p>Loading tracks...</p>
@@ -274,7 +382,24 @@
                             </div>
                         </div>
                     {/each}
+
+                    {#if !searchQuery.trim() && browseLoading}
+                        {#each Array.from({ length: 12 }) as _}
+                            <div class="track-card skeleton" aria-hidden="true">
+                                <div class="track-cover skeleton-block"></div>
+                                <div class="track-details">
+                                    <div class="skeleton-line title"></div>
+                                    <div class="skeleton-line"></div>
+                                    <div class="skeleton-line short"></div>
+                                </div>
+                            </div>
+                        {/each}
+                    {/if}
                 </div>
+
+                {#if !searchQuery.trim()}
+                    <div class="infinite-sentinel" bind:this={bottomSentinel}></div>
+                {/if}
             {/if}
         </main>
     </div>
@@ -347,5 +472,5 @@
 </div>
 
 <style scoped lang="scss">
-    @use "$styles/pages/Dashboard";
+    @use "styles/pages/Dashboard";
 </style>

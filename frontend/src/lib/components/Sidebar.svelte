@@ -243,5 +243,5 @@
 {/if}
 
 <style scoped lang="scss">
-  @use "$styles/components/Sidebar";
+  @use "styles/components/Sidebar";
 </style>
