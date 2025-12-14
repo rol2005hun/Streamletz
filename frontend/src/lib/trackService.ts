@@ -18,12 +18,21 @@ export interface TrackBrowseResponse {
   hasMore: boolean;
 }
 
+export interface TrackCountResponse {
+  count: number;
+}
+
 export const trackService = {
   async browseTracks(limit: number = 50, cursor?: string | null): Promise<TrackBrowseResponse> {
     const response = await api.get("/tracks/browse", {
       params: { limit, cursor: cursor || undefined }
     });
     return response.data;
+  },
+
+  async getTrackCount(): Promise<number> {
+    const response = await api.get<TrackCountResponse>("/tracks/count");
+    return response.data.count;
   },
 
   getAllTracks: async (): Promise<Track[]> => {

@@ -12,6 +12,7 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
     let hasMore = false;
     let likedTrackIds: number[] = [];
     let trackLoadError: string | null = null;
+    let trackCount: number | null = null;
 
     if (locals.isAuthenticated) {
         const userCookie = cookies.get('user');
@@ -37,6 +38,12 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
         }
 
         try {
+            trackCount = await trackService.getTrackCount();
+        } catch {
+            trackCount = null;
+        }
+
+        try {
             playlists = await playlistService.getUserPlaylists();
         } catch {
             playlists = [];
@@ -56,6 +63,7 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
         nextCursor,
         hasMore,
         likedTrackIds,
-        trackLoadError
+        trackLoadError,
+        trackCount
     };
 };

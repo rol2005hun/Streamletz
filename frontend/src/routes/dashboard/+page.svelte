@@ -48,6 +48,11 @@
 
     // Keeps the scroll height stable when we drop old items from memory.
     let browseTopSpacerPx = $state(0);
+    // Virtualization: keeps scrollbar size stable while paging.
+    let browseBottomSpacerPx = $state(0);
+    let browseVirtualStartIndex = $state(0);
+    let totalTrackCount = $state<number | null>(null);
+    let gridEl: HTMLElement | null = $state(null);
 
     let scrollEl: HTMLElement | null = $state(null);
     let bottomSentinel: HTMLElement | null = $state(null);
@@ -67,6 +72,9 @@
         error = (data as any).trackLoadError ?? "";
 
         browseTopSpacerPx = 0;
+        browseBottomSpacerPx = 0;
+        browseVirtualStartIndex = 0;
+        totalTrackCount = (data as any).trackCount ?? null;
 
         sidebarCollapsed = data.sidebarCollapsed ?? false;
         sidebarWidth = data.sidebarWidth ?? 280;
@@ -74,6 +82,56 @@
 
         didInitFromServerData = true;
     });
+
+    function canUseVirtualScroll(): boolean {
+        return !searchQuery.trim() && !!user && (totalTrackCount ?? 0) > 0;
+    }
+
+    async function updateBrowseBottomSpacer() {
+        if (!canUseVirtualScroll()) {
+            browseBottomSpacerPx = 0;
+            return;
+        }
+        if (!gridEl) return;
+
+        await tick();
+
+        // If paging is stopped (or inconsistent), don't keep a huge blank spacer.
+        const total = totalTrackCount ?? 0;
+        const passed = browseVirtualStartIndex + browseTracks.length;
+        const remaining = Math.max(0, total - passed);
+        if (remaining === 0) {
+            browseBottomSpacerPx = 0;
+            return;
+        }
+        if (!browseHasMore) {
+            browseBottomSpacerPx = 0;
+            return;
+        }
+
+        const style = getComputedStyle(gridEl);
+        const columns = style.gridTemplateColumns
+            ? style.gridTemplateColumns.split(" ").filter(Boolean).length
+            : 1;
+        const rowGap = Number.parseFloat(style.rowGap || "0") || 0;
+
+        const firstCard = gridEl.querySelector(
+            ".track-card:not(.skeleton)",
+        ) as HTMLElement | null;
+        const cardHeight = firstCard?.offsetHeight ?? 0;
+        if (cardHeight <= 0 || columns <= 0) return;
+
+        const rowStride = cardHeight + rowGap;
+        const remainingRows = Math.ceil(remaining / Math.max(1, columns));
+        browseBottomSpacerPx = Math.max(0, Math.round(remainingRows * rowStride));
+    }
+
+    function isNearLoadedEnd(thresholdPx: number = 600): boolean {
+        if (!scrollEl || !bottomSentinel) return false;
+        const viewportBottom = scrollEl.scrollTop + scrollEl.clientHeight;
+        const sentinelTop = bottomSentinel.offsetTop;
+        return viewportBottom >= sentinelTop - thresholdPx;
+    }
 
     $effect(() => {
         // If SSR didn't provide tracks (or failed), try a client-side first page.
@@ -95,6 +153,8 @@
                 browseNextCursor = response.nextCursor ?? null;
                 browseHasMore = !!response.hasMore && !!response.nextCursor;
                 browseTopSpacerPx = 0;
+                browseBottomSpacerPx = 0;
+                browseVirtualStartIndex = 0;
 
                 try {
                     const likedIds = await likedTrackService.getLikedStatus(
@@ -108,8 +168,41 @@
                 error = "Failed to load tracks.";
             } finally {
                 browseLoading = false;
+                await updateBrowseBottomSpacer();
             }
         })();
+    });
+
+    $effect(() => {
+        // Client-side fallback: fetch track count when SSR didn't include it.
+        if (!user) return;
+        if (searchQuery.trim()) return;
+        if (totalTrackCount !== null) return;
+
+        void (async () => {
+            try {
+                totalTrackCount = await trackService.getTrackCount();
+            } catch {
+                totalTrackCount = null;
+            } finally {
+                await updateBrowseBottomSpacer();
+            }
+        })();
+    });
+
+    $effect(() => {
+        // Keep spacer in sync with layout changes.
+        if (!gridEl) return;
+        const ro = new ResizeObserver(() => {
+            void updateBrowseBottomSpacer();
+        });
+        ro.observe(gridEl);
+        return () => ro.disconnect();
+    });
+
+    $effect(() => {
+        // Keep spacer in sync with paging state.
+        void updateBrowseBottomSpacer();
     });
 
     $effect(() => {
@@ -182,10 +275,6 @@
         }
     });
 
-    function isNearBottom(el: HTMLElement, thresholdPx: number = 200): boolean {
-        return el.scrollTop + el.clientHeight >= el.scrollHeight - thresholdPx;
-    }
-
     async function loadNextBrowsePage(
         options: {
             keepLoadingWhileNearBottom?: boolean;
@@ -199,7 +288,7 @@
 
         const keepLoadingWhileNearBottom = !!options.keepLoadingWhileNearBottom;
         const remaining = options.remaining ?? 0;
-        const wasNearBottom = isNearBottom(scrollEl, 300);
+        const wasNearLoadedEnd = isNearLoadedEnd(900);
 
         browseLoading = true;
         try {
@@ -236,11 +325,7 @@
             }
 
             await tick();
-
-            if (wasNearBottom) {
-                scrollEl.scrollTop = scrollEl.scrollHeight;
-                await tick();
-            }
+            await updateBrowseBottomSpacer();
 
             // memory cap: drop oldest items and compensate scroll
             if (browseTracks.length > MAX_TRACKS_IN_MEMORY) {
@@ -249,6 +334,7 @@
                 const beforeTop = scrollEl.scrollTop;
 
                 browseTracks = browseTracks.slice(dropCount);
+                browseVirtualStartIndex += dropCount;
                 await tick();
 
                 const afterHeight = scrollEl.scrollHeight;
@@ -259,12 +345,10 @@
                     await tick();
                 }
 
-                if (wasNearBottom) {
-                    scrollEl.scrollTop = scrollEl.scrollHeight;
-                } else {
-                    // Keep the viewport stable: spacer compensates removed DOM height.
-                    scrollEl.scrollTop = beforeTop;
-                }
+                // Keep the viewport stable: spacer compensates removed DOM height.
+                scrollEl.scrollTop = beforeTop;
+
+                await updateBrowseBottomSpacer();
             }
         } catch {
             error = "Failed to load more tracks.";
@@ -277,7 +361,7 @@
                 !searchQuery.trim() &&
                 browseHasMore &&
                 browseNextCursor &&
-                isNearBottom(scrollEl, 600)
+                (wasNearLoadedEnd || isNearLoadedEnd(1200))
             ) {
                 await loadNextBrowsePage({
                     keepLoadingWhileNearBottom: true,
@@ -373,6 +457,17 @@
             class="dashboard-content"
             style="margin-left: {sidebarCollapsed ? 0 : sidebarWidth}px"
             bind:this={scrollEl}
+            onscroll={() => {
+                if (searchQuery.trim()) return;
+                if (!browseHasMore || !browseNextCursor) return;
+                if (browseLoading) return;
+                if (isNearLoadedEnd(1200)) {
+                    void loadNextBrowsePage({
+                        keepLoadingWhileNearBottom: true,
+                        remaining: 3,
+                    });
+                }
+            }}
         >
             {#if error}
                 <div class="error-message">{error}</div>
@@ -424,7 +519,7 @@
                         style="height: {browseTopSpacerPx}px"
                     ></div>
                 {/if}
-                <div class="tracks-grid">
+                <div class="tracks-grid" bind:this={gridEl}>
                     {#each tracks as track (track.id)}
                         <div
                             class="track-card"
@@ -549,6 +644,13 @@
                         class="infinite-sentinel"
                         bind:this={bottomSentinel}
                     ></div>
+
+                    {#if browseBottomSpacerPx > 0}
+                        <div
+                            aria-hidden="true"
+                            style="height: {browseBottomSpacerPx}px"
+                        ></div>
+                    {/if}
                 {/if}
             {/if}
         </main>
