@@ -46,6 +46,9 @@
 
     let didInitFromServerData = $state(false);
 
+    // Keeps the scroll height stable when we drop old items from memory.
+    let browseTopSpacerPx = $state(0);
+
     let scrollEl: HTMLElement | null = $state(null);
     let bottomSentinel: HTMLElement | null = $state(null);
     let bottomObserver: IntersectionObserver | null = null;
@@ -62,6 +65,8 @@
         browseNextCursor = (data as any).nextCursor ?? null;
         browseHasMore = !!(data as any).hasMore;
         error = (data as any).trackLoadError ?? "";
+
+        browseTopSpacerPx = 0;
 
         sidebarCollapsed = data.sidebarCollapsed ?? false;
         sidebarWidth = data.sidebarWidth ?? 280;
@@ -88,7 +93,8 @@
                 const newItems = response.items ?? [];
                 browseTracks = newItems;
                 browseNextCursor = response.nextCursor ?? null;
-                browseHasMore = !!response.hasMore;
+                browseHasMore = !!response.hasMore && !!response.nextCursor;
+                browseTopSpacerPx = 0;
 
                 try {
                     const likedIds = await likedTrackService.getLikedStatus(
@@ -212,7 +218,8 @@
             // append
             browseTracks = [...browseTracks, ...newItems];
             browseNextCursor = response.nextCursor ?? null;
-            browseHasMore = !!response.hasMore;
+            // If the backend can't provide a nextCursor, we can't continue paging.
+            browseHasMore = !!response.hasMore && !!response.nextCursor;
 
             // update liked set for appended items
             try {
@@ -244,12 +251,19 @@
                 browseTracks = browseTracks.slice(dropCount);
                 await tick();
 
+                const afterHeight = scrollEl.scrollHeight;
+                const heightDelta = beforeHeight - afterHeight;
+
+                if (heightDelta > 0) {
+                    browseTopSpacerPx += heightDelta;
+                    await tick();
+                }
+
                 if (wasNearBottom) {
                     scrollEl.scrollTop = scrollEl.scrollHeight;
                 } else {
-                    const afterHeight = scrollEl.scrollHeight;
-                    const heightDelta = beforeHeight - afterHeight;
-                    scrollEl.scrollTop = Math.max(0, beforeTop - heightDelta);
+                    // Keep the viewport stable: spacer compensates removed DOM height.
+                    scrollEl.scrollTop = beforeTop;
                 }
             }
         } catch {
@@ -404,6 +418,12 @@
                     </p>
                 </div>
             {:else}
+                {#if !searchQuery.trim() && browseTopSpacerPx > 0}
+                    <div
+                        aria-hidden="true"
+                        style="height: {browseTopSpacerPx}px"
+                    ></div>
+                {/if}
                 <div class="tracks-grid">
                     {#each tracks as track (track.id)}
                         <div
