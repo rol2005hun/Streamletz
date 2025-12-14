@@ -139,7 +139,7 @@ public class TrackController {
      * @return ResponseEntity containing the track metadata
      * @throws RuntimeException if the track is not found
      */
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Get track by ID", description = "Retrieve track metadata by ID")
     public ResponseEntity<Track> getTrackById(@PathVariable Long id) {
