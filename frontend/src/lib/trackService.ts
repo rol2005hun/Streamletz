@@ -1,4 +1,4 @@
-import api from "./api";
+import api, { API_BASE_URL } from "./api";
 
 export interface Track {
   id: number;
@@ -42,7 +42,7 @@ export const trackService = {
   },
 
   getStreamUrl(trackId: number): string {
-    return `${import.meta.env.VITE_API_BASE_URL}/tracks/stream/${trackId}`;
+    return `${API_BASE_URL}/tracks/stream/${trackId}`;
   },
 
   async incrementPlayCount(trackId: number): Promise<void> {

@@ -11,10 +11,10 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
     let nextCursor: string | null = null;
     let hasMore = false;
     let likedTrackIds: number[] = [];
+    let trackLoadError: string | null = null;
 
     if (locals.isAuthenticated) {
         const userCookie = cookies.get('user');
-        const tokenCookie = cookies.get('streamletz-token');
 
         if (userCookie) {
             try {
@@ -23,29 +23,29 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
                 console.error('Failed to parse user cookie');
             }
         }
-        if (tokenCookie) {
-            try {
-                trackBrowse = await trackService.browseTracks(60, null);
-                tracks = trackBrowse.items ?? [];
-                nextCursor = trackBrowse.nextCursor ?? null;
-                hasMore = !!trackBrowse.hasMore;
-            } catch {
-                tracks = [];
-                nextCursor = null;
-                hasMore = false;
-            }
+        try {
+            trackBrowse = await trackService.browseTracks(60, null);
+            tracks = trackBrowse.items ?? [];
+            nextCursor = trackBrowse.nextCursor ?? null;
+            hasMore = !!trackBrowse.hasMore;
+        } catch (err) {
+            console.error('[dashboard] Failed to load initial tracks', err);
+            tracks = [];
+            nextCursor = null;
+            hasMore = false;
+            trackLoadError = 'Failed to load tracks. Please refresh and try again.';
+        }
 
-            try {
-                playlists = await playlistService.getUserPlaylists();
-            } catch {
-                playlists = [];
-            }
+        try {
+            playlists = await playlistService.getUserPlaylists();
+        } catch {
+            playlists = [];
+        }
 
-            try {
-                likedTrackIds = await likedTrackService.getLikedStatus(tracks.map((t) => t.id));
-            } catch {
-                likedTrackIds = [];
-            }
+        try {
+            likedTrackIds = await likedTrackService.getLikedStatus(tracks.map((t) => t.id));
+        } catch {
+            likedTrackIds = [];
         }
 
     }
@@ -55,6 +55,7 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
         tracks,
         nextCursor,
         hasMore,
-        likedTrackIds
+        likedTrackIds,
+        trackLoadError
     };
 };

@@ -2,6 +2,7 @@
     import { goto, invalidateAll } from "$app/navigation";
     import { tick } from "svelte";
     import { authService } from "$lib/authService";
+    import { API_BASE_URL } from "$lib/api";
     import { trackService, type Track } from "$lib/trackService";
     import { playlistService, type Playlist } from "$lib/playlistService";
     import { likedTrackService } from "$lib/likedTrackService";
@@ -18,17 +19,22 @@
     const MAX_TRACKS_IN_MEMORY = 240;
 
     let browseTracks: Track[] = $state((data as any).tracks ?? []);
-    let browseNextCursor: string | null = $state((data as any).nextCursor ?? null);
+    let browseNextCursor: string | null = $state(
+        (data as any).nextCursor ?? null,
+    );
     let browseHasMore: boolean = $state((data as any).hasMore ?? false);
     let browseLoading = $state(false);
+    let didTryInitialBrowseLoad = $state(false);
 
     let searchResults: Track[] = $state([]);
     let searchLoading = $state(false);
     let searchQuery = $state("");
 
-    let tracks: Track[] = $derived(searchQuery.trim() ? searchResults : browseTracks);
+    let tracks: Track[] = $derived(
+        searchQuery.trim() ? searchResults : browseTracks,
+    );
 
-    let error = $state("");
+    let error = $state((data as any).trackLoadError ?? "");
     let searchTimeout: ReturnType<typeof setTimeout> | null = null;
     let sidebarCollapsed = $state(data.sidebarCollapsed ?? false);
     let sidebarWidth = $state(data.sidebarWidth ?? 280);
@@ -47,6 +53,42 @@
     });
 
     $effect(() => {
+        // If SSR didn't provide tracks (or failed), try a client-side first page.
+        if (didTryInitialBrowseLoad) return;
+        if (searchQuery.trim()) return;
+        if (!user) return;
+        if (browseTracks.length > 0) return;
+
+        didTryInitialBrowseLoad = true;
+        void (async () => {
+            browseLoading = true;
+            try {
+                const response = await trackService.browseTracks(
+                    PAGE_SIZE,
+                    null,
+                );
+                const newItems = response.items ?? [];
+                browseTracks = newItems;
+                browseNextCursor = response.nextCursor ?? null;
+                browseHasMore = !!response.hasMore;
+
+                try {
+                    const likedIds = await likedTrackService.getLikedStatus(
+                        newItems.map((t) => t.id),
+                    );
+                    likedTracks = new Set<number>(likedIds);
+                } catch {
+                    // ignore liked status failures for initial load
+                }
+            } catch {
+                error = "Failed to load tracks.";
+            } finally {
+                browseLoading = false;
+            }
+        })();
+    });
+
+    $effect(() => {
         if (!scrollEl || !bottomSentinel) return;
         if (bottomObserver) bottomObserver.disconnect();
 
@@ -55,7 +97,10 @@
                 if (searchQuery.trim()) return;
                 const entry = entries[0];
                 if (entry?.isIntersecting) {
-                    void loadNextBrowsePage({ keepLoadingWhileNearBottom: true, remaining: 5 });
+                    void loadNextBrowsePage({
+                        keepLoadingWhileNearBottom: true,
+                        remaining: 5,
+                    });
                 }
             },
             {
@@ -94,7 +139,8 @@
             searchTimeout = setTimeout(async () => {
                 try {
                     searchLoading = true;
-                    const results = await trackService.searchTracks(searchQuery);
+                    const results =
+                        await trackService.searchTracks(searchQuery);
                     searchResults = results;
 
                     const likedIds = await likedTrackService.getLikedStatus(
@@ -116,7 +162,12 @@
         return el.scrollTop + el.clientHeight >= el.scrollHeight - thresholdPx;
     }
 
-    async function loadNextBrowsePage(options: { keepLoadingWhileNearBottom?: boolean; remaining?: number } = {}) {
+    async function loadNextBrowsePage(
+        options: {
+            keepLoadingWhileNearBottom?: boolean;
+            remaining?: number;
+        } = {},
+    ) {
         if (browseLoading) return;
         if (!browseHasMore) return;
         if (!browseNextCursor) return;
@@ -128,7 +179,10 @@
 
         browseLoading = true;
         try {
-            const response = await trackService.browseTracks(PAGE_SIZE, browseNextCursor);
+            const response = await trackService.browseTracks(
+                PAGE_SIZE,
+                browseNextCursor,
+            );
             const newItems = response.items ?? [];
 
             if (newItems.length === 0) {
@@ -187,8 +241,16 @@
         }
 
         if (keepLoadingWhileNearBottom && remaining > 0 && scrollEl) {
-            if (!searchQuery.trim() && browseHasMore && browseNextCursor && isNearBottom(scrollEl, 600)) {
-                await loadNextBrowsePage({ keepLoadingWhileNearBottom: true, remaining: remaining - 1 });
+            if (
+                !searchQuery.trim() &&
+                browseHasMore &&
+                browseNextCursor &&
+                isNearBottom(scrollEl, 600)
+            ) {
+                await loadNextBrowsePage({
+                    keepLoadingWhileNearBottom: true,
+                    remaining: remaining - 1,
+                });
             }
         }
     }
@@ -289,6 +351,19 @@
                     <div class="loading"></div>
                     <p>Loading tracks...</p>
                 </div>
+            {:else if !searchQuery.trim() && browseLoading && tracks.length === 0}
+                <div class="tracks-grid">
+                    {#each Array.from({ length: 12 }) as _}
+                        <div class="track-card skeleton" aria-hidden="true">
+                            <div class="track-cover skeleton-block"></div>
+                            <div class="track-details">
+                                <div class="skeleton-line title"></div>
+                                <div class="skeleton-line"></div>
+                                <div class="skeleton-line short"></div>
+                            </div>
+                        </div>
+                    {/each}
+                </div>
             {:else if tracks.length === 0}
                 <div class="empty-state">
                     <h3>No tracks found</h3>
@@ -311,9 +386,7 @@
                                             "http",
                                         )
                                             ? track.coverArtUrl
-                                            : import.meta.env
-                                                  .VITE_API_BASE_URL +
-                                              track.coverArtUrl}
+                                            : API_BASE_URL + track.coverArtUrl}
                                         alt={track.album || track.title}
                                     />
                                 {:else}
@@ -421,7 +494,10 @@
                 </div>
 
                 {#if !searchQuery.trim()}
-                    <div class="infinite-sentinel" bind:this={bottomSentinel}></div>
+                    <div
+                        class="infinite-sentinel"
+                        bind:this={bottomSentinel}
+                    ></div>
                 {/if}
             {/if}
         </main>
