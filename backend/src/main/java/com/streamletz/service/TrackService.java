@@ -78,6 +78,8 @@ public class TrackService {
                         t.getAlbum(),
                         t.getDuration(),
                         t.getCoverArtUrl(),
+                t.getFilePath(),
+                t.getFileFormat(),
                 t.getPlayCount(),
                 t.getCreatedAt()
                 ))

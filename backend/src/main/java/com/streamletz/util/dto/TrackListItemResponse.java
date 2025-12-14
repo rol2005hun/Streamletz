@@ -20,6 +20,8 @@ public class TrackListItemResponse {
     private String album;
     private Integer duration;
     private String coverArtUrl;
+    private String filePath;
+    private String fileFormat;
     private Integer playCount;
 
     /**
