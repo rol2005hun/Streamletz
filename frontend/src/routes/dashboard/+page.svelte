@@ -10,19 +10,19 @@
     import Navbar from "$lib/components/Navbar.svelte";
     import Sidebar from "$lib/components/Sidebar.svelte";
 
-    const { data } = $props();
-    let initialTrackId = data.lastPlayback?.trackId;
+    const props = $props();
+    let data = $derived(props.data);
 
-    let user = data.user;
-    let playlists: Playlist[] = data.playlists ?? [];
+    let initialTrackId = $derived(data.lastPlayback?.trackId);
+
+    let user = $derived(data.user);
+    let playlists: Playlist[] = $derived(data.playlists ?? []);
     const PAGE_SIZE = 60;
     const MAX_TRACKS_IN_MEMORY = 240;
 
-    let browseTracks: Track[] = $state((data as any).tracks ?? []);
-    let browseNextCursor: string | null = $state(
-        (data as any).nextCursor ?? null,
-    );
-    let browseHasMore: boolean = $state((data as any).hasMore ?? false);
+    let browseTracks: Track[] = $state([]);
+    let browseNextCursor: string | null = $state(null);
+    let browseHasMore: boolean = $state(false);
     let browseLoading = $state(false);
     let didTryInitialBrowseLoad = $state(false);
 
@@ -34,15 +34,17 @@
         searchQuery.trim() ? searchResults : browseTracks,
     );
 
-    let error = $state((data as any).trackLoadError ?? "");
+    let error = $state("");
     let searchTimeout: ReturnType<typeof setTimeout> | null = null;
-    let sidebarCollapsed = $state(data.sidebarCollapsed ?? false);
-    let sidebarWidth = $state(data.sidebarWidth ?? 280);
+    let sidebarCollapsed = $state(false);
+    let sidebarWidth = $state(280);
     let showPlaylistModal = $state(false);
     let selectedTrackForPlaylist: Track | null = $state(null);
     let userPlaylists: Playlist[] = $state([]);
     let playlistsLoading = $state(false);
-    let likedTracks = $state(new Set<number>(data.likedTrackIds ?? []));
+    let likedTracks = $state(new Set<number>());
+
+    let didInitFromServerData = $state(false);
 
     let scrollEl: HTMLElement | null = $state(null);
     let bottomSentinel: HTMLElement | null = $state(null);
@@ -50,6 +52,22 @@
 
     $effect(() => {
         allTracks.set(tracks);
+    });
+
+    $effect(() => {
+        if (didInitFromServerData) return;
+
+        const serverTracks = (data as any).tracks as Track[] | undefined;
+        browseTracks = serverTracks ?? [];
+        browseNextCursor = (data as any).nextCursor ?? null;
+        browseHasMore = !!(data as any).hasMore;
+        error = (data as any).trackLoadError ?? "";
+
+        sidebarCollapsed = data.sidebarCollapsed ?? false;
+        sidebarWidth = data.sidebarWidth ?? 280;
+        likedTracks = new Set<number>(data.likedTrackIds ?? []);
+
+        didInitFromServerData = true;
     });
 
     $effect(() => {
@@ -350,6 +368,19 @@
                 <div class="loading-container">
                     <div class="loading"></div>
                     <p>Loading tracks...</p>
+                </div>
+            {:else if !searchQuery.trim() && tracks.length === 0 && !didTryInitialBrowseLoad}
+                <div class="tracks-grid">
+                    {#each Array.from({ length: 12 }) as _}
+                        <div class="track-card skeleton" aria-hidden="true">
+                            <div class="track-cover skeleton-block"></div>
+                            <div class="track-details">
+                                <div class="skeleton-line title"></div>
+                                <div class="skeleton-line"></div>
+                                <div class="skeleton-line short"></div>
+                            </div>
+                        </div>
+                    {/each}
                 </div>
             {:else if !searchQuery.trim() && browseLoading && tracks.length === 0}
                 <div class="tracks-grid">
