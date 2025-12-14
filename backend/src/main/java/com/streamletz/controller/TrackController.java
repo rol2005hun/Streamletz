@@ -2,6 +2,8 @@ package com.streamletz.controller;
 
 import com.streamletz.model.Track;
 import com.streamletz.service.TrackService;
+import com.streamletz.util.dto.TrackBrowseResponse;
+import com.streamletz.util.dto.TrackListItemResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,7 +16,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 
 /**
  * REST controller for managing music tracks and audio streaming.
@@ -61,6 +68,68 @@ public class TrackController {
     @Operation(summary = "Get all tracks", description = "Retrieve list of all available tracks")
     public ResponseEntity<List<Track>> getAllTracks() {
         return ResponseEntity.ok(trackService.getAllTracks());
+    }
+
+    @GetMapping("/count")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Get track count", description = "Get total number of tracks")
+    public ResponseEntity<Map<String, Long>> getTrackCount() {
+        return ResponseEntity.ok(Map.of("count", trackService.getTrackCount()));
+    }
+
+    /**
+     * Paginated browse endpoint using keyset cursor (createdAt,id).
+     */
+    @GetMapping("/browse")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Browse tracks", description = "Browse tracks with cursor-based pagination")
+    public ResponseEntity<TrackBrowseResponse> browseTracks(
+            @RequestParam(name = "limit", defaultValue = "50") int limit,
+            @RequestParam(name = "cursor", required = false) String cursor) {
+
+        CursorParts cursorParts = decodeCursor(cursor);
+        List<TrackListItemResponse> items = trackService.browseTracks(limit, cursorParts.createdAt, cursorParts.id);
+
+        // hasMore: if we received 'limit' items, assume there may be more.
+        // (We intentionally avoid extra DB calls; frontend can request next page.)
+        boolean hasMore = items.size() >= Math.max(1, Math.min(limit, 100));
+        String nextCursor = null;
+        if (!items.isEmpty() && hasMore) {
+            TrackListItemResponse last = items.get(items.size() - 1);
+            if (last.getCreatedAt() != null && last.getId() != null) {
+                nextCursor = encodeCursor(last.getCreatedAt(), last.getId());
+            }
+        }
+
+        return ResponseEntity.ok(new TrackBrowseResponse(items, nextCursor, hasMore));
+    }
+
+    private static final DateTimeFormatter CURSOR_TIME_FORMAT = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+
+    private record CursorParts(LocalDateTime createdAt, Long id) {
+    }
+
+    private CursorParts decodeCursor(String cursor) {
+        if (cursor == null || cursor.isBlank()) {
+            return new CursorParts(null, null);
+        }
+        try {
+            String decoded = new String(Base64.getUrlDecoder().decode(cursor), StandardCharsets.UTF_8);
+            String[] parts = decoded.split("\\|", 2);
+            if (parts.length != 2) {
+                throw new IllegalArgumentException("Invalid cursor format");
+            }
+            LocalDateTime createdAt = LocalDateTime.parse(parts[0], CURSOR_TIME_FORMAT);
+            Long id = Long.parseLong(parts[1]);
+            return new CursorParts(createdAt, id);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid cursor");
+        }
+    }
+
+    private String encodeCursor(LocalDateTime createdAt, Long id) {
+        String raw = createdAt.format(CURSOR_TIME_FORMAT) + "|" + id;
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(raw.getBytes(StandardCharsets.UTF_8));
     }
 
     /**

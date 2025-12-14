@@ -2,16 +2,20 @@ package com.streamletz.service;
 
 import com.streamletz.model.Track;
 import com.streamletz.repository.TrackRepository;
+import com.streamletz.util.dto.TrackListItemResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -49,6 +53,35 @@ public class TrackService {
      */
     public List<Track> getAllTracks() {
         return trackRepository.findAll();
+    }
+
+    public long getTrackCount() {
+        return trackRepository.count();
+    }
+
+    public List<TrackListItemResponse> browseTracks(int limit, LocalDateTime cursorCreatedAt, Long cursorId) {
+        int safeLimit = Math.max(1, Math.min(limit, 100));
+        var pageable = PageRequest.of(0, safeLimit, Sort.by(Sort.Direction.DESC, "createdAt").and(Sort.by(Sort.Direction.DESC, "id")));
+
+        List<Track> tracks;
+        if (cursorCreatedAt == null || cursorId == null) {
+            tracks = trackRepository.browseFirstPage(pageable);
+        } else {
+            tracks = trackRepository.browseAfterCursor(cursorCreatedAt, cursorId, pageable);
+        }
+
+        return tracks.stream()
+                .map(t -> new TrackListItemResponse(
+                        t.getId(),
+                        t.getTitle(),
+                        t.getArtist(),
+                        t.getAlbum(),
+                        t.getDuration(),
+                        t.getCoverArtUrl(),
+                t.getPlayCount(),
+                t.getCreatedAt()
+                ))
+                .toList();
     }
 
     /**

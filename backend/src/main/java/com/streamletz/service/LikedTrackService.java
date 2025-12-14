@@ -161,4 +161,15 @@ public class LikedTrackService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return likedTrackRepository.countByUser(user);
     }
+
+    @Transactional(readOnly = true)
+    public List<Long> getLikedTrackIdsForTracks(String username, List<Long> trackIds) {
+        if (trackIds == null || trackIds.isEmpty()) {
+            return List.of();
+        }
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return likedTrackRepository.findLikedTrackIdsByUserAndTrackIds(user, trackIds);
+    }
 }

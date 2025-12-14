@@ -2,6 +2,8 @@ package com.streamletz.controller;
 
 import com.streamletz.model.Track;
 import com.streamletz.service.LikedTrackService;
+import com.streamletz.util.dto.LikedStatusResponse;
+import com.streamletz.util.dto.TrackIdsRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -129,5 +131,14 @@ public class LikedTrackController {
             @AuthenticationPrincipal UserDetails userDetails) {
         long count = likedTrackService.getLikedTracksCount(userDetails.getUsername());
         return ResponseEntity.ok(Map.of("count", count));
+    }
+
+    @PostMapping("/tracks/status")
+    @Operation(summary = "Batch liked status", description = "Return which of the provided trackIds are liked by the authenticated user")
+    public ResponseEntity<LikedStatusResponse> getLikedStatusForTracks(
+            @RequestBody TrackIdsRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        List<Long> likedIds = likedTrackService.getLikedTrackIdsForTracks(userDetails.getUsername(), request.getTrackIds());
+        return ResponseEntity.ok(new LikedStatusResponse(likedIds));
     }
 }

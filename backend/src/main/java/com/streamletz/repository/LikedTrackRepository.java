@@ -82,6 +82,10 @@ public interface LikedTrackRepository extends JpaRepository<LikedTrack, Long> {
     @Query("SELECT lt.track FROM LikedTrack lt WHERE lt.user = :user ORDER BY lt.likedAt DESC")
     List<Track> findLikedTracksByUser(@Param("user") User user);
 
+    @Query("SELECT lt.track.id FROM LikedTrack lt WHERE lt.user = :user AND lt.track.id IN :trackIds")
+    List<Long> findLikedTrackIdsByUserAndTrackIds(@Param("user") User user,
+                                                  @Param("trackIds") List<Long> trackIds);
+
     /**
      * Counts the total number of tracks liked by a user.
      * 
