@@ -55,7 +55,7 @@
                 if (searchQuery.trim()) return;
                 const entry = entries[0];
                 if (entry?.isIntersecting) {
-                    void loadNextBrowsePage();
+                    void loadNextBrowsePage({ keepLoadingWhileNearBottom: true, remaining: 5 });
                 }
             },
             {
@@ -112,11 +112,19 @@
         }
     });
 
-    async function loadNextBrowsePage() {
+    function isNearBottom(el: HTMLElement, thresholdPx: number = 200): boolean {
+        return el.scrollTop + el.clientHeight >= el.scrollHeight - thresholdPx;
+    }
+
+    async function loadNextBrowsePage(options: { keepLoadingWhileNearBottom?: boolean; remaining?: number } = {}) {
         if (browseLoading) return;
         if (!browseHasMore) return;
         if (!browseNextCursor) return;
         if (!scrollEl) return;
+
+        const keepLoadingWhileNearBottom = !!options.keepLoadingWhileNearBottom;
+        const remaining = options.remaining ?? 0;
+        const wasNearBottom = isNearBottom(scrollEl, 300);
 
         browseLoading = true;
         try {
@@ -150,6 +158,11 @@
 
             await tick();
 
+            if (wasNearBottom) {
+                scrollEl.scrollTop = scrollEl.scrollHeight;
+                await tick();
+            }
+
             // memory cap: drop oldest items and compensate scroll
             if (browseTracks.length > MAX_TRACKS_IN_MEMORY) {
                 const dropCount = browseTracks.length - MAX_TRACKS_IN_MEMORY;
@@ -159,14 +172,24 @@
                 browseTracks = browseTracks.slice(dropCount);
                 await tick();
 
-                const afterHeight = scrollEl.scrollHeight;
-                const heightDelta = beforeHeight - afterHeight;
-                scrollEl.scrollTop = Math.max(0, beforeTop - heightDelta);
+                if (wasNearBottom) {
+                    scrollEl.scrollTop = scrollEl.scrollHeight;
+                } else {
+                    const afterHeight = scrollEl.scrollHeight;
+                    const heightDelta = beforeHeight - afterHeight;
+                    scrollEl.scrollTop = Math.max(0, beforeTop - heightDelta);
+                }
             }
         } catch {
             error = "Failed to load more tracks.";
         } finally {
             browseLoading = false;
+        }
+
+        if (keepLoadingWhileNearBottom && remaining > 0 && scrollEl) {
+            if (!searchQuery.trim() && browseHasMore && browseNextCursor && isNearBottom(scrollEl, 600)) {
+                await loadNextBrowsePage({ keepLoadingWhileNearBottom: true, remaining: remaining - 1 });
+            }
         }
     }
 
