@@ -69,11 +69,12 @@ public interface TrackRepository extends JpaRepository<Track, Long> {
      */
     Optional<Track> findByFilePath(String filePath);
 
-    @Query("SELECT t FROM Track t ORDER BY t.createdAt DESC, t.id DESC")
-    List<Track> browseFirstPage(Pageable pageable);
+    @Query("SELECT t FROM Track t ORDER BY COALESCE(t.createdAt, :epoch) DESC, t.id DESC")
+    List<Track> browseFirstPage(@Param("epoch") LocalDateTime epoch, Pageable pageable);
 
-    @Query("SELECT t FROM Track t WHERE (t.createdAt < :createdAt) OR (t.createdAt = :createdAt AND t.id < :id) ORDER BY t.createdAt DESC, t.id DESC")
-    List<Track> browseAfterCursor(@Param("createdAt") LocalDateTime createdAt,
+    @Query("SELECT t FROM Track t WHERE (COALESCE(t.createdAt, :epoch) < :createdAt) OR (COALESCE(t.createdAt, :epoch) = :createdAt AND t.id < :id) ORDER BY COALESCE(t.createdAt, :epoch) DESC, t.id DESC")
+    List<Track> browseAfterCursor(@Param("epoch") LocalDateTime epoch,
+                                  @Param("createdAt") LocalDateTime createdAt,
                                   @Param("id") Long id,
                                   Pageable pageable);
 }

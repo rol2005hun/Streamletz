@@ -46,6 +46,8 @@ public class TrackService {
     @Value("${music.storage.path}")
     private String musicStoragePath;
 
+    private static final LocalDateTime BROWSE_EPOCH = LocalDateTime.of(1970, 1, 1, 0, 0, 0);
+
     /**
      * Retrieves all tracks from the database.
      * 
@@ -65,9 +67,9 @@ public class TrackService {
 
         List<Track> tracks;
         if (cursorCreatedAt == null || cursorId == null) {
-            tracks = trackRepository.browseFirstPage(pageable);
+            tracks = trackRepository.browseFirstPage(BROWSE_EPOCH, pageable);
         } else {
-            tracks = trackRepository.browseAfterCursor(cursorCreatedAt, cursorId, pageable);
+            tracks = trackRepository.browseAfterCursor(BROWSE_EPOCH, cursorCreatedAt, cursorId, pageable);
         }
 
         return tracks.stream()
@@ -81,7 +83,7 @@ public class TrackService {
                 t.getFilePath(),
                 t.getFileFormat(),
                 t.getPlayCount(),
-                t.getCreatedAt()
+            (t.getCreatedAt() != null ? t.getCreatedAt() : BROWSE_EPOCH)
                 ))
                 .toList();
     }
