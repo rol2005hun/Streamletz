@@ -15,14 +15,14 @@
     position: relative;
     overflow: hidden;
     min-height: 0;
+    margin-bottom: 90px;
 }
 
 .dashboard-content {
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: $spacing-xl;
-    padding-bottom: 130px;
+    padding: $spacing-md;
     height: 100%;
     will-change: margin-left;
 }
@@ -594,5 +594,11 @@
     }
     100% {
         transform: translateX(100%);
+    }
+}
+
+@media (max-width: 768px) {
+    .main-view {
+        margin-bottom: 145px;
     }
 }
