@@ -53,6 +53,10 @@
     let browseVirtualStartIndex = $state(0);
     let totalTrackCount = $state<number | null>(null);
     let gridEl: HTMLElement | null = $state(null);
+    let inBottomSpacer = $state(false);
+    let scrollRaf = 0;
+
+    const MAX_SPACER_OVERSHOOT_PX = 320;
 
     let scrollEl: HTMLElement | null = $state(null);
     let bottomSentinel: HTMLElement | null = $state(null);
@@ -126,11 +130,80 @@
         browseBottomSpacerPx = Math.max(0, Math.round(remainingRows * rowStride));
     }
 
-    function isNearLoadedEnd(thresholdPx: number = 600): boolean {
-        if (!scrollEl || !bottomSentinel) return false;
+    function loadedEndDistancePx(): number | null {
+        if (!scrollEl || !bottomSentinel) return null;
         const viewportBottom = scrollEl.scrollTop + scrollEl.clientHeight;
         const sentinelTop = bottomSentinel.offsetTop;
-        return viewportBottom >= sentinelTop - thresholdPx;
+        return sentinelTop - viewportBottom;
+    }
+
+    function isNearLoadedEnd(thresholdPx: number = 600): boolean {
+        const dist = loadedEndDistancePx();
+        if (dist === null) return false;
+        // Near end means: within threshold from above, or only slightly beyond.
+        return dist <= thresholdPx && dist >= -MAX_SPACER_OVERSHOOT_PX;
+    }
+
+    function clampDeepIntoSpacer(): boolean {
+        if (!scrollEl || !bottomSentinel) return false;
+        const dist = loadedEndDistancePx();
+        if (dist === null) return false;
+
+        // If the user drags the scrollbar far into the virtual spacer, clamp them
+        // to the end of loaded content. This avoids empty gaps and prevents
+        // runaway catch-up behavior.
+        if (dist < -MAX_SPACER_OVERSHOOT_PX) {
+            const maxScrollTop = Math.max(
+                0,
+                bottomSentinel.offsetTop - scrollEl.clientHeight + MAX_SPACER_OVERSHOOT_PX,
+            );
+            if (scrollEl.scrollTop > maxScrollTop) {
+                scrollEl.scrollTop = maxScrollTop;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    function updateInBottomSpacer() {
+        if (!scrollEl || !bottomSentinel) {
+            inBottomSpacer = false;
+            return;
+        }
+        const dist = loadedEndDistancePx();
+        // If viewport is at/after the end of loaded items, we're inside the reserved spacer.
+        inBottomSpacer = dist !== null && dist <= 0;
+    }
+
+    function getGridMetrics(): { columns: number; rowStride: number } | null {
+        if (!gridEl) return null;
+        const style = getComputedStyle(gridEl);
+        const columns = style.gridTemplateColumns
+            ? style.gridTemplateColumns.split(" ").filter(Boolean).length
+            : 1;
+        const rowGap = Number.parseFloat(style.rowGap || "0") || 0;
+
+        const firstCard = gridEl.querySelector(
+            ".track-card:not(.skeleton)",
+        ) as HTMLElement | null;
+        const cardHeight = firstCard?.offsetHeight ?? 0;
+        if (cardHeight <= 0 || columns <= 0) return null;
+
+        return { columns, rowStride: cardHeight + rowGap };
+    }
+
+    function computeCatchUpPages(): number {
+        // Keep this intentionally small: we want chunked loading like Spotify,
+        // not an uncontrolled sprint to the end when the user drags the scrollbar.
+        if (!scrollEl) return 2;
+        const metrics = getGridMetrics();
+        if (!metrics) return 2;
+
+        const rowsNeeded = Math.ceil((scrollEl.clientHeight * 1.5) / metrics.rowStride) + 1;
+        const itemsNeeded = rowsNeeded * Math.max(1, metrics.columns);
+        const pages = Math.ceil(itemsNeeded / PAGE_SIZE);
+        return Math.max(1, Math.min(pages, 4));
     }
 
     $effect(() => {
@@ -458,15 +531,34 @@
             style="margin-left: {sidebarCollapsed ? 0 : sidebarWidth}px"
             bind:this={scrollEl}
             onscroll={() => {
-                if (searchQuery.trim()) return;
-                if (!browseHasMore || !browseNextCursor) return;
-                if (browseLoading) return;
-                if (isNearLoadedEnd(1200)) {
-                    void loadNextBrowsePage({
-                        keepLoadingWhileNearBottom: true,
-                        remaining: 3,
-                    });
-                }
+                if (scrollRaf) return;
+                scrollRaf = requestAnimationFrame(() => {
+                    scrollRaf = 0;
+                    if (searchQuery.trim()) return;
+
+                    updateInBottomSpacer();
+
+                    // If user drags the scrollbar deep into the virtual spacer,
+                    // clamp them back to the loaded end. This prevents blank gaps
+                    // and stops the app from "racing" to the end.
+                    const didClamp = clampDeepIntoSpacer();
+
+                    if (!browseHasMore || !browseNextCursor) {
+                        inBottomSpacer = false;
+                        return;
+                    }
+                    if (browseLoading) return;
+
+                    // Load in small chunks near the loaded end (including slight overshoot).
+                    // If we clamped, only fetch a small amount; don't recursively sprint.
+                    if (isNearLoadedEnd(1200)) {
+                        const pages = didClamp ? 2 : computeCatchUpPages();
+                        void loadNextBrowsePage({
+                            keepLoadingWhileNearBottom: true,
+                            remaining: pages,
+                        });
+                    }
+                });
             }}
         >
             {#if error}
@@ -647,9 +739,36 @@
 
                     {#if browseBottomSpacerPx > 0}
                         <div
+                            class="browse-bottom-spacer"
                             aria-hidden="true"
                             style="height: {browseBottomSpacerPx}px"
-                        ></div>
+                        >
+                            {#if (inBottomSpacer || browseLoading) && browseHasMore}
+                                <div class="browse-bottom-spacer__loader">
+                                    <div class="tracks-grid">
+                                        {#each Array.from({ length: 12 }) as _}
+                                            <div
+                                                class="track-card skeleton"
+                                                aria-hidden="true"
+                                            >
+                                                <div
+                                                    class="track-cover skeleton-block"
+                                                ></div>
+                                                <div class="track-details">
+                                                    <div
+                                                        class="skeleton-line title"
+                                                    ></div>
+                                                    <div class="skeleton-line"></div>
+                                                    <div
+                                                        class="skeleton-line short"
+                                                    ></div>
+                                                </div>
+                                            </div>
+                                        {/each}
+                                    </div>
+                                </div>
+                            {/if}
+                        </div>
                     {/if}
                 {/if}
             {/if}

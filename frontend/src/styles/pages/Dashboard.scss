@@ -67,6 +67,19 @@
     height: 1px;
 }
 
+.browse-bottom-spacer {
+    position: relative;
+
+    &__loader {
+        position: sticky;
+        top: 0;
+        padding-top: $spacing-md;
+        padding-bottom: $spacing-md;
+        min-height: 100vh;
+        pointer-events: none;
+    }
+}
+
 .track-card {
     background: $background-card;
     border-radius: $border-radius-lg;
